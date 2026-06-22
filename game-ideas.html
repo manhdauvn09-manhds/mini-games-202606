@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>10 Ý Tưởng Game — Spec & Tính Năng Chính</title>
+<title>Ý Tưởng Game — 10 Cơ Bản + 15 Game Hot Thị Trường Á Châu</title>
 <style>
   :root{
     --bg:#0e1120; --bg2:#141831; --card:#1a1f3a; --card2:#212747;
@@ -131,6 +131,7 @@
     <span class="pill">⚡ MVP 1–4 ngày/game</span>
     <span class="pill">🔁 Tận dụng hạ tầng cờ vua</span>
     <span class="pill">📱 Web · Responsive</span>
+    <a href="#asia" class="pill" style="text-decoration:none; border-color:color-mix(in srgb,var(--gold) 45%,transparent); color:var(--gold); background:color-mix(in srgb,var(--gold) 12%,transparent)">🌏 +15 game hot Á châu ↓</a>
   </div>
 </header>
 
@@ -475,6 +476,422 @@
     <div class="b"><h4>Pong 1v1</h4><p>Bóng bàn 2D đối kháng realtime — đơn giản nhất để thử nghiệm netcode versus.</p></div>
   </div>
 
+  <!-- =================== 15 GAME HOT THỊ TRƯỜNG Á CHÂU =================== -->
+  <div class="section-title" id="asia"><h2>🌏 15 Game Hot Thị Trường Á Châu</h2><div class="line"></div></div>
+  <p style="color:var(--muted); max-width:880px; margin:-6px 0 6px; font-size:15px">
+    Tuyển chọn <b>15 game đang đông người chơi &amp; thu hút</b> ở thị trường 🇯🇵 Nhật · 🇻🇳 Việt · 🇰🇷 Hàn · 🇨🇳 Trung (đã loại các game bạn đã có: caro, tetris, 2048, flappy, taiko, mahjong, chess, xiangqi). Tất cả đều làm được dạng <b>1 file HTML tự-chứa</b> (offline, không cần server), kèm góc <b>1000×</b> — làm gì để bản web của mình lên đẳng cấp. <span style="color:var(--gold)">🔥 = đang viral/trend mạnh.</span>
+  </p>
+
+  <!-- TOOLBAR (riêng cho khu Á châu) -->
+  <div class="toolbar">
+    <div class="grp">
+      <span class="lbl">Lọc:</span>
+      <button class="btn active" data-filter2="all">Tất cả</button>
+      <button class="btn" data-filter2="merge">🍉 Merge</button>
+      <button class="btn" data-filter2="puzzle">🧩 Giải đố</button>
+      <button class="btn" data-filter2="arcade">🕹️ Arcade</button>
+      <button class="btn" data-filter2="action">⚔️ Hành động</button>
+      <button class="btn" data-filter2="board">♟️ Cờ/Board</button>
+      <button class="btn" data-filter2="casual">🎲 Casual</button>
+    </div>
+    <div class="grp">
+      <span class="lbl">Sắp xếp:</span>
+      <button class="btn" data-sort2="default">Mặc định</button>
+      <button class="btn" data-sort2="dev">Dễ làm nhất</button>
+      <button class="btn" data-sort2="fun">Thu hút nhất</button>
+    </div>
+  </div>
+
+  <!-- CARDS Á CHÂU -->
+  <div class="grid" id="grid2">
+
+    <!-- 1 SUIKA -->
+    <article class="card" data-cat="merge" data-dev="3" data-fun="5" style="--cat:#56d96a">
+      <span class="num">01</span>
+      <span class="cat">🇯🇵 Nhật · 🔥 Viral</span>
+      <h3>🍉 Suika (Watermelon Merge)</h3>
+      <div class="en">スイカゲーム · Thả &amp; gộp trái cây bằng vật lý</div>
+      <p class="desc">Trò gộp trái cây gây sốt toàn cầu (gốc Nhật): thả quả vào hộp, 2 quả cùng loại chạm nhau → gộp thành quả to hơn theo vật lý; tạo ra quả dưa hấu là đỉnh cao. Cực dễ quay clip → lan truyền mạnh.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">2–3 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Vật lý rơi/lăn mượt (xung lực + va chạm hình tròn)</li>
+        <li>Chuỗi gộp liên hoàn (chain) + điểm thưởng combo</li>
+        <li>"Next + Hold" để tính trước nước thả</li>
+        <li>Daily seed (cùng thứ tự quả cho mọi người) + kỷ lục</li>
+        <li>Skin trái cây/theme + juice rung &amp; particle khi gộp</li>
+      </ul>
+      <div class="hook">🪝 <b>1000×:</b> Combo chain + Daily seed + share ảnh điểm → vòng lặp viral tự nhiên.</div>
+      <div class="foot"><span class="chip">🌍 <b>Nhật</b></span><span class="chip">📦 Self-contained · Offline ✓</span></div>
+    </article>
+
+    <!-- 2 PUYO PUYO -->
+    <article class="card" data-cat="puzzle" data-dev="3" data-fun="5" style="--cat:#b388ff">
+      <span class="num">02</span>
+      <span class="cat">🇯🇵 Nhật · Falling puzzle</span>
+      <h3>🟣 Puyo Puyo</h3>
+      <div class="en">ぷよぷよ · Nối màu rơi, nổ chuỗi combo</div>
+      <p class="desc">Khối nhầy đôi rơi xuống; nối ≥4 viên cùng màu để nổ, tạo phản ứng dây chuyền (chain) — chain càng dài điểm càng khủng. Có đối kháng "đổ rác" sang đối thủ.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">2 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Cặp puyo xoay/đặt; phát hiện cụm ≥4 + nổ dây chuyền</li>
+        <li>Bộ đếm chain hoành tráng + SFX cao dần theo combo</li>
+        <li>vs Bot 3 mức (AI biết dựng chain) + all-clear bonus</li>
+        <li>Mode Endless + Puzzle dựng sẵn (giải combo cho trước)</li>
+        <li>Theme màu + rung màn khi nổ chuỗi lớn</li>
+      </ul>
+      <div class="hook">🪝 <b>1000×:</b> Chain combo + vs Bot + voice combo + bảng xếp hạng.</div>
+      <div class="foot"><span class="chip">🌍 <b>Nhật</b></span><span class="chip">📦 Self-contained · Offline ✓</span></div>
+    </article>
+
+    <!-- 3 NONOGRAM -->
+    <article class="card" data-cat="puzzle" data-dev="3" data-fun="4" style="--cat:#34d3b6">
+      <span class="num">03</span>
+      <span class="cat">🇯🇵 Nhật · Logic puzzle</span>
+      <h3>🧩 Nonogram / Picross</h3>
+      <div class="en">お絵かきロジック · Giải số → hiện tranh pixel</div>
+      <p class="desc">Giải các con số ở hàng/cột để tô ra một bức tranh pixel. Gây nghiện kiểu Sudoku nhưng "phần thưởng hình ảnh" khi xong cực thỏa mãn.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">2 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Cỡ 5×5 → 20×20, đánh dấu X cho ô chắc chắn trống</li>
+        <li>Auto-fill khi hàng/cột đã đủ thông tin; kiểm tra lỗi tùy chọn</li>
+        <li>Thư viện 100+ tranh theo chủ đề; reveal animation + tên tranh</li>
+        <li>Daily picross + streak; lưu tiến độ từng câu</li>
+        <li>Juice: tô ô có âm "tick", rung nhẹ khi điền sai</li>
+      </ul>
+      <div class="hook">🪝 <b>1000×:</b> Album sưu tầm + daily + mở khóa theo bộ → "chơi cho đủ bộ".</div>
+      <div class="foot"><span class="chip">🌍 <b>Nhật</b></span><span class="chip">📦 Self-contained · Offline ✓</span></div>
+    </article>
+
+    <!-- 4 VAMPIRE SURVIVORS -->
+    <article class="card" data-cat="action" data-dev="4" data-fun="5" style="--cat:#ff6b6b">
+      <span class="num">04</span>
+      <span class="cat">🇯🇵 Nhật/Toàn cầu · 🔥 Trend</span>
+      <h3>🧛 Vampire-Survivors-like</h3>
+      <div class="en">ヴァンサバ系 · Tự bắn, né quái, sống sót</div>
+      <p class="desc">"Bullet-heaven": nhân vật tự động bắn, bạn chỉ di chuyển để né hàng trăm quái, lên cấp chọn &amp; tiến hóa vũ khí, sống sót 15–30 phút. Thể loại đang bùng nổ khắp Á–Âu.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">3–4 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>6–8 vũ khí + tiến hóa (evolution) khi đủ điều kiện</li>
+        <li>Sóng quái tăng dần + boss theo mốc phút</li>
+        <li>Meta-upgrade vĩnh viễn giữa các ván (nhặt vàng nâng cấp)</li>
+        <li>Nhiều nhân vật mở khóa, mỗi người 1 lối chơi</li>
+        <li>Juice particle dày đặc, số sát thương bay, màn hình rung</li>
+      </ul>
+      <div class="hook">🪝 <b>1000×:</b> Evolution + meta-progression + boss + nhân vật mở khóa → "một ván nữa".</div>
+      <div class="foot"><span class="chip">🌍 <b>Nhật/Global</b></span><span class="chip">📦 Self-contained · Offline ✓</span></div>
+    </article>
+
+    <!-- 5 ONET / PIKACHU -->
+    <article class="card" data-cat="puzzle" data-dev="2" data-fun="5" style="--cat:#ffce54">
+      <span class="num">05</span>
+      <span class="cat">🇻🇳 Việt · 🔥 Quốc dân</span>
+      <h3>⚡ Pikachu / Onet Connect</h3>
+      <div class="en">Nối hình · Nối 2 ô giống nhau bằng đường ≤3 đoạn</div>
+      <p class="desc">Huyền thoại phòng net Việt Nam: nối 2 ô giống nhau bằng đường gấp tối đa 3 đoạn để xóa. Luật dễ, gây nghiện, đến nay vẫn cực đông người chơi.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">1–2 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Thuật toán đường nối ≤3 đoạn (vẽ tia khi nối đúng)</li>
+        <li>Hint + xáo bài khi bí; đảm bảo bàn luôn còn nước</li>
+        <li>Chế độ trọng lực/dồn ô (lên/xuống/trái/phải) tăng khó</li>
+        <li>Đồng hồ + combo nối nhanh liên tiếp</li>
+        <li>Theme Pikachu/emoji/hoa quả + daily</li>
+      </ul>
+      <div class="hook">🪝 <b>1000×:</b> Combo + nhiều kiểu dồn ô + theme + daily → cuốn như xưa nhưng "xịn" hơn.</div>
+      <div class="foot"><span class="chip">🌍 <b>Việt</b></span><span class="chip">📦 Self-contained · Offline ✓</span></div>
+    </article>
+
+    <!-- 6 BAU CUA -->
+    <article class="card" data-cat="casual" data-dev="2" data-fun="4" style="--cat:#e7384f">
+      <span class="num">06</span>
+      <span class="cat">🇻🇳 Việt · Xúc xắc Tết</span>
+      <h3>🦀 Bầu Cua Tôm Cá</h3>
+      <div class="en">Trò xúc xắc Tết quốc dân · đặt cửa nào trúng cửa đó</div>
+      <p class="desc">3 viên xúc xắc 6 mặt (bầu/cua/tôm/cá/gà/nai), đặt cược vào cửa, lắc bát ra trúng cửa nào ăn cửa đó. Vui, may rủi, đậm không khí lễ hội.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">1 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Hoạt cảnh lắc bát &amp; lật bát hồi hộp</li>
+        <li>Đặt cược nhiều cửa, nút đặt nhanh/gấp đôi/xóa cược</li>
+        <li>Vốn ảo + nhiệm vụ điểm danh ngày (không tiền thật)</li>
+        <li>Streak thắng + thành tựu; SFX &amp; theme Tết</li>
+        <li>Lịch sử ván + thống kê tần suất ra từng cửa</li>
+      </ul>
+      <div class="hook">🪝 <b>1000×:</b> Vốn ảo + nhiệm vụ ngày + theme Tết → lý do quay lại mỗi ngày.</div>
+      <div class="foot"><span class="chip">🌍 <b>Việt</b></span><span class="chip">📦 Self-contained · Offline ✓</span></div>
+    </article>
+
+    <!-- 7 LUDO / CO CA NGUA -->
+    <article class="card" data-cat="board" data-dev="3" data-fun="4" style="--cat:#6c8cff">
+      <span class="num">07</span>
+      <span class="cat">🇻🇳 Việt · Board đua</span>
+      <h3>🐴 Cờ Cá Ngựa (Ludo)</h3>
+      <div class="en">Gieo xúc xắc đua 4 ngựa về chuồng, đá quân đối thủ</div>
+      <p class="desc">Board game quốc dân để chơi nhóm: gieo xúc xắc đưa 4 ngựa về đích, "đá" quân đối thủ về vạch xuất phát. Đơn giản, ồn ào, vui.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">2–3 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>vs 1–3 Bot (3 mức) + 2–4 người chơi chung 1 máy</li>
+        <li>Animation đá quân + về đích; gieo xúc xắc 3D</li>
+        <li>Luật rút gọn/đầy đủ tùy chọn (cần đúng số để xuất/về)</li>
+        <li>Theme bàn cờ &amp; quân; âm thanh vui nhộn</li>
+        <li>Thống kê số ván thắng / số lần đá quân</li>
+      </ul>
+      <div class="hook">🪝 <b>1000×:</b> Bot nhiều mức + chơi nhóm 1 máy + thống kê → vui cả khi 1 mình.</div>
+      <div class="foot"><span class="chip">🌍 <b>Việt</b></span><span class="chip">📦 Self-contained · Offline ✓</span></div>
+    </article>
+
+    <!-- 8 O AN QUAN -->
+    <article class="card" data-cat="board" data-dev="3" data-fun="3" style="--cat:#ff9f43">
+      <span class="num">08</span>
+      <span class="cat">🇻🇳 Việt · Dân gian/Chiến thuật</span>
+      <h3>🪨 Ô Ăn Quan</h3>
+      <div class="en">Cờ mancala dân gian Việt · rải sỏi để "ăn" quân</div>
+      <p class="desc">Cờ dân gian Việt Nam: rải sỏi quanh các ô, tính toán để "ăn" được nhiều quân nhất. Truyền thống, đậm bản sắc, chiều sâu chiến thuật bất ngờ.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">2 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>AI minimax 3 mức + gợi ý nước đi cho người mới</li>
+        <li>Hoạt cảnh rải sỏi từng ô (đếm trực quan)</li>
+        <li>Hướng dẫn luật tương tác (ăn liên hoàn, vay quan)</li>
+        <li>PvP 2 người chung 1 máy; theme bàn đất/gỗ</li>
+        <li>Đếm điểm quan/dân rõ ràng cuối ván</li>
+      </ul>
+      <div class="hook">🪝 <b>1000×:</b> AI + gợi ý + hướng dẫn → ai cũng chơi được mà vẫn giữ nét Việt.</div>
+      <div class="foot"><span class="chip">🌍 <b>Việt</b></span><span class="chip">📦 Self-contained · Offline ✓</span></div>
+    </article>
+
+    <!-- 9 ANIPANG MATCH-3 -->
+    <article class="card" data-cat="puzzle" data-dev="3" data-fun="5" style="--cat:#ff7aa8">
+      <span class="num">09</span>
+      <span class="cat">🇰🇷 Hàn · Match-3 quốc dân</span>
+      <h3>💎 Anipang Match-3</h3>
+      <div class="en">애니팡 · Đổi chỗ nối ≥3, combo trong 60 giây</div>
+      <p class="desc">Mega-hit quốc dân Hàn Quốc: đổi chỗ thú/kẹo để nối ≥3, kích hoạt dây chuyền combo trong 60 giây tốc độ. Đơn giản mà cực cuốn.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">2 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Hoán đổi + cascade combo (rơi xuống nối tiếp) đầy juice</li>
+        <li>Booster: bom hàng/cột, cầu vồng xóa cùng màu</li>
+        <li>Mode 60s + Endless + Mục tiêu (đạt điểm/đủ loại)</li>
+        <li>Daily + bảng xếp hạng; đảm bảo luôn có nước (auto đảo bàn)</li>
+        <li>Hiệu ứng &amp; SFX combo tăng dần</li>
+      </ul>
+      <div class="hook">🪝 <b>1000×:</b> Booster + nhiều mode + daily leaderboard → đua điểm mỗi ngày.</div>
+      <div class="foot"><span class="chip">🌍 <b>Hàn</b></span><span class="chip">📦 Self-contained · Offline ✓</span></div>
+    </article>
+
+    <!-- 10 DALGONA -->
+    <article class="card" data-cat="arcade" data-dev="2" data-fun="4" style="--cat:#ffce54">
+      <span class="num">10</span>
+      <span class="cat">🇰🇷 Hàn · 🔥 Squid Game</span>
+      <h3>🍬 Dalgona Honeycomb</h3>
+      <div class="en">달고나 · Lần theo viền hình kẹo, đừng làm gãy</div>
+      <p class="desc">Từ Squid Game: lần theo viền hình (tròn/tam giác/sao/dù) trên miếng kẹo đường mà không làm gãy. Đơn giản, hồi hộp, viral toàn cầu.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">1 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Vẽ theo viền bằng chạm/chuột (bám đường mới được điểm)</li>
+        <li>Thanh "rủi ro gãy" theo độ lệch &amp; tốc độ tay</li>
+        <li>4 hình khó tăng dần; mode tính giờ + chấm độ chính xác</li>
+        <li>Hiệu ứng kẹo/khói/vết nứt khi sắp gãy</li>
+        <li>Kỷ lục + nút share kết quả</li>
+      </ul>
+      <div class="hook">🪝 <b>1000×:</b> 4 hình + chấm điểm chính xác + share → "thử lại cho qua".</div>
+      <div class="foot"><span class="chip">🌍 <b>Hàn</b></span><span class="chip">📦 Self-contained · Offline ✓</span></div>
+    </article>
+
+    <!-- 11 RED LIGHT GREEN LIGHT -->
+    <article class="card" data-cat="arcade" data-dev="2" data-fun="4" style="--cat:#56d96a">
+      <span class="num">11</span>
+      <span class="cat">🇰🇷 Hàn · 🔥 Squid Game</span>
+      <h3>🚦 Red Light, Green Light</h3>
+      <div class="en">무궁화 꽃이 피었습니다 · Chạy đèn xanh, đứng im đèn đỏ</div>
+      <p class="desc">Trò chơi mở màn Squid Game: chạy khi đèn xanh, đứng hình tuyệt đối khi đỏ — búp bê quay đầu mà còn cử động là bị loại. Phản xạ &amp; tự chủ căng thẳng.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">1 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Búp bê xoay đầu + tín hiệu cảnh báo trước khi quay</li>
+        <li>Giữ để chạy, nhả để dừng tức thì (lố là loại)</li>
+        <li>Nhiều vòng tăng tốc + vạch đích; thời gian giới hạn</li>
+        <li>Combo "suýt chết" (dừng sát nút) thưởng điểm</li>
+        <li>Nhân vật/skin + leaderboard thời gian về đích</li>
+      </ul>
+      <div class="hook">🪝 <b>1000×:</b> Tăng tốc theo vòng + leaderboard thời gian → đua nhau về đích.</div>
+      <div class="foot"><span class="chip">🌍 <b>Hàn</b></span><span class="chip">📦 Self-contained · Offline ✓</span></div>
+    </article>
+
+    <!-- 12 BLOCK PUZZLE -->
+    <article class="card" data-cat="puzzle" data-dev="2" data-fun="5" style="--cat:#ff9f43">
+      <span class="num">12</span>
+      <span class="cat">🌏 Á châu · 🔥 Casual hit</span>
+      <h3>🪵 Block Puzzle / Blockudoku</h3>
+      <div class="en">Kéo khối vào lưới 9×9, lấp đầy hàng/cột/ô để xóa</div>
+      <p class="desc">Hit casual phủ khắp Á: kéo các khối vào lưới 9×9, lấp đầy hàng, cột hoặc ô vuông 3×3 để xóa (lai Tetris + Sudoku). Không đồng hồ, chơi mãi không dứt.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">1–2 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>3 khối/lượt, kéo-thả vào lưới (xoay tùy chọn)</li>
+        <li>Xóa hàng/cột/ô 3×3 cùng lúc + combo/streak điểm</li>
+        <li>Cảnh báo "hết chỗ đặt" → kết thúc ván</li>
+        <li>Undo + theme gỗ/neon; Daily + mục tiêu</li>
+        <li>Thành tựu + lưu ván đang chơi</li>
+      </ul>
+      <div class="hook">🪝 <b>1000×:</b> Combo streak + daily + theme → casual gây nghiện, dễ chơi mọi lúc.</div>
+      <div class="foot"><span class="chip">🌍 <b>Á châu</b></span><span class="chip">📦 Self-contained · Offline ✓</span></div>
+    </article>
+
+    <!-- 13 JUMP HOP -->
+    <article class="card" data-cat="arcade" data-dev="2" data-fun="4" style="--cat:#34d3b6">
+      <span class="num">13</span>
+      <span class="cat">🇨🇳 Trung · Viral WeChat</span>
+      <h3>🎯 Jump Hop (跳一跳)</h3>
+      <div class="en">跳一跳 · Giữ tích lực, nhảy bục sang bục</div>
+      <p class="desc">Game nhảy bục viral của WeChat: giữ để tích lực rồi thả cho nhân vật nhảy sang bục kế tiếp; trúng tâm bục thì combo điểm tăng dần. Tối giản, cuốn.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">1 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Vật lý nảy + canh lực bằng giữ/thả</li>
+        <li>Bục đặc biệt (nhạc/quà) thưởng điểm khi đáp trúng</li>
+        <li>Combo trúng-tâm liên tiếp nhân điểm</li>
+        <li>Skin nhân vật + nền; phối màu tối giản đẹp</li>
+        <li>Daily seed + "ghost" kỷ lục để vượt</li>
+      </ul>
+      <div class="hook">🪝 <b>1000×:</b> Combo trúng tâm + bục đặc biệt + ghost kỷ lục → phá điểm cao.</div>
+      <div class="foot"><span class="chip">🌍 <b>Trung</b></span><span class="chip">📦 Self-contained · Offline ✓</span></div>
+    </article>
+
+    <!-- 14 TILE MATCH 3D -->
+    <article class="card" data-cat="puzzle" data-dev="3" data-fun="5" style="--cat:#6c8cff">
+      <span class="num">14</span>
+      <span class="cat">🌏 Á châu · 🔥 Trend mobile</span>
+      <h3>🀄 Tile Match 3D (Triple Tile)</h3>
+      <div class="en">Nhặt ô lên khay, gom đủ 3 ô cùng hình thì xóa</div>
+      <p class="desc">Trend mobile cực mạnh: nhặt ô từ đống chồng lên khay 7 chỗ; gom đủ 3 ô cùng hình thì tự xóa. Khay đầy 7 ô là thua → căng não &amp; gây nghiện.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">2 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Đống ô xếp chồng nhiều tầng (ô dưới bị che/khóa)</li>
+        <li>Khay 7 ô + gom-3 tự xóa, đẩy điểm</li>
+        <li>3 booster: hoàn tác, xáo đống, rút 3 ô ra ngoài</li>
+        <li>Nhiều màn bố cục tăng khó; đảm bảo màn giải được</li>
+        <li>Theme icon dễ thương + juice khi xóa bộ ba</li>
+      </ul>
+      <div class="hook">🪝 <b>1000×:</b> Booster + nhiều màn + đảm bảo giải → cuốn từng màn một.</div>
+      <div class="foot"><span class="chip">🌍 <b>Á châu</b></span><span class="chip">📦 Self-contained · Offline ✓</span></div>
+    </article>
+
+    <!-- 15 WATER SORT -->
+    <article class="card" data-cat="puzzle" data-dev="2" data-fun="4" style="--cat:#b388ff">
+      <span class="num">15</span>
+      <span class="cat">🌏 Á châu · 🔥 Casual hit</span>
+      <h3>🧪 Water Sort Puzzle</h3>
+      <div class="en">Rót nước màu giữa các ống đến khi mỗi ống 1 màu</div>
+      <p class="desc">Puzzle sắp xếp gây nghiện phủ khắp Á: rót nước màu qua lại giữa các ống sao cho mỗi ống chỉ còn một màu. Nhẹ nhàng, thư giãn mà rất cuốn.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">1 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Luật rót: chỉ rót lên cùng màu hoặc ống trống</li>
+        <li>Undo + thêm 1 ống cứu nguy khi bí</li>
+        <li>200+ màn khó tăng dần (sinh ngẫu nhiên + đảm bảo giải)</li>
+        <li>Gợi ý nước đi; animation rót/đổ màu mượt</li>
+        <li>Theme ống &amp; bảng màu; daily challenge</li>
+      </ul>
+      <div class="hook">🪝 <b>1000×:</b> 200+ màn + undo/ống cứu + hint → giải mãi không chán.</div>
+      <div class="foot"><span class="chip">🌍 <b>Á châu</b></span><span class="chip">📦 Self-contained · Offline ✓</span></div>
+    </article>
+
+  </div>
+
+  <!-- BẢNG SO SÁNH Á CHÂU -->
+  <div class="section-title"><h2>📊 Bảng so sánh nhanh — 15 game Á châu</h2><div class="line"></div></div>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Game</th><th>Thị trường</th><th>Thể loại</th><th>Dễ làm</th><th>Thu hút</th><th>MVP</th><th>Hook 1000×</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>01</td><td><b>🍉 Suika</b></td><td>🇯🇵 Nhật 🔥</td><td>Merge/Vật lý</td><td><span class="mini dev" data-dev="3"></span></td><td><span class="mini" data-fun="5"></span></td><td>2–3 ngày</td><td>Combo · Daily · share</td></tr>
+        <tr><td>02</td><td><b>🟣 Puyo Puyo</b></td><td>🇯🇵 Nhật</td><td>Falling puzzle</td><td><span class="mini dev" data-dev="3"></span></td><td><span class="mini" data-fun="5"></span></td><td>2 ngày</td><td>Chain · vs Bot</td></tr>
+        <tr><td>03</td><td><b>🧩 Nonogram</b></td><td>🇯🇵 Nhật</td><td>Logic puzzle</td><td><span class="mini dev" data-dev="3"></span></td><td><span class="mini" data-fun="4"></span></td><td>2 ngày</td><td>Album · daily</td></tr>
+        <tr><td>04</td><td><b>🧛 Vampire-Survivors</b></td><td>🇯🇵/🌍 🔥</td><td>Hành động</td><td><span class="mini dev" data-dev="4"></span></td><td><span class="mini" data-fun="5"></span></td><td>3–4 ngày</td><td>Evolution · meta</td></tr>
+        <tr><td>05</td><td><b>⚡ Pikachu/Onet</b></td><td>🇻🇳 Việt 🔥</td><td>Nối hình</td><td><span class="mini dev" data-dev="2"></span></td><td><span class="mini" data-fun="5"></span></td><td>1–2 ngày</td><td>Combo · theme</td></tr>
+        <tr><td>06</td><td><b>🦀 Bầu Cua Tôm Cá</b></td><td>🇻🇳 Việt</td><td>Casual xúc xắc</td><td><span class="mini dev" data-dev="2"></span></td><td><span class="mini" data-fun="4"></span></td><td>1 ngày</td><td>Vốn ảo · nhiệm vụ</td></tr>
+        <tr><td>07</td><td><b>🐴 Cờ Cá Ngựa</b></td><td>🇻🇳 Việt</td><td>Board đua</td><td><span class="mini dev" data-dev="3"></span></td><td><span class="mini" data-fun="4"></span></td><td>2–3 ngày</td><td>Bot · chơi nhóm</td></tr>
+        <tr><td>08</td><td><b>🪨 Ô Ăn Quan</b></td><td>🇻🇳 Việt</td><td>Cờ dân gian</td><td><span class="mini dev" data-dev="3"></span></td><td><span class="mini" data-fun="3"></span></td><td>2 ngày</td><td>AI · gợi ý</td></tr>
+        <tr><td>09</td><td><b>💎 Anipang Match-3</b></td><td>🇰🇷 Hàn</td><td>Match-3</td><td><span class="mini dev" data-dev="3"></span></td><td><span class="mini" data-fun="5"></span></td><td>2 ngày</td><td>Booster · daily</td></tr>
+        <tr><td>10</td><td><b>🍬 Dalgona</b></td><td>🇰🇷 Hàn 🔥</td><td>Arcade chính xác</td><td><span class="mini dev" data-dev="2"></span></td><td><span class="mini" data-fun="4"></span></td><td>1 ngày</td><td>Chính xác · share</td></tr>
+        <tr><td>11</td><td><b>🚦 Red Light Green Light</b></td><td>🇰🇷 Hàn 🔥</td><td>Phản xạ</td><td><span class="mini dev" data-dev="2"></span></td><td><span class="mini" data-fun="4"></span></td><td>1 ngày</td><td>Tăng tốc · time</td></tr>
+        <tr><td>12</td><td><b>🪵 Block Puzzle</b></td><td>🌏 Á châu 🔥</td><td>Giải đố</td><td><span class="mini dev" data-dev="2"></span></td><td><span class="mini" data-fun="5"></span></td><td>1–2 ngày</td><td>Combo · daily</td></tr>
+        <tr><td>13</td><td><b>🎯 Jump Hop</b></td><td>🇨🇳 Trung</td><td>Arcade timing</td><td><span class="mini dev" data-dev="2"></span></td><td><span class="mini" data-fun="4"></span></td><td>1 ngày</td><td>Combo tâm · ghost</td></tr>
+        <tr><td>14</td><td><b>🀄 Tile Match 3D</b></td><td>🌏 Á châu 🔥</td><td>Giải đố</td><td><span class="mini dev" data-dev="3"></span></td><td><span class="mini" data-fun="5"></span></td><td>2 ngày</td><td>Booster · nhiều màn</td></tr>
+        <tr><td>15</td><td><b>🧪 Water Sort</b></td><td>🌏 Á châu 🔥</td><td>Giải đố</td><td><span class="mini dev" data-dev="2"></span></td><td><span class="mini" data-fun="4"></span></td><td>1 ngày</td><td>200+ màn · hint</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ƯU TIÊN BUILD -->
+  <div class="section-title"><h2>⭐ Gợi ý ưu tiên build trước</h2><div class="line"></div></div>
+  <div class="bonus">
+    <div class="b" style="border-color:color-mix(in srgb,var(--gold) 35%,transparent)"><h4>🍉 Suika</h4><p>Viral nhất, dễ quay clip; vật lý gộp cực thỏa mãn. Đầu tư 2–3 ngày, đổi lại độ lan truyền cao nhất nhóm.</p></div>
+    <div class="b" style="border-color:color-mix(in srgb,var(--gold) 35%,transparent)"><h4>⚡ Pikachu / Onet</h4><p>Người Việt ai cũng biết &amp; mê; dễ làm (1–2 ngày), gây nghiện ngay. "Ăn" lượng người chơi VN sẵn có.</p></div>
+    <div class="b" style="border-color:color-mix(in srgb,var(--gold) 35%,transparent)"><h4>🪵 Block Puzzle</h4><p>Casual không đồng hồ, chơi mọi lúc; dễ làm mà giữ chân lâu. Hợp cả mobile lẫn desktop.</p></div>
+    <div class="b" style="border-color:color-mix(in srgb,var(--gold) 35%,transparent)"><h4>🍬 Dalgona</h4><p>Ăn theo sức nóng Squid Game, làm trong 1 ngày, dễ share kết quả "qua/gãy".</p></div>
+    <div class="b" style="border-color:color-mix(in srgb,var(--gold) 35%,transparent)"><h4>🀄 Tile Match 3D</h4><p>Trend mobile rất mạnh hiện nay; cấu trúc màn rõ ràng, dễ thêm nội dung &amp; booster.</p></div>
+    <div class="b"><h4>💡 Cách triển khai</h4><p>Cùng "khung 1000×" như 8 game đang live: VI/JP, Settings, theme, Daily, thành tựu, share, mobile-ready. Deploy qua repo GitHub (≈30s/game).</p></div>
+  </div>
+
   <footer>
     Tài liệu brainstorm spec game · Ưu tiên tái sử dụng hạ tầng realtime/Elo/bot sẵn có ·
     Mở trực tiếp file này bằng trình duyệt, dùng thanh <b>Lọc/Sắp xếp</b> để duyệt nhanh.
@@ -531,6 +948,33 @@
       arr.forEach(c=> grid.appendChild(c));
     });
   });
+
+  // ---- Khu "15 game Á châu" (#grid2) — filter/sort riêng, không đụng phần trên ----
+  (function(){
+    const grid2 = document.getElementById('grid2');
+    if(!grid2) return;
+    const cards2 = [...grid2.children];
+    document.querySelectorAll('[data-filter2]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        document.querySelectorAll('[data-filter2]').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        const f = btn.dataset.filter2;
+        cards2.forEach(c=> c.classList.toggle('hide', f!=='all' && c.dataset.cat!==f));
+      });
+    });
+    document.querySelectorAll('[data-sort2]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        document.querySelectorAll('[data-sort2]').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        const s = btn.dataset.sort2;
+        let arr = [...cards2];
+        if(s==='dev') arr.sort((a,b)=> a.dataset.dev - b.dataset.dev);
+        else if(s==='fun') arr.sort((a,b)=> b.dataset.fun - a.dataset.fun);
+        else arr.sort((a,b)=> a.querySelector('.num').textContent - b.querySelector('.num').textContent);
+        arr.forEach(c=> grid2.appendChild(c));
+      });
+    });
+  })();
 </script>
 </body>
 </html>
