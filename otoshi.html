@@ -16,6 +16,11 @@
     --line:rgba(255,255,255,.12);
     --wood:#c98a4b; --lacquer:#c0392b;
     --sun:#ff6b6b;                       /* backdrop 和 disc */
+    /* safe-area insets mirrored into custom props so JS can read them via getComputedStyle */
+    --sa-t:env(safe-area-inset-top, 0px);
+    --sa-r:env(safe-area-inset-right, 0px);
+    --sa-b:env(safe-area-inset-bottom, 0px);
+    --sa-l:env(safe-area-inset-left, 0px);
   }
   /* ===== Theme palettes (applied via <html data-theme="…">) ===== */
   html[data-theme="sakura"]{
@@ -61,7 +66,9 @@
     font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif; color:var(--txt);
     user-select:none; -webkit-user-select:none; touch-action:none;
   }
-  #app{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; padding:8px; }
+  #app{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+    padding:calc(8px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right))
+            calc(8px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left)); }
 
   #stage{ position:relative; display:flex; flex-direction:column; align-items:center; gap:10px; }
 
@@ -90,10 +97,11 @@
     box-shadow:0 28px 60px -30px #000, inset 0 0 0 1px rgba(255,255,255,.06), inset 0 0 70px rgba(0,0,0,.5); }
 
   #topctl{ position:absolute; top:8px; right:8px; display:flex; gap:7px; z-index:6; }
-  .iconbtn{ pointer-events:auto; cursor:pointer; width:clamp(34px,6vmin,42px); height:clamp(34px,6vmin,42px);
+  .iconbtn{ pointer-events:auto; cursor:pointer; touch-action:manipulation;
+    width:clamp(44px,6vmin,46px); height:clamp(44px,6vmin,46px);
     border-radius:12px; border:1px solid var(--line);
     background:rgba(8,12,30,.6); backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px);
-    color:#fff; font-size:clamp(15px,3vmin,19px); display:flex; align-items:center; justify-content:center;
+    color:#fff; font-size:clamp(16px,3vmin,19px); display:flex; align-items:center; justify-content:center;
     transition:transform .12s, border-color .12s; }
   .iconbtn:hover{ border-color:var(--cyan); }
   .iconbtn:active{ transform:scale(.9); }
@@ -105,7 +113,9 @@
 
   /* ---------- Overlays ---------- */
   .overlay{ position:fixed; inset:0; z-index:20; display:flex; align-items:center; justify-content:center;
-    padding:18px; opacity:0; pointer-events:none; visibility:hidden; transition:opacity .3s ease, visibility .3s ease;
+    padding:calc(18px + env(safe-area-inset-top)) calc(18px + env(safe-area-inset-right))
+            calc(18px + env(safe-area-inset-bottom)) calc(18px + env(safe-area-inset-left));
+    opacity:0; pointer-events:none; visibility:hidden; transition:opacity .3s ease, visibility .3s ease;
     background:rgba(5,8,20,.5); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); }
   .overlay.show{ opacity:1; pointer-events:auto; visibility:visible; }
   .panel{ width:min(440px,94vw); border-radius:26px; padding:24px 22px 20px; text-align:center;
@@ -113,7 +123,9 @@
     border:1px solid rgba(255,255,255,.14);
     box-shadow:0 30px 70px -30px #000, inset 0 1px 0 rgba(255,255,255,.08);
     transform:translateY(14px) scale(.98); transition:transform .35s cubic-bezier(.2,.9,.3,1.2);
-    max-height:94vh; overflow:auto; }
+    max-height:94vh;
+    max-height:calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    overflow:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; }
   .overlay.show .panel{ transform:none; }
 
   .logo{ font-size:clamp(40px,12vw,68px); font-weight:900; line-height:.95; margin:2px 0;
@@ -134,7 +146,7 @@
   .stats .s.teal b{ color:var(--teal); }
 
   .modes{ display:flex; gap:10px; margin:4px 0 14px; }
-  .modebtn{ flex:1; cursor:pointer; border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:12px 8px;
+  .modebtn{ flex:1; cursor:pointer; touch-action:manipulation; border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:12px 8px;
     background:rgba(255,255,255,.04); color:#fff; transition:transform .12s, border-color .15s, background .15s; text-align:center; }
   .modebtn .mt{ font-size:clamp(14px,4vw,17px); font-weight:900; }
   .modebtn .md{ font-size:11px; color:var(--mut); margin-top:3px; letter-spacing:.3px; }
@@ -142,8 +154,8 @@
   .modebtn.sel.cy{ border-color:var(--cyan); background:rgba(52,224,255,.12); }
   .modebtn:active{ transform:scale(.97); }
 
-  .btn{ pointer-events:auto; cursor:pointer; border:none; border-radius:16px; font-weight:900;
-    font-size:clamp(17px,4.6vw,21px); padding:15px 18px; width:100%; color:var(--ink);
+  .btn{ pointer-events:auto; cursor:pointer; touch-action:manipulation; border:none; border-radius:16px; font-weight:900;
+    font-size:clamp(17px,4.6vw,21px); padding:15px 18px; width:100%; color:var(--ink); min-height:48px;
     background:linear-gradient(180deg,#ffd76a,#ff9f43);
     box-shadow:0 12px 26px -10px #c9772a, inset 0 1px 0 rgba(255,255,255,.5);
     transition:transform .12s, filter .12s; letter-spacing:.5px; }
@@ -173,9 +185,10 @@
 
   /* Language toggle */
   .langrow{ display:flex; gap:8px; justify-content:center; margin:0 0 12px; }
-  .langbtn{ cursor:pointer; border:1px solid rgba(255,255,255,.14); border-radius:999px;
+  .langbtn{ cursor:pointer; touch-action:manipulation; border:1px solid rgba(255,255,255,.14); border-radius:999px;
     background:rgba(255,255,255,.05); color:#fff; font-weight:800; letter-spacing:.3px;
-    font-size:clamp(11px,3vw,13px); padding:7px 14px;
+    font-size:clamp(11px,3vw,13px); padding:10px 14px; min-height:44px;
+    display:flex; align-items:center; justify-content:center;
     transition:transform .12s, border-color .15s, background .15s; }
   .langbtn:active{ transform:scale(.96); }
   .langbtn.sel{ border-color:var(--gold); background:rgba(255,206,84,.16); color:#ffe6ad; }
@@ -198,11 +211,12 @@
   .setrow:last-child{ border-bottom:none; }
   .setrow .lab{ font-size:14px; font-weight:800; color:var(--txt); text-align:left; }
   .setrow .lab small{ display:block; font-weight:600; font-size:11px; color:var(--mut); margin-top:2px; }
-  input[type=range]{ -webkit-appearance:none; appearance:none; width:130px; height:6px;
-    border-radius:999px; background:rgba(255,255,255,.18); outline:none; }
-  input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:20px; height:20px;
+  input{ font-size:16px; }   /* >=16px prevents iOS focus auto-zoom */
+  input[type=range]{ -webkit-appearance:none; appearance:none; width:130px; height:8px;
+    border-radius:999px; background:rgba(255,255,255,.18); outline:none; touch-action:none; }
+  input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:26px; height:26px;
     border-radius:50%; background:linear-gradient(180deg,#ffd76a,#ff9f43); cursor:pointer; border:2px solid #fff3; }
-  input[type=range]::-moz-range-thumb{ width:20px; height:20px; border:2px solid #fff3;
+  input[type=range]::-moz-range-thumb{ width:26px; height:26px; border:2px solid #fff3;
     border-radius:50%; background:linear-gradient(180deg,#ffd76a,#ff9f43); cursor:pointer; }
 
   /* toggle switch */
@@ -215,13 +229,14 @@
 
   /* segmented control (language inside settings, theme rendered separately) */
   .seg{ display:flex; gap:6px; }
-  .seg button{ cursor:pointer; border:1px solid var(--line); border-radius:10px; padding:7px 12px;
+  .seg button{ cursor:pointer; touch-action:manipulation; border:1px solid var(--line); border-radius:10px;
+    padding:7px 14px; min-height:44px; min-width:44px;
     background:rgba(255,255,255,.05); color:var(--txt); font-weight:800; font-size:12px; }
   .seg button.sel{ border-color:var(--gold); background:rgba(255,206,84,.16); color:#ffe6ad; }
 
   /* theme picker chips */
   .themegrid{ display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; }
-  .themechip{ cursor:pointer; width:34px; height:34px; border-radius:10px; border:2px solid rgba(255,255,255,.2);
+  .themechip{ cursor:pointer; touch-action:manipulation; width:44px; height:44px; border-radius:10px; border:2px solid rgba(255,255,255,.2);
     padding:0; position:relative; overflow:hidden; }
   .themechip.sel{ border-color:#fff; box-shadow:0 0 0 2px var(--cyan); }
   .themechip::after{ content:attr(data-mark); position:absolute; inset:0; display:flex; align-items:center;
@@ -253,7 +268,8 @@
   .daily .dt{ flex:1; }
   .daily .dt .h{ font-size:14px; font-weight:900; color:var(--cyan); }
   .daily .dt .s{ font-size:11px; color:var(--mut); margin-top:2px; }
-  .daily .dgo{ cursor:pointer; border:none; border-radius:12px; padding:9px 14px; font-weight:900; font-size:13px;
+  .daily .dgo{ cursor:pointer; touch-action:manipulation; border:none; border-radius:12px; padding:9px 16px;
+    min-height:44px; font-weight:900; font-size:13px;
     color:var(--ink); background:linear-gradient(180deg,#7ef0ff,#34d3b6); }
   .daily .dgo:active{ transform:scale(.96); }
 
@@ -288,9 +304,31 @@
   .badgepill{ display:inline-block; margin:2px 0 8px; padding:4px 12px; border-radius:999px; font-size:11px;
     font-weight:900; letter-spacing:1px; background:rgba(52,224,255,.16); color:var(--cyan); border:1px solid rgba(52,224,255,.4); }
   .tabrow{ display:flex; gap:6px; margin:0 0 12px; }
-  .tabrow button{ flex:1; cursor:pointer; border:1px solid var(--line); border-radius:12px; padding:9px 6px;
+  .tabrow button{ flex:1; cursor:pointer; touch-action:manipulation; border:1px solid var(--line); border-radius:12px;
+    padding:9px 6px; min-height:44px;
     background:rgba(255,255,255,.04); color:var(--mut); font-weight:800; font-size:12px; }
   .tabrow button.sel{ border-color:var(--gold); background:rgba(255,206,84,.12); color:#ffe6ad; }
+
+  /* ===== Short-viewport / landscape: keep menu compact & primary CTA reachable ===== */
+  /* Sticky primary Play CTA inside the (scrolling) menu panel so it's always reachable. */
+  #menu .panel{ position:relative; }
+  #playBtn{ position:sticky; bottom:0; z-index:2; box-shadow:0 -10px 18px -6px rgba(8,12,30,.9), 0 12px 26px -10px #c9772a, inset 0 1px 0 rgba(255,255,255,.5); }
+  @media (max-height:560px){
+    /* shrink vertical rhythm so panels fit short landscape phones */
+    .panel{ padding:16px 18px 14px; }
+    .logo{ font-size:clamp(28px,8vw,44px); margin:0; }
+    .tagline{ margin:6px 6px 10px; }
+    .stats, .modes, .daily{ margin:4px 0 8px; }
+    .help{ margin-top:10px; }
+    #stage{ gap:6px; }
+  }
+  /* Landscape with little height: HUD wraps tighter, hint shrinks, no overlap with board. */
+  @media (orientation:landscape) and (max-height:520px){
+    #hud{ gap:6px; }
+    .stat{ padding:4px 8px; min-width:48px; }
+    #hint{ font-size:11px; min-height:1em; }
+    #stage{ gap:5px; }
+  }
 </style>
 </head>
 <body>
@@ -1044,21 +1082,51 @@
   // ---------- Canvas sizing ----------
   var DPR=1, W=0, H=0;             // CSS pixel logical dims
   // Virtual coordinate system: we render in CSS px scaled to fit a target aspect.
+  // read resolved safe-area insets (px) via a hidden probe whose padding uses env().
+  // getComputedStyle on padding always yields resolved pixels, unlike reading a
+  // custom property that merely stores the env() expression.
+  var _saProbe = null;
+  function safeInsets(){
+    if(!_saProbe){
+      _saProbe = document.createElement("div");
+      _saProbe.style.cssText =
+        "position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;"+
+        "padding-top:env(safe-area-inset-top,0px);padding-right:env(safe-area-inset-right,0px);"+
+        "padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);";
+      document.body.appendChild(_saProbe);
+    }
+    var cs = getComputedStyle(_saProbe);
+    return {
+      t: parseFloat(cs.paddingTop)    || 0,
+      r: parseFloat(cs.paddingRight)  || 0,
+      b: parseFloat(cs.paddingBottom) || 0,
+      l: parseFloat(cs.paddingLeft)   || 0
+    };
+  }
   function pickSize(){
-    var maxW = window.innerWidth - 16;
-    var maxH = window.innerHeight - 16;
-    // reserve room for HUD (~70px) + hint (~28px) + gaps
-    var reserve = 120;
-    var availH = maxH - reserve;
-    var availW = maxW;
+    // subtract real safe-area insets so the board never sits under notch / home indicator
+    var sa = safeInsets();
+    var maxW = window.innerWidth  - 16 - (sa.l + sa.r);
+    var maxH = window.innerHeight - 16 - (sa.t + sa.b);
+    // measure the live HUD + hint heights instead of a fixed guess so short
+    // landscape (where HUD wraps) doesn't push the board off-screen.
+    var hudH  = ($("hud")  && $("hud").offsetHeight)  || 70;
+    var hintH = ($("hint") && $("hint").offsetHeight) || 22;
+    var reserve = hudH + hintH + 26;   // + inter-element gaps
+    var availH = Math.max(160, maxH - reserve);
+    var availW = Math.max(160, maxW);
     // aspect 3:4 portrait-ish board
     var aspect = 0.74; // w/h
     var h = availH;
     var w = h*aspect;
     if(w>availW){ w=availW; h=w/aspect; }
-    w = clamp(w, 240, 560);
-    h = clamp(h, 360, 760);
-    return {w:Math.round(w), h:Math.round(h)};
+    // lower mins so short/landscape viewports fit without clipping the playfield
+    w = clamp(w, 200, 560);
+    h = clamp(h, 240, 760);
+    // final guard: if clamping made it taller than available, shrink to fit
+    if(h>availH){ h=availH; w=Math.min(w, h*aspect); }
+    if(w>availW){ w=availW; h=Math.min(h, w/aspect); }
+    return {w:Math.round(Math.max(160,w)), h:Math.round(Math.max(160,h))};
   }
   function resize(){
     var s = pickSize();

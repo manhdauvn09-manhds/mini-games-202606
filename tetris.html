@@ -44,6 +44,8 @@
   html[data-rm="1"] .v.flash, html[data-rm="1"] .newbest, html[data-rm="1"] #levelFlash{ animation:none !important; }
   html[data-rm="1"] .panel{ transition:none !important; }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  /* Kill 300ms tap delay & double-tap zoom on all menu/HUD controls (game pad keeps touch-action:none) */
+  .btn,.langbtn,.iconbtn,.modebtn,.seg button,.swatch,.toggle,.stepper button,.ach{ touch-action:manipulation; }
   html,body{
     margin:0; height:100%; overflow:hidden;
     background:
@@ -53,7 +55,9 @@
     font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif; color:var(--txt);
     user-select:none; -webkit-user-select:none; touch-action:none;
   }
-  #app{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; padding:10px; }
+  #app{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+    padding:calc(10px + env(safe-area-inset-top)) calc(10px + env(safe-area-inset-right))
+            calc(10px + env(safe-area-inset-bottom)) calc(10px + env(safe-area-inset-left)); }
 
   /* ---------- Game layout ---------- */
   #stage{ position:relative; display:flex; gap:clamp(8px,1.6vmin,18px); align-items:stretch; justify-content:center; }
@@ -109,7 +113,9 @@
 
   /* ---------- Overlays ---------- */
   .overlay{ position:fixed; inset:0; z-index:20; display:flex; align-items:center; justify-content:center;
-    padding:18px; opacity:0; pointer-events:none; visibility:hidden; transition:opacity .3s ease, visibility .3s ease;
+    padding:calc(18px + env(safe-area-inset-top)) calc(18px + env(safe-area-inset-right))
+            calc(18px + env(safe-area-inset-bottom)) calc(18px + env(safe-area-inset-left));
+    opacity:0; pointer-events:none; visibility:hidden; transition:opacity .3s ease, visibility .3s ease;
     background:rgba(5,8,20,.45); backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px); }
   .overlay.show{ opacity:1; pointer-events:auto; visibility:visible; }
   .panel{ width:min(440px,94vw); border-radius:26px; padding:24px 22px 20px; text-align:center;
@@ -117,7 +123,8 @@
     border:1px solid rgba(255,255,255,.14);
     box-shadow:0 30px 70px -30px #000, inset 0 1px 0 rgba(255,255,255,.08);
     transform:translateY(14px) scale(.98); transition:transform .35s cubic-bezier(.2,.9,.3,1.2);
-    max-height:94vh; overflow:auto; }
+    max-height:calc(100vh - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; }
   .overlay.show .panel{ transform:none; }
 
   /* Language toggle */
@@ -249,7 +256,7 @@
   .statlist .cell .v{ font-size:clamp(16px,4.4vw,21px); font-weight:900; color:var(--gold); margin-top:2px; }
 
   /* Toasts */
-  #toasts{ position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:40; display:flex;
+  #toasts{ position:fixed; top:calc(14px + env(safe-area-inset-top)); left:50%; transform:translateX(-50%); z-index:40; display:flex;
     flex-direction:column; gap:8px; align-items:center; pointer-events:none; width:min(360px,92vw); }
   .toast{ pointer-events:none; background:linear-gradient(180deg,rgba(40,48,92,.96),rgba(20,26,54,.97));
     border:1px solid rgba(255,206,84,.45); border-radius:14px; padding:10px 14px; display:flex; align-items:center;
@@ -272,12 +279,15 @@
 
   /* ---------- Mobile touch controls ---------- */
   #touch{ position:fixed; left:0; right:0; bottom:0; z-index:10; display:none;
-    padding:10px clamp(8px,3vw,18px) calc(10px + env(safe-area-inset-bottom));
-    gap:10px; align-items:flex-end; justify-content:space-between; pointer-events:none; }
+    padding:10px calc(clamp(8px,3vw,18px) + env(safe-area-inset-right))
+            calc(10px + env(safe-area-inset-bottom))
+            calc(clamp(8px,3vw,18px) + env(safe-area-inset-left));
+    gap:10px; align-items:flex-end; justify-content:space-between; pointer-events:none;
+    flex-wrap:wrap-reverse; }
   #touch.show{ display:flex; }
-  .tgroup{ display:flex; gap:9px; pointer-events:none; }
+  .tgroup{ display:flex; gap:10px; pointer-events:none; }
   .tbtn{ pointer-events:auto; cursor:pointer; -webkit-user-select:none; user-select:none; touch-action:none;
-    width:clamp(54px,15.5vw,72px); height:clamp(54px,15.5vw,72px); border-radius:18px;
+    width:clamp(54px,15.5vw,72px); height:clamp(54px,15.5vw,72px); min-width:44px; min-height:44px; border-radius:18px;
     border:1px solid rgba(255,255,255,.14);
     background:linear-gradient(180deg, rgba(40,48,92,.7), rgba(18,22,46,.78));
     box-shadow:0 10px 22px -12px #000, inset 0 1px 0 rgba(255,255,255,.1);
@@ -293,9 +303,26 @@
   @media (max-width:520px){
     .col .plabel{ letter-spacing:1px; }
   }
-  /* Landscape phones: keep controls compact */
+  /* Narrow phones (~375px): shrink pad so all controls fit one tidy row, still >=44px */
+  @media (max-width:430px){
+    #touch{ gap:6px; }
+    .tgroup{ gap:7px; }
+    .tbtn{ width:clamp(46px,12.4vw,56px); height:clamp(46px,12.4vw,56px);
+      min-width:46px; min-height:46px; font-size:clamp(18px,5vw,24px); }
+    .tbtn.wide{ width:auto; padding:0 clamp(8px,3vw,14px); font-size:clamp(11px,3vw,14px); }
+  }
+  /* Landscape phones / short screens: keep controls compact but >=44px & well-spaced */
   @media (max-height:520px) and (orientation:landscape){
-    .tbtn{ width:clamp(46px,9vw,60px); height:clamp(46px,9vw,60px); }
+    #touch{ padding-top:6px; gap:8px;
+      padding-bottom:calc(6px + env(safe-area-inset-bottom)); }
+    .tgroup{ gap:8px; }
+    .tbtn{ width:clamp(48px,8vw,58px); height:clamp(48px,8vw,58px);
+      min-width:48px; min-height:48px; border-radius:14px; font-size:clamp(18px,4vw,24px); }
+    .tbtn.wide{ width:auto; }
+  }
+  /* Very short screens (e.g. iPhone landscape): keep buttons reachable, never below tap minimum */
+  @media (max-height:380px){
+    .tbtn{ width:46px; height:46px; min-width:46px; min-height:46px; border-radius:12px; font-size:20px; }
   }
 </style>
 </head>
@@ -828,10 +855,20 @@
     var isMobile = vw < 760 || ('ontouchstart' in window && vw < 1024);
 
     // Reserve vertical room for touch controls on mobile.
+    // Measure the actual rendered bar height (buttons + paddings + safe-area) so the
+    // board never overlaps the D-pad/drop/rotate controls, even in short landscape.
     var reservedBottom = 0;
     var touchEl = $("touch");
-    if(isMobile){ reservedBottom = Math.min(170, vh*0.26); touchEl.classList.add("show"); }
-    else { touchEl.classList.remove("show"); }
+    if(isMobile){
+      touchEl.classList.add("show");
+      // offsetHeight reflects real button sizes + safe-area padding from CSS.
+      var barH = touchEl.offsetHeight || 0;
+      // Fallback estimate if not yet laid out; clamp so it can't swallow the board.
+      if(!barH){ barH = Math.min(170, vh*0.26); }
+      reservedBottom = Math.min(barH + 8, vh*0.42);
+    } else {
+      touchEl.classList.remove("show");
+    }
 
     // Side panel widths roughly: left ~ clamp, right ~ clamp + gaps.
     // We size CELL so board + panels fit. Board pixel size = CELL*COLS x CELL*ROWS.

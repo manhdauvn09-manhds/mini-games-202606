@@ -54,6 +54,7 @@
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{height:100%;}
+  html{ overscroll-behavior:none; }
   body{
     margin:0; font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
     color:var(--ink);
@@ -65,8 +66,9 @@
     background-attachment:fixed;
     min-height:100dvh;
     display:flex; flex-direction:column; align-items:center;
-    padding:max(12px,env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));
+    padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));
     overflow-x:hidden;
+    overscroll-behavior:none;
     -webkit-user-select:none; user-select:none;
     touch-action:manipulation;
   }
@@ -123,10 +125,12 @@
   .btn{
     appearance:none; cursor:pointer; font-family:inherit; font-weight:700; font-size:14px;
     color:var(--ink); padding:9px 14px; border-radius:12px;
+    min-height:44px;
     border:1px solid var(--glass-brd);
     background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.04));
     transition:transform .08s ease, box-shadow .18s ease, border-color .18s, background .18s, opacity .18s;
-    display:inline-flex; align-items:center; gap:7px; white-space:nowrap;
+    display:inline-flex; align-items:center; justify-content:center; gap:7px; white-space:nowrap;
+    touch-action:manipulation;
   }
   .btn:hover{ border-color:rgba(255,255,255,.28); box-shadow:0 6px 18px rgba(0,0,0,.32); }
   .btn:active{ transform:translateY(1px) scale(.98); }
@@ -139,7 +143,7 @@
     box-shadow:0 8px 22px rgba(255,206,84,.30);
   }
   .btn.primary:hover{ box-shadow:0 10px 26px rgba(255,206,84,.42); }
-  .icon-btn{ padding:9px 11px; }
+  .icon-btn{ padding:9px 11px; min-width:44px; }
   select.btn{ padding-right:10px; }
   select.btn option{ color:#101627; background:#101627; }
   html[data-theme="light"] select.btn option{ color:#101627; background:#fff; }
@@ -149,10 +153,12 @@
   .langbtn{
     appearance:none; cursor:pointer; font-family:inherit; font-weight:800; font-size:12.5px;
     color:var(--ink); padding:7px 12px; border-radius:999px;
+    min-height:44px;
     border:1px solid var(--glass-brd);
     background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.04));
     transition:transform .08s ease, box-shadow .18s ease, border-color .18s, background .18s;
     display:inline-flex; align-items:center; gap:6px; white-space:nowrap;
+    touch-action:manipulation;
   }
   .langbtn:hover{ border-color:var(--cyan); }
   .langbtn:active{ transform:translateY(1px) scale(.98); }
@@ -297,8 +303,9 @@
   .modal h2 .ic{ font-size:22px; }
   .modal-x{
     margin-left:auto; appearance:none; cursor:pointer; font-size:18px; font-weight:800;
-    width:34px; height:34px; border-radius:10px; color:var(--ink);
+    width:44px; height:44px; border-radius:10px; color:var(--ink);
     border:1px solid var(--glass-brd); background:var(--glass);
+    touch-action:manipulation;
   }
   .modal-x:focus-visible{ outline:2px solid var(--cyan); outline-offset:2px; }
   .setrow{ display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--glass-brd); }
@@ -309,8 +316,8 @@
   input[type="range"]::-webkit-slider-thumb{ -webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:var(--gold); border:2px solid #fff3; cursor:pointer; }
   input[type="range"]::-moz-range-thumb{ width:18px; height:18px; border-radius:50%; background:var(--gold); border:2px solid #fff3; cursor:pointer; }
   /* toggle switch */
-  .switch{ position:relative; width:46px; height:26px; flex:0 0 auto; }
-  .switch input{ position:absolute; opacity:0; width:100%; height:100%; margin:0; cursor:pointer; }
+  .switch{ position:relative; width:46px; height:26px; flex:0 0 auto; touch-action:manipulation; }
+  .switch input{ position:absolute; opacity:0; width:100%; height:44px; top:50%; left:0; transform:translateY(-50%); margin:0; cursor:pointer; touch-action:manipulation; }
   .switch .track{ position:absolute; inset:0; border-radius:999px; background:var(--glass-brd); transition:background .18s; }
   .switch .thumb{ position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; transition:transform .18s; box-shadow:0 2px 5px rgba(0,0,0,.35); }
   .switch input:checked ~ .track{ background:linear-gradient(135deg,var(--gold),#ffd778); }
@@ -318,8 +325,9 @@
   .switch input:focus-visible ~ .track{ outline:2px solid var(--cyan); outline-offset:2px; }
   .theme-grid{ display:flex; gap:9px; flex-wrap:wrap; }
   .theme-chip{
-    appearance:none; cursor:pointer; width:40px; height:40px; border-radius:12px;
+    appearance:none; cursor:pointer; width:44px; height:44px; border-radius:12px;
     border:2px solid var(--glass-brd); position:relative; overflow:hidden; padding:0;
+    touch-action:manipulation;
   }
   .theme-chip:focus-visible{ outline:2px solid var(--cyan); outline-offset:2px; }
   .theme-chip.sel{ border-color:var(--gold); box-shadow:0 0 0 3px rgba(255,206,84,.3); }
@@ -329,7 +337,8 @@
   .seg-btn{
     appearance:none; cursor:pointer; font-family:inherit; font-weight:700; font-size:13px; color:var(--ink);
     padding:8px 13px; border-radius:10px; border:1px solid var(--glass-brd); background:var(--glass);
-    flex:1 1 auto; min-width:84px; text-align:center;
+    flex:1 1 auto; min-width:84px; min-height:44px; text-align:center;
+    touch-action:manipulation;
   }
   .seg-btn:focus-visible{ outline:2px solid var(--cyan); outline-offset:2px; }
   .seg-btn.sel{ color:#1a1205; border-color:transparent; background:linear-gradient(135deg,var(--gold),#ffd778); }
@@ -368,6 +377,23 @@
     header{ padding:10px; gap:8px; }
     .score-box{ min-width:72px; padding:6px 9px; }
     .hint{ display:none; }
+  }
+  /* compact language buttons on narrow phones so the row + CTA stay reachable */
+  @media (max-width:430px){
+    .controls{ gap:8px; }
+    .langbtn{ font-size:0; gap:0; padding:0; width:44px; min-width:44px; justify-content:center; }
+    .langbtn::before{ font-size:18px; }
+    .langbtn[data-lang="vi"]::before{ content:"🇻🇳"; }
+    .langbtn[data-lang="ja"]::before{ content:"🇯🇵"; }
+  }
+  /* short landscape: keep header/controls + board within viewport, no overlap/clip */
+  @media (max-height:560px) and (orientation:landscape){
+    body{ padding-top:max(6px,env(safe-area-inset-top)); }
+    .wrap{ gap:8px; }
+    header{ padding:8px 12px; }
+    .board{ width:min(92vw, 78vmin, 480px); }
+    .hint{ display:none; }
+    footer{ display:none; }
   }
   @media (prefers-reduced-motion:reduce){
     *{ animation-duration:.001ms !important; transition-duration:.001ms !important; }
@@ -2007,29 +2033,61 @@
     if(dir !== null){ e.preventDefault(); handleDir(dir); }
   }, { passive:false });
 
-  // Touch swipe on board
-  var tStartX=0, tStartY=0, tActive=false;
-  var THRESHOLD = 24;
+  // Touch swipe on board — velocity-aware so short thumb flicks register in all 4 dirs.
+  var tStartX=0, tStartY=0, tStartT=0, tActive=false, tFired=false;
+  var MIN_DIST = 12;        // px: a slow but deliberate drag still counts
+  var FLICK_DIST = 7;       // px: a quick flick needs even less travel
+  var FLICK_VEL = 0.45;     // px/ms: speed that qualifies as a flick
+  function fireSwipe(dx, dy){
+    var adx = Math.abs(dx), ady = Math.abs(dy);
+    if(adx > ady){ handleDir(dx>0 ? DIR.right : DIR.left); }
+    else { handleDir(dy>0 ? DIR.down : DIR.up); }
+  }
+  function onOverlayUI(target){
+    // don't hijack touches on overlay buttons (Continue / Try again / Share)
+    return !!(target && target.closest && target.closest("#ov-actions"));
+  }
   $board.addEventListener("touchstart", function(e){
-    if(e.touches.length !== 1) return;
-    tActive = true;
+    if(e.touches.length !== 1 || onOverlayUI(e.target)){ tActive=false; return; }
+    tActive = true; tFired = false;
     tStartX = e.touches[0].clientX; tStartY = e.touches[0].clientY;
-  }, { passive:true });
-  $board.addEventListener("touchmove", function(e){
-    if(!tActive) return;
+    tStartT = (e.timeStamp || Date.now());
+    // stop the board touch from scrolling/rubber-banding the page
     if(e.cancelable) e.preventDefault();
+  }, { passive:false });
+  $board.addEventListener("touchmove", function(e){
+    if(!tActive){ return; }
+    if(e.cancelable) e.preventDefault();
+    if(tFired) return;
+    var t = e.touches[0];
+    var dx = t.clientX - tStartX, dy = t.clientY - tStartY;
+    var adx = Math.abs(dx), ady = Math.abs(dy);
+    var dist = Math.max(adx, ady);
+    var dt = (e.timeStamp || Date.now()) - tStartT;
+    var vel = dt>0 ? dist/dt : 0;
+    // fire as soon as a clear gesture is recognised — feels instant on a flick
+    if(dist >= MIN_DIST || (dist >= FLICK_DIST && vel >= FLICK_VEL)){
+      tFired = true;
+      fireSwipe(dx, dy);
+    }
   }, { passive:false });
   $board.addEventListener("touchend", function(e){
     if(!tActive) return;
     tActive = false;
+    if(tFired) return;             // already handled mid-move
     var t = (e.changedTouches && e.changedTouches[0]) || null;
     if(!t) return;
     var dx = t.clientX - tStartX, dy = t.clientY - tStartY;
     var adx = Math.abs(dx), ady = Math.abs(dy);
-    if(Math.max(adx,ady) < THRESHOLD) return;
-    if(adx > ady){ handleDir(dx>0 ? DIR.right : DIR.left); }
-    else { handleDir(dy>0 ? DIR.down : DIR.up); }
-  }, { passive:true });
+    var dist = Math.max(adx, ady);
+    var dt = (e.timeStamp || Date.now()) - tStartT;
+    var vel = dt>0 ? dist/dt : 0;
+    // on release accept either a deliberate drag or a quick flick
+    if(dist >= MIN_DIST || (dist >= FLICK_DIST && vel >= FLICK_VEL)){
+      fireSwipe(dx, dy);
+    }
+  }, { passive:false });
+  $board.addEventListener("touchcancel", function(){ tActive=false; tFired=false; }, { passive:true });
 
   // Pointer swipe fallback (mouse drag on desktop)
   var pDown=false, pX=0, pY=0;

@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#0b1020" />
 <meta name="description" content="麻雀ソリティア 1000× — Mahjong Solitaire kiểu Thượng Hải, ghép cặp quân bài đẹp mắt, mượt mà. Chơi miễn phí, đảm bảo luôn có lời giải." />
 <title>麻雀ソリティア ✦ 1000×</title>
@@ -61,13 +61,18 @@
     font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif; color:var(--txt);
     user-select:none; -webkit-user-select:none; touch-action:manipulation;
   }
-  #app{ position:fixed; inset:0; display:flex; flex-direction:column; }
+  #app{
+    position:fixed; inset:0; display:flex; flex-direction:column;
+    /* honour iPhone notch / home indicator so UI is never clipped */
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
 
   /* ---------- Top bar ---------- */
   #bar{
     display:flex; align-items:center; gap:clamp(6px,1.4vw,14px);
     padding:clamp(6px,1.4vw,12px) clamp(8px,2vw,18px);
     flex-wrap:wrap; justify-content:center;
+    flex:0 0 auto;
   }
   .brand{ display:flex; align-items:center; gap:10px; margin-right:auto; }
   .brand .kanji{
@@ -101,6 +106,8 @@
     background:linear-gradient(180deg,rgba(40,48,92,.9),rgba(20,26,54,.92));
     border:1px solid var(--line); border-radius:13px;
     padding:9px clamp(9px,1.5vw,15px);
+    min-height:44px; min-width:44px;            /* touch target ≥44×44 */
+    justify-content:center; touch-action:manipulation;  /* kill 300ms delay + double-tap zoom */
     display:inline-flex; align-items:center; gap:7px;
     box-shadow:0 14px 28px -20px #000, inset 0 1px 0 rgba(255,255,255,.07);
     transition:transform .08s ease, box-shadow .15s ease, border-color .15s ease, filter .15s ease;
@@ -116,12 +123,19 @@
 
   .badge{ font-size:.78em; background:rgba(255,255,255,.14); border-radius:9px; padding:1px 6px; font-weight:900; }
 
+  /* short landscape (e.g. phone turned sideways): keep the bar from eating the
+     board — let it scroll, and tighten the brand so the playfield stays usable. */
+  @media (max-height:480px) and (orientation:landscape){
+    #bar{ max-height:42vh; overflow-y:auto; gap:6px; padding:6px 10px; }
+    .brand .sub{ display:none; }
+  }
+
   /* ---------- Board ---------- */
   #stage{ position:relative; flex:1; min-height:0; display:flex; align-items:center; justify-content:center; padding:clamp(4px,1.2vw,14px); }
   #boardWrap{
     position:relative; border-radius:20px;
   }
-  #board{ display:block; touch-action:none; }
+  #board{ display:block; touch-action:manipulation; }
   #fx{ position:absolute; inset:0; pointer-events:none; }
 
   /* combo float */
@@ -135,13 +149,15 @@
   /* ---------- Overlays ---------- */
   .overlay{
     position:fixed; inset:0; z-index:40; display:flex; align-items:center; justify-content:center;
-    padding:18px; background:rgba(5,8,20,.62); backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px);
+    padding:calc(18px + env(safe-area-inset-top)) calc(18px + env(safe-area-inset-right)) calc(18px + env(safe-area-inset-bottom)) calc(18px + env(safe-area-inset-left));
+    background:rgba(5,8,20,.62); backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px);
     animation:fade .25s ease both;
   }
   .overlay.hidden{ display:none; }
   @keyframes fade{ from{opacity:0} to{opacity:1} }
   .card{
-    width:min(560px,94vw); max-height:92vh; overflow:auto;
+    width:min(560px,94vw); max-height:100%; overflow:auto;
+    -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
     background:linear-gradient(180deg,var(--panel-a),var(--panel-b));
     border:1px solid var(--line); border-radius:24px;
     box-shadow:0 50px 110px -40px #000, inset 0 1px 0 rgba(255,255,255,.08);
@@ -213,6 +229,7 @@
     font-weight:800; font-size:clamp(11px,1.7vw,13px);
     background:linear-gradient(180deg,rgba(30,36,70,.7),rgba(16,20,42,.8));
     border:1.5px solid var(--line); border-radius:12px; padding:7px 14px;
+    min-height:44px; touch-action:manipulation;
     display:inline-flex; align-items:center; gap:6px;
     box-shadow:0 14px 28px -20px #000, inset 0 1px 0 rgba(255,255,255,.07);
     transition:transform .08s ease, border-color .15s ease, filter .15s ease, background .15s ease;
@@ -234,11 +251,12 @@
   .setRow input[type=range]{ width:clamp(110px,38vw,180px); accent-color:var(--gold); cursor:pointer; }
   .seg{ display:inline-flex; border:1px solid var(--line); border-radius:11px; overflow:hidden; }
   .seg button{ appearance:none; cursor:pointer; font-family:inherit; font-weight:800; font-size:clamp(11px,1.7vw,13px);
-    background:transparent; color:var(--mut); border:none; padding:7px 13px; transition:background .15s,color .15s; }
+    background:transparent; color:var(--mut); border:none; padding:7px 13px; min-height:44px; touch-action:manipulation;
+    transition:background .15s,color .15s; }
   .seg button.on{ background:linear-gradient(180deg,#ffd874,#e9a92b); color:#3a2a02; }
   .themeRow{ display:flex; gap:9px; flex-wrap:wrap; justify-content:flex-end; }
-  .swatch{ width:34px; height:34px; border-radius:10px; cursor:pointer; border:2px solid var(--line); position:relative; padding:0;
-    transition:transform .1s, border-color .15s; }
+  .swatch{ width:44px; height:44px; border-radius:10px; cursor:pointer; border:2px solid var(--line); position:relative; padding:0;
+    touch-action:manipulation; transition:transform .1s, border-color .15s; }
   .swatch:hover{ transform:translateY(-2px); }
   .swatch.sel{ border-color:var(--gold); box-shadow:0 0 0 2px rgba(255,206,84,.35); }
   .swatch::after{ content:""; position:absolute; inset:4px; border-radius:6px; background:var(--sw,#444); }
@@ -1366,13 +1384,29 @@ function tileAt(px, py){
   const g = G.geo;
   // iterate from top layer / front to back -> reverse of draw order
   const list = sortedForDraw().reverse();
+  // Pass 1: exact hit on the tile face (respects z-order / covering tiles).
   for(const t of list){
     if(t.removed) continue;
     if(px>=t.sx && px<=t.sx+g.tileW && py>=t.sy && py<=t.sy+g.tileH){
       return t;
     }
   }
-  return null;
+  // Pass 2 (touch-friendly): no exact hit -> snap to the NEAREST *free* tile
+  // within a generous pad. Free tiles never have a tile above them, so this can
+  // only help on small/dense layouts and never steals from a covering tile.
+  // Pad grows when tiles are tiny so a free tile stays reliably tappable.
+  const pad = Math.max(10, g.tileW*0.45);
+  let best=null, bestD=Infinity;
+  for(const t of list){
+    if(t.removed) continue;
+    if(!isFree(t, G.tiles)) continue;
+    const cx=t.sx+g.tileW/2, cy=t.sy+g.tileH/2;
+    if(px>=t.sx-pad && px<=t.sx+g.tileW+pad && py>=t.sy-pad && py<=t.sy+g.tileH+pad){
+      const dx=px-cx, dy=py-cy, d=dx*dx+dy*dy;
+      if(d<bestD){ bestD=d; best=t; }
+    }
+  }
+  return best;
 }
 
 /* ====================================================================== */
@@ -2329,8 +2363,9 @@ function onMove(e){
   if(downPt){
     if(Math.abs(p.x-downPt.x)>8 || Math.abs(p.y-downPt.y)>8) moved=true;
   }
-  // hover (mouse only)
-  if(!e.touches){
+  // hover (fine pointer / mouse only — never on touch, which has no hover)
+  const isTouch = (e.pointerType==="touch") || (e.touches!=null);
+  if(!isTouch){
     const t = tileAt(p.x,p.y);
     G.hover = (t && isFree(t,G.tiles)) ? t : null;
     board.style.cursor = G.hover ? "pointer" : "default";
@@ -2349,14 +2384,25 @@ function onUp(e){
   downTile=null; downPt=null;
 }
 
-board.addEventListener("mousedown", onDown);
-board.addEventListener("mousemove", onMove);
-window.addEventListener("mouseup", onUp);
-board.addEventListener("mouseleave", ()=>{ G.hover=null; });
-
-board.addEventListener("touchstart", (e)=>{ onDown(e); }, {passive:true});
-board.addEventListener("touchmove", (e)=>{ onMove(e); }, {passive:true});
-board.addEventListener("touchend", (e)=>{ onUp(e); }, {passive:false});
+/* Prefer unified Pointer Events (covers mouse + touch + pen with one code path
+   and avoids the synthetic-mouse double-fire that touchstart/touchend cause on
+   mobile). Fall back to mouse + touch on browsers without Pointer Events. */
+if(window.PointerEvent){
+  board.addEventListener("pointerdown", onDown);
+  board.addEventListener("pointermove", onMove);
+  window.addEventListener("pointerup", onUp);
+  window.addEventListener("pointercancel", ()=>{ downTile=null; downPt=null; });
+  board.addEventListener("pointerleave", (e)=>{ if(e.pointerType!=="touch") G.hover=null; });
+} else {
+  board.addEventListener("mousedown", onDown);
+  board.addEventListener("mousemove", onMove);
+  window.addEventListener("mouseup", onUp);
+  board.addEventListener("mouseleave", ()=>{ G.hover=null; });
+  board.addEventListener("touchstart", (e)=>{ onDown(e); }, {passive:true});
+  board.addEventListener("touchmove", (e)=>{ onMove(e); }, {passive:true});
+  // prevent the synthetic mouse event that would re-trigger the tap
+  board.addEventListener("touchend", (e)=>{ if(e.cancelable) e.preventDefault(); onUp(e); }, {passive:false});
+}
 
 /* keyboard */
 window.addEventListener("keydown", (e)=>{
