@@ -2450,6 +2450,123 @@ document.getElementById("btnWinMenu").addEventListener("click", openMenu);
 document.getElementById("btnLoseShuffle").addEventListener("click", ()=>{ hideOverlay("lose"); doShuffle(true); });
 document.getElementById("btnLoseNew").addEventListener("click", openMenu);
 
+/* ---- Menu mode segment (Relaxed / Classic / Timed) ---- */
+document.querySelectorAll("#modeSeg button").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    menuMode = b.dataset.mode;
+    document.querySelectorAll("#modeSeg button").forEach(n=>{
+      n.classList.toggle("on", n===b);
+      n.setAttribute("aria-pressed", n===b ? "true":"false");
+    });
+    Audio2.select();
+  });
+});
+
+/* ---- Settings panel: open / controls / close ---- */
+function openSettings(){
+  buildSettings();
+  pauseClock();              // don't inflate the clock while the panel is open
+  showOverlay("settings");
+}
+function closeSettings(){
+  hideOverlay("settings");
+  resumeClock();
+  Audio2.select();
+}
+document.getElementById("btnSettings").addEventListener("click", ()=>{ Audio2.ensure(); openSettings(); });
+document.getElementById("btnMenuSettings").addEventListener("click", ()=>{ Audio2.ensure(); openSettings(); });
+document.getElementById("btnSettingsClose").addEventListener("click", closeSettings);
+
+/* volume slider */
+document.getElementById("setVol").addEventListener("input", (e)=>{
+  SETTINGS.vol = clamp(parseInt(e.target.value,10)||0, 0, 100);
+  saveSettings();
+});
+/* sfx on/off segment */
+document.querySelectorAll("#setSfxSeg button").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    SETTINGS.sfx = (b.dataset.v==="1");
+    saveSettings(); applySettings();
+    document.querySelectorAll("#setSfxSeg button").forEach(n=> n.classList.toggle("on", n===b));
+    if(SETTINGS.sfx){ Audio2.ensure(); Audio2.select(); }
+  });
+});
+/* music on/off segment */
+document.querySelectorAll("#setMusicSeg button").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    SETTINGS.music = (b.dataset.v==="1");
+    saveSettings();
+    document.querySelectorAll("#setMusicSeg button").forEach(n=> n.classList.toggle("on", n===b));
+    Audio2.select();
+  });
+});
+/* reduce-motion on/off segment */
+document.querySelectorAll("#setRmSeg button").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    SETTINGS.reduceMotion = (b.dataset.v==="1");
+    saveSettings(); applyMotion();
+    document.querySelectorAll("#setRmSeg button").forEach(n=> n.classList.toggle("on", n===b));
+    Audio2.select();
+  });
+});
+
+/* ---- Stats / achievements panel: open / close ---- */
+function openStats(){
+  buildStatsPanel();
+  pauseClock();
+  showOverlay("stats");
+}
+function closeStats(){
+  hideOverlay("stats");
+  resumeClock();
+  Audio2.select();
+}
+document.getElementById("btnStats").addEventListener("click", ()=>{ Audio2.ensure(); openStats(); });
+document.getElementById("btnStatsClose").addEventListener("click", closeStats);
+
+/* ---- Daily challenge ---- */
+document.getElementById("btnDaily").addEventListener("click", ()=>{
+  Audio2.ensure();
+  newGame(menuLayout, { daily:true, mode:menuMode });
+});
+
+/* ---- Resume saved game (menu) ---- */
+document.getElementById("btnResume").addEventListener("click", ()=>{
+  Audio2.ensure();
+  if(hasSave()) resumeGame();
+  else openMenu();
+});
+
+/* ---- Share / copy result (win overlay) ---- */
+function buildShareText(){
+  const stars = G._lastWinStars || 0;
+  let sh=""; for(let i=0;i<3;i++) sh += i<stars ? "★" : "☆";
+  return t("shareTitle")+" — "+layoutName(G.layoutKey)+"\n"+
+    sh+"  "+fmtTime(G.elapsed)+" · "+fmtNum(G.score)+" "+t("ptsUnit")+" · "+t("lblMaxCombo")+" ×"+G.maxCombo;
+}
+function shareResult(){
+  const txt = buildShareText();
+  const done = ()=> toast(t("toastShareOk"));
+  const fail = ()=>{
+    // last-ditch fallback: temporary textarea + execCommand (fully offline)
+    try{
+      const ta=document.createElement("textarea");
+      ta.value=txt; ta.setAttribute("readonly","");
+      ta.style.position="fixed"; ta.style.opacity="0"; ta.style.left="-9999px";
+      document.body.appendChild(ta); ta.select();
+      const ok=document.execCommand("copy");
+      document.body.removeChild(ta);
+      ok ? done() : toast(t("toastShareFail"));
+    }catch(e){ toast(t("toastShareFail")); }
+  };
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(done, fail);
+    } else { fail(); }
+  }catch(e){ fail(); }
+}
+document.getElementById("btnWinShare").addEventListener("click", shareResult);
+
 /* ====================================================================== */
 /*  Resize                                                                */
 /* ====================================================================== */
@@ -2463,6 +2580,8 @@ window.addEventListener("orientationchange", ()=>{ setTimeout(layout, 250); });
 document.querySelectorAll(".langbtn").forEach(b=>{
   b.addEventListener("click", ()=>{ setLang(b.dataset.lang); Audio2.ensure(); Audio2.select(); });
 });
+loadSettings();   // restore persisted settings...
+applySettings();  // ...and apply theme / reduce-motion / mute so the panel reflects reality
 loadMute();
 applyLang();
 buildMenu();

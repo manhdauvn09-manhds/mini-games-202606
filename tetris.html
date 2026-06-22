@@ -2088,6 +2088,233 @@
     b.addEventListener("click", function(){ setLang(b.getAttribute("data-lang")); });
   });
 
+  // ---------- Feature panels: build / render / open / close ----------
+  // (Reuses existing show()/hide(), save{}, persist(), t(), THEMES, ACH, startGame, pauseGame.)
+
+  // Apply persisted look-and-feel (theme + reduced motion) to the document root.
+  function applySettingsToDoc(){
+    document.documentElement.setAttribute("data-theme", save.settings.theme || "midnight");
+    document.documentElement.setAttribute("data-rm", reducedMotion() ? "1" : "0");
+  }
+
+  // Menu meta: best for the selected mode + start-level value. Called from applyLang().
+  function refreshMenuMeta(){
+    var mb = $("mBest");
+    if(mb){
+      if(mode==="sprint"){
+        mb.textContent = save.bests.sprint>0 ? fmtTime(save.bests.sprint) : "—";
+      } else {
+        mb.textContent = (save.bests[mode]||0).toLocaleString("vi-VN");
+      }
+    }
+    var ml = $("mLevel"); if(ml) ml.textContent = pendingStartLevel;
+  }
+
+  // Mode picker
+  function setMode(m){
+    if(!save.bests.hasOwnProperty(m)) return;
+    mode = m;
+    document.querySelectorAll("#modeGrid .modebtn").forEach(function(b){
+      b.classList.toggle("active", b.getAttribute("data-mode")===m);
+    });
+    refreshMenuMeta();
+  }
+  document.querySelectorAll("#modeGrid .modebtn").forEach(function(b){
+    b.addEventListener("click", function(){ Audio.ensure(); setMode(b.getAttribute("data-mode")); });
+  });
+
+  // Start-level stepper
+  function setStartLevel(v){
+    pendingStartLevel = Math.max(1, Math.min(15, v));
+    var ml = $("mLevel"); if(ml) ml.textContent = pendingStartLevel;
+  }
+  $("lvlMinus").addEventListener("click", function(){ Audio.ensure(); setStartLevel(pendingStartLevel-1); });
+  $("lvlPlus").addEventListener("click", function(){ Audio.ensure(); setStartLevel(pendingStartLevel+1); });
+
+  // Daily challenge: register today's play toward streak + achievement, then start.
+  function registerDailyPlay(){
+    var tk = todayKey();
+    if(save.daily.lastPlayed !== tk){
+      // consecutive-day streak: +1 if yesterday, else reset to 1
+      var y = new Date(); y.setDate(y.getDate()-1);
+      var yk = ""+y.getFullYear()+("0"+(y.getMonth()+1)).slice(-2)+("0"+y.getDate()).slice(-2);
+      save.daily.streak = (save.daily.lastPlayed===yk) ? (save.daily.streak||0)+1 : 1;
+      save.daily.lastPlayed = tk;
+      if(save.daily.date!==tk){ save.daily.date=tk; save.daily.best=0; }
+      persist();
+    }
+    checkAch("daily");
+  }
+  $("dailyBtn").addEventListener("click", function(){ Audio.ensure(); startGame({ daily:true }); });
+
+  // ---------- Settings panel ----------
+  function buildSwatches(){
+    var host = $("swatches"); if(!host || host.childElementCount) return;
+    var grads = {
+      midnight:"linear-gradient(135deg,#15224a,#1a1140)",
+      sunset:"linear-gradient(135deg,#4a1d2e,#3a1428)",
+      forest:"linear-gradient(135deg,#123a2a,#0e2e22)",
+      light:"linear-gradient(135deg,#cfdcff,#e6d8ff)"
+    };
+    THEMES.forEach(function(name){
+      var b = document.createElement("button");
+      b.className = "swatch"; b.setAttribute("data-theme-name", name);
+      b.setAttribute("aria-label", name);
+      b.innerHTML = '<i style="background:'+grads[name]+'"></i><span class="chk">✓</span>';
+      b.addEventListener("click", function(){
+        save.settings.theme = name; persist();
+        applySettingsToDoc(); syncSettingsUI();
+        Audio.ensure(); Audio.tone(520,520,0.05,"triangle",0.06);
+      });
+      host.appendChild(b);
+    });
+  }
+  function syncSettingsUI(){
+    var vr = $("volRange"); if(vr) vr.value = Math.round((save.settings.vol||0)*100);
+    $("sfxToggle").setAttribute("aria-checked", save.settings.sfx ? "true":"false");
+    $("musicToggle").setAttribute("aria-checked", save.settings.music ? "true":"false");
+    $("rmToggle").setAttribute("aria-checked", reducedMotion() ? "true":"false");
+    $("cbToggle").setAttribute("aria-checked", save.settings.cb ? "true":"false");
+    document.querySelectorAll("#swatches .swatch").forEach(function(s){
+      s.classList.toggle("active", s.getAttribute("data-theme-name")===save.settings.theme);
+    });
+  }
+  function openSettings(){
+    Audio.ensure();
+    if(running && !gameOver && !paused){ pauseGame(); }
+    buildSwatches(); syncSettingsUI();
+    show($("settings"));
+  }
+  function closeSettings(){ hide($("settings")); }
+
+  $("settingsBtn").addEventListener("click", openSettings);
+  $("pSettingsBtn").addEventListener("click", openSettings);
+  $("setCloseBtn").addEventListener("click", closeSettings);
+
+  $("volRange").addEventListener("input", function(){
+    save.settings.vol = (parseInt(this.value,10)||0)/100; persist();
+    Audio.setVol(save.settings.vol);
+  });
+  function wireToggle(id, getv, setv){
+    var el = $(id);
+    function flip(){
+      setv(!getv());
+      el.setAttribute("aria-checked", getv() ? "true":"false");
+      persist(); applySettingsToDoc(); Audio.ensure();
+    }
+    el.addEventListener("click", flip);
+    el.addEventListener("keydown", function(e){
+      if(e.key===" "||e.key==="Enter"||e.code==="Space"){ e.preventDefault(); flip(); }
+    });
+  }
+  wireToggle("sfxToggle", function(){return !!save.settings.sfx;}, function(v){ save.settings.sfx=v; save.muted=!v; updateMuteIcon(); });
+  wireToggle("musicToggle", function(){return !!save.settings.music;}, function(v){
+    save.settings.music=v;
+    if(v && running && !paused && !gameOver){ Audio.startMusic(); } else { Audio.stopMusic(); }
+  });
+  wireToggle("rmToggle", function(){return reducedMotion();}, function(v){ save.settings.rm=v; });
+  wireToggle("cbToggle", function(){return !!save.settings.cb;}, function(v){ save.settings.cb=v; });
+
+  // ---------- Stats panel ----------
+  function renderStats(){
+    var host=$("statsList"); if(!host) return;
+    var sm = $("statsMode"); if(sm) sm.textContent = t("statsTitle");
+    var s = save.stats;
+    var rows=[
+      [t("stGames"), (s.games||0).toLocaleString("vi-VN")],
+      [t("stBestScore"), (s.bestScore||0).toLocaleString("vi-VN")],
+      [t("stBestLines"), (s.bestLines||0)],
+      [t("stBestCombo"), (s.bestCombo||0)],
+      [t("stBestTime"), s.bestTimeSprint>0 ? fmtTime(s.bestTimeSprint) : "—"],
+      [t("stTotalLines"), (s.totalLines||0).toLocaleString("vi-VN")],
+      [t("stTetris"), (s.tetris||0)],
+      [t("stTspin"), (s.tspin||0)],
+      [t("stPC"), (s.pc||0)],
+      [t("stPPS"), (s.bestPPS||0).toFixed(2)]
+    ];
+    host.innerHTML="";
+    for(var i=0;i<rows.length;i++){
+      var c=document.createElement("div"); c.className="cell";
+      c.innerHTML='<div class="k"></div><div class="v"></div>';
+      c.querySelector(".k").textContent=rows[i][0];
+      c.querySelector(".v").textContent=rows[i][1];
+      host.appendChild(c);
+    }
+  }
+  function openStats(){ Audio.ensure(); renderStats(); show($("statsView")); }
+  function closeStats(){ hide($("statsView")); }
+  $("statsBtn").addEventListener("click", openStats);
+  $("statsCloseBtn").addEventListener("click", closeStats);
+  $("statsResetBtn").addEventListener("click", function(){
+    if(window.confirm(t("confirmReset"))){
+      save.stats={ games:0, bestScore:0, bestLines:0, bestCombo:0, bestTimeSprint:0, totalLines:0,
+        tetris:0, tspin:0, pc:0, bestPPS:0 };
+      save.bests={ marathon:0, sprint:0, ultra:0, zen:0 };
+      save.best=0; save.ach={}; save.daily={ date:"", best:0, streak:0, lastPlayed:"" };
+      persist();
+      renderStats(); renderAchGrid(); refreshMenuMeta();
+    }
+  });
+
+  // ---------- Achievements panel ----------
+  function renderAchGrid(){
+    var host=$("achGrid"); if(!host) return;
+    var unlocked=0;
+    host.innerHTML="";
+    for(var i=0;i<ACH.length;i++){
+      var a=ACH[i]; var on=!!save.ach[a.id]; if(on) unlocked++;
+      var el=document.createElement("div");
+      el.className="ach"+(on?" unlocked":"");
+      el.innerHTML='<div class="ic"></div><div class="nm"></div>';
+      el.querySelector(".ic").textContent=a.ic;
+      el.querySelector(".nm").textContent=t("ach_"+a.id);
+      host.appendChild(el);
+    }
+    var p=$("achProgress"); if(p) p.textContent = t("achUnlocked")+unlocked+" / "+ACH.length;
+  }
+  function openAch(){ Audio.ensure(); renderAchGrid(); show($("achView")); }
+  function closeAch(){ hide($("achView")); }
+  $("achBtn").addEventListener("click", openAch);
+  $("achCloseBtn").addEventListener("click", closeAch);
+
+  // ---------- Copy result (game-over share) ----------
+  function buildShareText(){
+    var L=[];
+    L.push("TETRIS 1000×");
+    L.push(t("modeName")+": "+(isDaily? t("dailyTitle")+" · " : "")+t(MODE_KEY[mode]||"modeMarathon"));
+    L.push(t("score")+": "+score.toLocaleString("vi-VN"));
+    L.push(t("linesLbl")+": "+lines+"  ·  "+t("level")+": "+level);
+    L.push(t("resTime")+": "+fmtTime(runTime)+"  ·  PPS: "+(runTime>0?(piecesPlaced/runTime):0).toFixed(2));
+    L.push(t("stTetris")+": "+runStats.tetris+"  ·  "+t("stTspin")+": "+runStats.tspin);
+    return L.join("\n");
+  }
+  $("copyBtn").addEventListener("click", function(){
+    var btn=this, txt=buildShareText();
+    function ok(){
+      btn.classList.remove("copybtn-ok"); void btn.offsetWidth; btn.classList.add("copybtn-ok");
+      toast("📋", t("copied"), "");
+    }
+    function fallback(){
+      try{
+        var ta=document.createElement("textarea");
+        ta.value=txt; ta.style.position="fixed"; ta.style.opacity="0";
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        document.execCommand("copy"); document.body.removeChild(ta); ok();
+      }catch(e){}
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(ok, fallback);
+    } else { fallback(); }
+  });
+
+  // Close overlays with Escape (settings/stats/ach), matching keyboard-friendly UX.
+  window.addEventListener("keydown", function(e){
+    if(e.key!=="Escape") return;
+    if($("settings").classList.contains("show")){ closeSettings(); }
+    else if($("statsView").classList.contains("show")){ closeStats(); }
+    else if($("achView").classList.contains("show")){ closeAch(); }
+  });
+
   // ---------- Wire up UI ----------
   $("playBtn").addEventListener("click", function(){ Audio.ensure(); startGame(); });
   $("againBtn").addEventListener("click", function(){ Audio.ensure(); startGame(); });
@@ -2114,6 +2341,8 @@
   // ---------- Init ----------
   $("mBest").textContent = save.best.toLocaleString("vi-VN");
   updateMuteIcon();
+  applySettingsToDoc();
+  setMode(mode);
   applyLang();
   bindTouch();
   computeLayout();

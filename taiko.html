@@ -2163,6 +2163,68 @@
   $('pauseBtn').onclick=function(){ resumeAudio(); if(STATE==='playing') doPause(); else if(STATE==='paused') doResume(); };
   $('muteBtn').onclick=function(){ ensureAudio(); setMuted(!muted); resumeAudio(); };
 
+  /* ----- overlay return-target tracking -----
+     Settings / calibration can be opened from the menu OR from the pause
+     overlay. Remember where we came from so the Close/Back buttons return
+     there instead of always dumping the player to the menu. */
+  var overlayReturn = menu;
+  function returnFromOverlay(){
+    // if a game is paused behind us, go back to the pause overlay; otherwise menu
+    if(STATE==='paused'){ showOverlay(pauseEl); }
+    else { showOverlay(overlayReturn || menu); }
+  }
+
+  // HUD gear + pause-panel "Settings" : open settings overlay (build + show)
+  $('settingsBtn').onclick=function(){
+    resumeAudio();
+    // pause a running game first (matches how other overlays gate gameplay)
+    if(STATE==='playing') doPause();
+    overlayReturn = (STATE==='paused') ? pauseEl : menu;
+    openSettings();
+  };
+  $('pauseSettingsBtn').onclick=function(){ resumeAudio(); overlayReturn=pauseEl; openSettings(); };
+  $('setClose').onclick=function(){ saveSettings(); returnFromOverlay(); };
+
+  // Stats / Achievements
+  $('statsBtn').onclick=function(){ resumeAudio(); overlayReturn=menu; buildStatsView(); showOverlay($('stats')); };
+  $('statsBack').onclick=function(){ showOverlay(overlayReturn||menu); };
+
+  // Daily challenge
+  $('dailyBtn').onclick=function(){ resumeAudio(); overlayReturn=menu; openDaily(); };
+  $('dailyPlayBtn').onclick=function(){ resumeAudio(); playDaily(); };
+  $('dailyBack').onclick=function(){ showOverlay(overlayReturn||menu); };
+
+  // Calibration (from menu, from settings)
+  $('calibBtn').onclick=function(){ resumeAudio(); overlayReturn=menu; openCalib(); };
+  $('setCalibBtn').onclick=function(){ resumeAudio(); openCalib(); };
+  $('calibToggle').onclick=function(){ resumeAudio(); if(calib.running) calibTickStop(); else calibTickStart(); };
+  $('calibResetBtn').onclick=function(){ calib.computed=0; calib.taps=[]; $('calibTapCount').textContent='0'; $('calibOffsetVal').textContent='0ms'; };
+  $('calibApplyBtn').onclick=function(){
+    calibTickStop();
+    settings.offset = (calib.computed!=null) ? calib.computed : settings.offset;
+    saveSettings(); syncSettingsUI(); toast(t('calibApply'));
+    returnFromOverlay();
+  };
+  $('calibBack').onclick=function(){ calibTickStop(); returnFromOverlay(); };
+  // calibration tap target: pointer on the beat circle, plus SPACE while open
+  $('calibBeat').addEventListener('pointerdown', function(e){ e.preventDefault(); calibTap(); }, {passive:false});
+  window.addEventListener('keydown', function(e){
+    if(e.code==='Space' && $('calib').classList.contains('show')){ e.preventDefault(); calibTap(); }
+  });
+
+  // Results: copy/share result text
+  $('shareBtn').onclick=function(){ doShare(); };
+
+  /* ----- settings controls (sliders + toggles) ----- */
+  $('setVolMaster').oninput=function(){ settings.volMaster=(+this.value)/100; $('valVolMaster').textContent=this.value; applyVolumes(); saveSettings(); };
+  $('setVolMusic').oninput =function(){ settings.volMusic =(+this.value)/100; $('valVolMusic').textContent =this.value; applyVolumes(); saveSettings(); };
+  $('setVolSfx').oninput   =function(){ settings.volSfx   =(+this.value)/100; $('valVolSfx').textContent   =this.value; applyVolumes(); saveSettings(); };
+  $('setScroll').oninput   =function(){ settings.scroll=(+this.value)/100; $('valScroll').textContent=settings.scroll.toFixed(1)+'×'; saveSettings(); };
+  $('setOffset').oninput   =function(){ settings.offset=+this.value; $('valOffset').textContent=Math.round(settings.offset)+'ms'; saveSettings(); };
+  $('setMusicOn').onclick=function(){ settings.musicOn=!settings.musicOn; this.setAttribute('aria-checked', settings.musicOn?'true':'false'); applyVolumes(); saveSettings(); };
+  $('setSfxOn').onclick  =function(){ settings.sfxOn=!settings.sfxOn; this.setAttribute('aria-checked', settings.sfxOn?'true':'false'); applyVolumes(); saveSettings(); if(settings.sfxOn && AC && !muted) sfxKa(false); };
+  $('setReducedMotion').onclick=function(){ settings.reducedMotion=!settings.reducedMotion; this.setAttribute('aria-checked', settings.reducedMotion?'true':'false'); applyReducedMotion(); saveSettings(); };
+
   // language toggle
   document.querySelectorAll('.langbtn').forEach(function(b){
     b.onclick=function(){

@@ -2423,6 +2423,7 @@
 
   function openMenu(){
     initMenuSelectionState();
+    renderDailyInfo();
     // if a game is in progress, offer resume
     const canResume = running && !gameOver && history.length>0;
     $("btnResume").style.display = canResume ? "block" : "none";
@@ -2441,6 +2442,77 @@
     store.muted = !store.muted; saveStore(); refreshSoundBtn();
     if(!store.muted){ resumeAudio(); blip(740,0.07,"sine",0.12); }
   });
+
+  /* =========================================================
+     Settings / Stats / Achievements / Daily / Replay wiring
+     (HTML + builders already exist; just connect open/close).
+     Overlays sit on top of an event-driven board, so opening one
+     does not break the running game — no extra pause needed.
+     ========================================================= */
+  // Reflect current persisted settings onto the settings controls.
+  function refreshSettingsUI(){
+    $("setVol").value = Math.round((store.vol||0)*100);
+    $("setSfx").setAttribute("aria-pressed", store.sfx !== false ? "true" : "false");
+    $("setReduce").setAttribute("aria-pressed", reducedMotion() ? "true" : "false");
+    document.querySelectorAll("#themeSwatches .swatch").forEach(s=>{
+      s.classList.toggle("sel", s.getAttribute("data-theme")===store.theme);
+    });
+  }
+
+  // Settings: open / close
+  $("btnSettings").addEventListener("click", ()=>{ resumeAudio(); clickTick(); refreshSettingsUI(); show($("settings")); });
+  $("btnCloseSettings").addEventListener("click", ()=>{ clickTick(); hide($("settings")); });
+  $("btnSettingsDone").addEventListener("click", ()=>{ clickTick(); hide($("settings")); });
+  // Master volume
+  $("setVol").addEventListener("input", ()=>{
+    store.vol = Math.max(0, Math.min(1, (parseInt($("setVol").value,10)||0)/100));
+    saveStore(); applyMasterGain();
+  });
+  // SFX toggle
+  $("setSfx").addEventListener("click", ()=>{
+    store.sfx = !(store.sfx !== false);
+    $("setSfx").setAttribute("aria-pressed", store.sfx ? "true" : "false");
+    saveStore(); applyMasterGain();
+    if(store.sfx){ resumeAudio(); blip(700,0.06,"sine",0.1); }
+  });
+  // Theme swatches
+  document.querySelectorAll("#themeSwatches .swatch").forEach(sw=>{
+    sw.addEventListener("click", ()=>{
+      store.theme = sw.getAttribute("data-theme"); saveStore();
+      applyTheme(); refreshSettingsUI(); clickTick();
+    });
+  });
+  // Reduced motion toggle
+  $("setReduce").addEventListener("click", ()=>{
+    store.reduceMotion = !reducedMotion();
+    $("setReduce").setAttribute("aria-pressed", store.reduceMotion ? "true" : "false");
+    saveStore(); applyReducedMotion(); clickTick();
+  });
+
+  // Stats: open / close
+  $("btnStats").addEventListener("click", ()=>{ resumeAudio(); clickTick(); renderStats(); show($("stats")); });
+  $("btnCloseStats").addEventListener("click", ()=>{ clickTick(); hide($("stats")); });
+  $("btnStatsDone").addEventListener("click", ()=>{ clickTick(); hide($("stats")); });
+
+  // Achievements: open / close
+  $("btnAch").addEventListener("click", ()=>{ resumeAudio(); clickTick(); renderAchievements(); show($("ach")); });
+  $("btnCloseAch").addEventListener("click", ()=>{ clickTick(); hide($("ach")); });
+  $("btnAchDone").addEventListener("click", ()=>{ clickTick(); hide($("ach")); });
+
+  // Daily challenge
+  $("btnDaily").addEventListener("click", ()=>{ resumeAudio(); blip(720,0.08,"triangle",0.12); startDaily(); });
+
+  // Game-over: copy result + watch replay
+  $("btnCopyResult").addEventListener("click", ()=>{ resumeAudio(); clickTick(); copyResult(); });
+  $("btnWatchReplay").addEventListener("click", ()=>{ resumeAudio(); clickTick(); openReplay(); });
+
+  // Replay scrubber: prev / next / play-pause / scrub / close
+  $("replayPrev").addEventListener("click", ()=>{ clickTick(); replaySet(replayPos-1); });
+  $("replayNext").addEventListener("click", ()=>{ clickTick(); replaySet(replayPos+1); });
+  $("replayPlay").addEventListener("click", ()=>{ clickTick(); replayToggle(); });
+  $("replayScrub").addEventListener("input", ()=>{ replaySet(parseInt($("replayScrub").value,10)||0); });
+  $("btnCloseReplay").addEventListener("click", ()=>{ clickTick(); closeReplay(); });
+  $("btnReplayDone").addEventListener("click", ()=>{ clickTick(); closeReplay(); });
 
   /* =========================================================
      Resize handling
@@ -2473,7 +2545,9 @@
      ========================================================= */
   function boot(){
     refreshSoundBtn();
+    applySettings();          // apply persisted theme / reduced-motion / volume
     initMenuUI();
+    renderDailyInfo();        // menu is shown by default — fill its daily info line
     applyLang();
     layout();
     updateHUD();
