@@ -1,0 +1,2595 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0b1020" />
+<meta name="description" content="だるま落とし — Daruma Otoshi 1000×: trò chơi gõ búa truyền thống Nhật Bản. Gõ rơi từng khối gỗ, giữ đầu daruma đứng vững. Vật lý đã đời, hiệu ứng cực mượt. Chơi miễn phí trên máy tính và điện thoại." />
+<title>だるま落とし ✦ 1000×</title>
+<style>
+  :root{
+    --bg0:#0b1020; --bg1:#0e1428;
+    --bgr0:#15224a; --bgr1:#2a1320;     /* radial accents */
+    --gold:#ffce54; --cyan:#34e0ff; --violet:#b388ff; --teal:#34d3b6; --rose:#ff6b9d;
+    --ink:#08122a; --txt:#eaf0ff; --mut:#9fa9d2;
+    --panel-a:rgba(28,34,72,.78); --panel-b:rgba(14,18,40,.86);
+    --line:rgba(255,255,255,.12);
+    --wood:#c98a4b; --lacquer:#c0392b;
+    --sun:#ff6b6b;                       /* backdrop 和 disc */
+  }
+  /* ===== Theme palettes (applied via <html data-theme="…">) ===== */
+  html[data-theme="sakura"]{
+    --bg0:#1a0e16; --bg1:#241019;
+    --bgr0:#3a1430; --bgr1:#4a1422;
+    --gold:#ffd76a; --cyan:#ff8fb1; --violet:#d9a0ff; --teal:#7fe0c4; --rose:#ff6b9d;
+    --panel-a:rgba(60,30,52,.80); --panel-b:rgba(34,14,28,.88);
+    --sun:#ff9bc4;
+  }
+  html[data-theme="matcha"]{
+    --bg0:#0c160e; --bg1:#101e14;
+    --bgr0:#143a22; --bgr1:#2a3410;
+    --gold:#e8d264; --cyan:#5ad7a0; --violet:#9fd07a; --teal:#34d3b6; --rose:#ffae6b;
+    --panel-a:rgba(24,48,34,.80); --panel-b:rgba(12,24,16,.88);
+    --sun:#8fd17a;
+  }
+  html[data-theme="indigo"]{
+    --bg0:#070a18; --bg1:#0a0e22;
+    --bgr0:#101a44; --bgr1:#16205a;
+    --gold:#ffce54; --cyan:#5ad7ff; --violet:#9aa6ff; --teal:#5fd6e0; --rose:#ff7fb0;
+    --panel-a:rgba(20,28,72,.82); --panel-b:rgba(8,12,34,.90);
+    --sun:#5a78ff;
+  }
+  html[data-theme="light"]{
+    --bg0:#eef1fb; --bg1:#e2e7f6;
+    --bgr0:#dbe6ff; --bgr1:#ffe6ec;
+    --gold:#d99a14; --cyan:#0f8fb0; --violet:#7a52d0; --teal:#108f78; --rose:#d34670;
+    --ink:#0c1428; --txt:#1a2240; --mut:#5a648a;
+    --panel-a:rgba(255,255,255,.82); --panel-b:rgba(232,237,250,.92);
+    --line:rgba(20,30,60,.16);
+    --sun:#ff8da0;
+  }
+  /* Reduced-motion: tone down panel/overlay transitions */
+  html[data-reduce="1"] *{ animation-duration:.001s !important; animation-iteration-count:1 !important; }
+  html[data-reduce="1"] .overlay, html[data-reduce="1"] .panel{ transition:none !important; }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{
+    margin:0; height:100%; overflow:hidden;
+    background:
+      radial-gradient(1200px 800px at 18% -10%, var(--bgr0) 0%, transparent 55%),
+      radial-gradient(1000px 700px at 110% 10%, var(--bgr1) 0%, transparent 50%),
+      linear-gradient(160deg, var(--bg0), var(--bg1));
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif; color:var(--txt);
+    user-select:none; -webkit-user-select:none; touch-action:none;
+  }
+  #app{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; padding:8px; }
+
+  #stage{ position:relative; display:flex; flex-direction:column; align-items:center; gap:10px; }
+
+  /* Top HUD bar */
+  #hud{ display:flex; gap:clamp(8px,1.6vmin,16px); align-items:stretch; justify-content:center; flex-wrap:wrap; }
+  .glass{
+    background:linear-gradient(180deg, var(--panel-a), var(--panel-b));
+    border:1px solid var(--line);
+    box-shadow:0 22px 50px -28px #000, inset 0 1px 0 rgba(255,255,255,.06);
+    border-radius:16px;
+    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+  }
+  .stat{ text-align:center; padding:clamp(6px,1.2vmin,11px) clamp(10px,2vmin,18px); min-width:clamp(58px,12vmin,86px); }
+  .stat .k{ font-size:clamp(8px,1.4vmin,10px); letter-spacing:2px; text-transform:uppercase; color:var(--mut); font-weight:800; }
+  .stat .v{ font-size:clamp(17px,3.4vmin,28px); font-weight:900; line-height:1.1; }
+  .stat.gold .v{ color:var(--gold); }
+  .stat.cyan .v{ color:var(--cyan); }
+  .stat.teal .v{ color:var(--teal); }
+  .stat.rose .v{ color:var(--rose); }
+  .v.flash{ animation:vflash .45s ease; }
+  @keyframes vflash{ 0%{ transform:scale(1.35); filter:brightness(1.6) } 100%{ transform:scale(1) } }
+
+  /* Board wrapper */
+  #boardWrap{ position:relative; border-radius:18px; }
+  #board{ display:block; border-radius:16px; background:rgba(4,7,18,.55);
+    box-shadow:0 28px 60px -30px #000, inset 0 0 0 1px rgba(255,255,255,.06), inset 0 0 70px rgba(0,0,0,.5); }
+
+  #topctl{ position:absolute; top:8px; right:8px; display:flex; gap:7px; z-index:6; }
+  .iconbtn{ pointer-events:auto; cursor:pointer; width:clamp(34px,6vmin,42px); height:clamp(34px,6vmin,42px);
+    border-radius:12px; border:1px solid var(--line);
+    background:rgba(8,12,30,.6); backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px);
+    color:#fff; font-size:clamp(15px,3vmin,19px); display:flex; align-items:center; justify-content:center;
+    transition:transform .12s, border-color .12s; }
+  .iconbtn:hover{ border-color:var(--cyan); }
+  .iconbtn:active{ transform:scale(.9); }
+
+  /* Action hint under board */
+  #hint{ font-size:clamp(11px,2.2vmin,14px); color:var(--mut); letter-spacing:.5px; text-align:center;
+    min-height:1.2em; transition:opacity .2s; }
+  #hint b{ color:var(--gold); }
+
+  /* ---------- Overlays ---------- */
+  .overlay{ position:fixed; inset:0; z-index:20; display:flex; align-items:center; justify-content:center;
+    padding:18px; opacity:0; pointer-events:none; visibility:hidden; transition:opacity .3s ease, visibility .3s ease;
+    background:rgba(5,8,20,.5); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); }
+  .overlay.show{ opacity:1; pointer-events:auto; visibility:visible; }
+  .panel{ width:min(440px,94vw); border-radius:26px; padding:24px 22px 20px; text-align:center;
+    background:linear-gradient(180deg, rgba(28,34,72,.95), rgba(14,18,40,.97));
+    border:1px solid rgba(255,255,255,.14);
+    box-shadow:0 30px 70px -30px #000, inset 0 1px 0 rgba(255,255,255,.08);
+    transform:translateY(14px) scale(.98); transition:transform .35s cubic-bezier(.2,.9,.3,1.2);
+    max-height:94vh; overflow:auto; }
+  .overlay.show .panel{ transform:none; }
+
+  .logo{ font-size:clamp(40px,12vw,68px); font-weight:900; line-height:.95; margin:2px 0;
+    letter-spacing:1px;
+    background:linear-gradient(90deg,#ffd54a,#ff8d5c,#ff5d8f,#b388ff,#34e0ff);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 6px 30px rgba(255,140,90,.25); }
+  .logo small{ display:block; -webkit-text-fill-color:#fff; color:#fff; font-size:.32em; letter-spacing:8px; font-weight:800; opacity:.9; margin-top:4px; }
+  .sub{ font-size:clamp(13px,3.6vw,15px); color:#ffd8a8; letter-spacing:3px; font-weight:800; margin:2px 0 2px; }
+  .tagline{ color:var(--mut); font-size:clamp(12px,3.4vw,14px); margin:8px 6px 16px; line-height:1.55; }
+
+  .stats{ display:flex; gap:10px; margin:4px 0 16px; }
+  .stats .s{ flex:1; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.10); border-radius:16px; padding:12px 6px; }
+  .stats .s b{ display:block; font-size:clamp(20px,6vw,30px); line-height:1; }
+  .stats .s span{ font-size:11px; color:var(--mut); letter-spacing:1px; text-transform:uppercase; }
+  .stats .s.gold b{ color:var(--gold); }
+  .stats .s.cyan b{ color:var(--cyan); }
+  .stats .s.teal b{ color:var(--teal); }
+
+  .modes{ display:flex; gap:10px; margin:4px 0 14px; }
+  .modebtn{ flex:1; cursor:pointer; border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:12px 8px;
+    background:rgba(255,255,255,.04); color:#fff; transition:transform .12s, border-color .15s, background .15s; text-align:center; }
+  .modebtn .mt{ font-size:clamp(14px,4vw,17px); font-weight:900; }
+  .modebtn .md{ font-size:11px; color:var(--mut); margin-top:3px; letter-spacing:.3px; }
+  .modebtn.sel{ border-color:var(--gold); background:rgba(255,206,84,.12); }
+  .modebtn.sel.cy{ border-color:var(--cyan); background:rgba(52,224,255,.12); }
+  .modebtn:active{ transform:scale(.97); }
+
+  .btn{ pointer-events:auto; cursor:pointer; border:none; border-radius:16px; font-weight:900;
+    font-size:clamp(17px,4.6vw,21px); padding:15px 18px; width:100%; color:var(--ink);
+    background:linear-gradient(180deg,#ffd76a,#ff9f43);
+    box-shadow:0 12px 26px -10px #c9772a, inset 0 1px 0 rgba(255,255,255,.5);
+    transition:transform .12s, filter .12s; letter-spacing:.5px; }
+  .btn:active{ transform:translateY(2px) scale(.99); filter:brightness(1.06); }
+  .btn.cyan{ background:linear-gradient(180deg,#7ef0ff,#34d3b6); box-shadow:0 12px 26px -10px #18b28e, inset 0 1px 0 rgba(255,255,255,.5); }
+  .btn.ghost{ background:rgba(255,255,255,.08); color:#fff; box-shadow:inset 0 0 0 1px rgba(255,255,255,.16); }
+  .btnrow{ display:flex; gap:10px; margin-top:10px; }
+  .btnrow .btn{ width:auto; flex:1; font-size:clamp(14px,3.8vw,17px); padding:13px 12px; }
+
+  .help{ margin-top:16px; text-align:left; }
+  .help .seclabel{ display:flex; align-items:center; gap:8px; color:var(--mut); font-size:11px; letter-spacing:2px;
+    text-transform:uppercase; margin:0 2px 10px; font-weight:800; }
+  .help .seclabel::after{ content:""; flex:1; height:1px; background:rgba(255,255,255,.12); }
+  .krow{ display:flex; justify-content:space-between; gap:10px; font-size:13px; color:#cbd3f0; margin:7px 2px; }
+  .krow span:last-child{ color:var(--mut); text-align:right; }
+  .kbd{ background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.18); border-bottom-width:2px;
+    border-radius:6px; padding:1px 7px; font-size:12px; font-weight:800; display:inline-block; margin:1px; }
+
+  .newbest{ display:inline-block; margin:4px 0 6px; padding:5px 14px; border-radius:999px; font-size:12px; font-weight:900;
+    letter-spacing:1px; background:linear-gradient(90deg,#ffd54a,#ff8d5c); color:#3a1d00; animation:pop .5s; }
+  @keyframes pop{ 0%{transform:scale(0)} 70%{transform:scale(1.15)} 100%{transform:scale(1)} }
+  .gohead{ font-size:clamp(30px,9vw,46px); font-weight:900; letter-spacing:1px; margin:0 0 2px;
+    background:linear-gradient(90deg,#ff5d8f,#b388ff,#34e0ff); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .gosub{ font-size:clamp(13px,3.6vw,15px); color:var(--mut); letter-spacing:4px; font-weight:800; margin:0 0 8px; }
+
+  .credit{ margin-top:14px; font-size:11px; color:var(--mut); opacity:.7; letter-spacing:.5px; }
+
+  /* Language toggle */
+  .langrow{ display:flex; gap:8px; justify-content:center; margin:0 0 12px; }
+  .langbtn{ cursor:pointer; border:1px solid rgba(255,255,255,.14); border-radius:999px;
+    background:rgba(255,255,255,.05); color:#fff; font-weight:800; letter-spacing:.3px;
+    font-size:clamp(11px,3vw,13px); padding:7px 14px;
+    transition:transform .12s, border-color .15s, background .15s; }
+  .langbtn:active{ transform:scale(.96); }
+  .langbtn.sel{ border-color:var(--gold); background:rgba(255,206,84,.16); color:#ffe6ad; }
+
+  /* ===== Accessibility: visible focus ring ===== */
+  button:focus-visible, .modebtn:focus-visible, .langbtn:focus-visible,
+  .iconbtn:focus-visible, .themechip:focus-visible, input:focus-visible{
+    outline:3px solid var(--cyan); outline-offset:2px; border-radius:12px;
+  }
+  .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
+    clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+  /* menu top icon row */
+  .menutop{ display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px; }
+  .menutop .iconbtn{ position:relative; }
+
+  /* ===== Settings rows ===== */
+  .setrow{ display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:11px 4px; border-bottom:1px solid rgba(255,255,255,.08); }
+  .setrow:last-child{ border-bottom:none; }
+  .setrow .lab{ font-size:14px; font-weight:800; color:var(--txt); text-align:left; }
+  .setrow .lab small{ display:block; font-weight:600; font-size:11px; color:var(--mut); margin-top:2px; }
+  input[type=range]{ -webkit-appearance:none; appearance:none; width:130px; height:6px;
+    border-radius:999px; background:rgba(255,255,255,.18); outline:none; }
+  input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:20px; height:20px;
+    border-radius:50%; background:linear-gradient(180deg,#ffd76a,#ff9f43); cursor:pointer; border:2px solid #fff3; }
+  input[type=range]::-moz-range-thumb{ width:20px; height:20px; border:2px solid #fff3;
+    border-radius:50%; background:linear-gradient(180deg,#ffd76a,#ff9f43); cursor:pointer; }
+
+  /* toggle switch */
+  .switch{ position:relative; width:50px; height:28px; flex:none; cursor:pointer; border:none;
+    border-radius:999px; background:rgba(255,255,255,.16); transition:background .18s; padding:0; }
+  .switch::after{ content:""; position:absolute; top:3px; left:3px; width:22px; height:22px; border-radius:50%;
+    background:#fff; transition:transform .18s; box-shadow:0 2px 5px rgba(0,0,0,.4); }
+  .switch[aria-checked="true"]{ background:linear-gradient(90deg,#7ef0ff,#34d3b6); }
+  .switch[aria-checked="true"]::after{ transform:translateX(22px); }
+
+  /* segmented control (language inside settings, theme rendered separately) */
+  .seg{ display:flex; gap:6px; }
+  .seg button{ cursor:pointer; border:1px solid var(--line); border-radius:10px; padding:7px 12px;
+    background:rgba(255,255,255,.05); color:var(--txt); font-weight:800; font-size:12px; }
+  .seg button.sel{ border-color:var(--gold); background:rgba(255,206,84,.16); color:#ffe6ad; }
+
+  /* theme picker chips */
+  .themegrid{ display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; }
+  .themechip{ cursor:pointer; width:34px; height:34px; border-radius:10px; border:2px solid rgba(255,255,255,.2);
+    padding:0; position:relative; overflow:hidden; }
+  .themechip.sel{ border-color:#fff; box-shadow:0 0 0 2px var(--cyan); }
+  .themechip::after{ content:attr(data-mark); position:absolute; inset:0; display:flex; align-items:center;
+    justify-content:center; font-size:14px; font-weight:900; color:#fff; opacity:0; }
+  .themechip.sel::after{ opacity:1; }
+
+  /* ===== Stats / achievements ===== */
+  .statgrid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:4px 0 14px; }
+  .statgrid .s{ background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.10);
+    border-radius:14px; padding:10px 8px; text-align:center; }
+  .statgrid .s b{ display:block; font-size:clamp(18px,5vw,26px); line-height:1.05; color:var(--gold); }
+  .statgrid .s span{ font-size:10px; color:var(--mut); letter-spacing:.5px; text-transform:uppercase; }
+
+  .achgrid{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:6px 0 4px; }
+  .ach{ position:relative; aspect-ratio:1; border-radius:14px; border:1px solid rgba(255,255,255,.12);
+    background:rgba(255,255,255,.04); display:flex; flex-direction:column; align-items:center;
+    justify-content:center; gap:2px; padding:4px 2px; text-align:center; }
+  .ach .ico{ font-size:clamp(16px,5vw,22px); filter:grayscale(1) brightness(.7); }
+  .ach .nm{ font-size:8px; line-height:1.1; color:var(--mut); font-weight:800; letter-spacing:.2px; }
+  .ach.un{ border-color:var(--gold); background:rgba(255,206,84,.10); }
+  .ach.un .ico{ filter:none; }
+  .ach.un .nm{ color:#ffe0a8; }
+  .ach.un::after{ content:"✓"; position:absolute; top:3px; right:5px; font-size:10px; color:var(--teal); font-weight:900; }
+
+  /* daily challenge card */
+  .daily{ display:flex; align-items:center; gap:12px; margin:4px 0 12px; padding:12px;
+    border-radius:16px; border:1px solid rgba(52,224,255,.3); background:rgba(52,224,255,.07); text-align:left; }
+  .daily .di{ font-size:26px; }
+  .daily .dt{ flex:1; }
+  .daily .dt .h{ font-size:14px; font-weight:900; color:var(--cyan); }
+  .daily .dt .s{ font-size:11px; color:var(--mut); margin-top:2px; }
+  .daily .dgo{ cursor:pointer; border:none; border-radius:12px; padding:9px 14px; font-weight:900; font-size:13px;
+    color:var(--ink); background:linear-gradient(180deg,#7ef0ff,#34d3b6); }
+  .daily .dgo:active{ transform:scale(.96); }
+
+  /* leaderboard list */
+  .lblist{ text-align:left; margin:4px 0 10px; }
+  .lbrow{ display:flex; justify-content:space-between; font-size:13px; padding:5px 6px; border-radius:8px; color:#cbd3f0; }
+  .lbrow:nth-child(odd){ background:rgba(255,255,255,.04); }
+  .lbrow .rk{ color:var(--mut); font-weight:800; width:22px; }
+  .lbrow .sc{ font-weight:900; color:var(--gold); }
+  .lbrow.me{ outline:1px solid var(--cyan); }
+
+  /* toast for achievements */
+  #toastWrap{ position:fixed; left:0; right:0; top:14px; z-index:40; display:flex; flex-direction:column;
+    align-items:center; gap:8px; pointer-events:none; }
+  .toast{ display:flex; align-items:center; gap:10px; padding:11px 16px; border-radius:14px;
+    background:linear-gradient(180deg, rgba(40,46,90,.97), rgba(20,24,52,.98));
+    border:1px solid var(--gold); box-shadow:0 18px 40px -16px #000;
+    color:#fff; font-weight:800; font-size:13px; max-width:90vw;
+    transform:translateY(-20px); opacity:0; transition:transform .3s, opacity .3s; }
+  .toast.show{ transform:none; opacity:1; }
+  .toast .ti{ font-size:22px; }
+  .toast .tt small{ display:block; font-weight:700; font-size:10px; color:var(--gold); letter-spacing:1px; }
+
+  /* mid-run NEW BEST banner */
+  #liveBest{ position:absolute; left:50%; top:38%; transform:translate(-50%,-10px) scale(.8);
+    z-index:8; pointer-events:none; opacity:0; transition:opacity .25s, transform .25s;
+    font-weight:900; font-size:clamp(20px,7vw,34px); letter-spacing:1px; text-align:center;
+    background:linear-gradient(90deg,#ffd54a,#ff8d5c); -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 4px 22px rgba(255,150,80,.5); }
+  #liveBest.show{ opacity:1; transform:translate(-50%,-50%) scale(1); }
+
+  .badgepill{ display:inline-block; margin:2px 0 8px; padding:4px 12px; border-radius:999px; font-size:11px;
+    font-weight:900; letter-spacing:1px; background:rgba(52,224,255,.16); color:var(--cyan); border:1px solid rgba(52,224,255,.4); }
+  .tabrow{ display:flex; gap:6px; margin:0 0 12px; }
+  .tabrow button{ flex:1; cursor:pointer; border:1px solid var(--line); border-radius:12px; padding:9px 6px;
+    background:rgba(255,255,255,.04); color:var(--mut); font-weight:800; font-size:12px; }
+  .tabrow button.sel{ border-color:var(--gold); background:rgba(255,206,84,.12); color:#ffe6ad; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="stage">
+    <!-- Top HUD -->
+    <div id="hud">
+      <div class="glass stat gold"><div class="k" data-i18n="hudScore">Điểm</div><div class="v" id="score">0</div></div>
+      <div class="glass stat cyan"><div class="k" data-i18n="hudRound">Vòng</div><div class="v" id="round">1</div></div>
+      <div class="glass stat rose"><div class="k" data-i18n="hudCombo">Combo</div><div class="v" id="combo">×1</div></div>
+      <div class="glass stat teal"><div class="k" data-i18n="hudBest">Kỷ lục</div><div class="v" id="best">0</div></div>
+    </div>
+
+    <!-- Board -->
+    <div id="boardWrap" class="glass">
+      <canvas id="board"></canvas>
+      <div id="topctl">
+        <button id="pauseBtn" class="iconbtn" data-i18n-title="pauseTip" data-i18n-aria="pauseAria" title="Tạm dừng (P)" aria-label="Tạm dừng">⏸</button>
+        <button id="muteBtn" class="iconbtn" data-i18n-title="muteTip" data-i18n-aria="muteAria" title="Âm thanh (M)" aria-label="Bật tắt âm thanh">🔊</button>
+      </div>
+      <div id="liveBest" aria-hidden="true"></div>
+    </div>
+
+    <div id="hint" data-i18n="hintAim">Nhấn <b>cách</b> / chạm để vung búa khi vạch vào vùng sáng</div>
+    <div id="ariaLive" class="sr-only" aria-live="polite" role="status"></div>
+  </div>
+
+  <!-- MENU -->
+  <div id="menu" class="overlay show">
+    <div class="panel">
+      <div class="menutop">
+        <button id="statsBtn" class="iconbtn" data-i18n-title="statsTip" data-i18n-aria="statsTip" title="Thành tích" aria-label="Thành tích">📊</button>
+        <div class="langrow" style="margin:0">
+          <button class="langbtn" data-lang="vi">🇻🇳 Tiếng Việt</button>
+          <button class="langbtn" data-lang="ja">🇯🇵 日本語</button>
+        </div>
+        <button id="settingsBtn" class="iconbtn" data-i18n-title="settingsTip" data-i18n-aria="settingsTip" title="Cài đặt" aria-label="Cài đặt">⚙</button>
+      </div>
+      <div class="logo">だるま落とし<small>1000×</small></div>
+      <div class="sub">DARUMA OTOSHI</div>
+      <div class="tagline" data-i18n="menuTagline">Gõ búa văng từng khối gỗ ở đáy, để chồng tháp rơi thẳng xuống.<br>Canh đúng nhịp · giữ thăng bằng · đừng để đổ tháp daruma.</div>
+      <div class="modes">
+        <div class="modebtn sel" id="modeClassic" data-mode="classic">
+          <div class="mt">クラシック</div>
+          <div class="md" data-i18n="modeClassicDesc">Classic · vòng vô tận</div>
+        </div>
+        <div class="modebtn cy" id="modeScore" data-mode="score">
+          <div class="mt">スコアアタック</div>
+          <div class="md" data-i18n="modeScoreDesc">Score Attack · 60 giây</div>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="s gold"><b id="mBest">0</b><span data-i18n="bestLbl">Kỷ lục</span></div>
+        <div class="s cyan"><b id="mRounds">0</b><span data-i18n="bestRoundsLbl">Vòng tốt nhất</span></div>
+      </div>
+      <div class="daily">
+        <div class="di">🗓️</div>
+        <div class="dt">
+          <div class="h" data-i18n="dailyTitle">Thử thách hôm nay</div>
+          <div class="s" id="dailyInfo">—</div>
+        </div>
+        <button id="dailyBtn" class="dgo" data-i18n="dailyPlay">Chơi</button>
+      </div>
+      <button id="playBtn" class="btn" data-i18n="playNow">▶ Chơi ngay</button>
+      <div class="help">
+        <div class="seclabel" data-i18n="howToPlay">Cách chơi</div>
+        <div class="krow"><span data-i18n="tut1a">Vung búa (canh nhịp)</span><span><span class="kbd">Space</span> / <span class="kbd" data-i18n="kbdTap">Chạm</span></span></div>
+        <div class="krow"><span data-i18n="tut2a">Trúng đẹp khi vạch ở vùng vàng</span><span data-i18n="tut2b">khối văng — combo tăng</span></div>
+        <div class="krow"><span data-i18n="tut3a">Lệch nhịp → tháp lung lay</span><span data-i18n="tut3b">lệch nhiều → đổ tháp</span></div>
+        <div class="krow"><span data-i18n="tut4a">Dọn hết thân, giữ đầu daruma</span><span data-i18n="tut4b">qua vòng mới khó hơn</span></div>
+        <div class="krow"><span data-i18n="tut5a">Tạm dừng</span><span><span class="kbd">P</span> / <span class="kbd">Esc</span></span></div>
+      </div>
+      <div class="credit" data-i18n="credit">和 · gỗ &amp; sơn mài · WebAudio · không cần mạng</div>
+    </div>
+  </div>
+
+  <!-- PAUSE -->
+  <div id="pause" class="overlay">
+    <div class="panel">
+      <div class="logo" style="font-size:clamp(34px,10vw,52px)" data-i18n="pauseTitle">Tạm dừng</div>
+      <div class="tagline" data-i18n="pauseSub">Cây búa đang chờ bạn quay lại.</div>
+      <button id="resumeBtn" class="btn cyan" data-i18n="resume">Tiếp tục</button>
+      <div class="btnrow">
+        <button id="pRestartBtn" class="btn ghost" data-i18n="restart">Chơi lại</button>
+        <button id="pMenuBtn" class="btn ghost" data-i18n="menuBtn">Menu</button>
+      </div>
+      <div class="btnrow">
+        <button id="pSettingsBtn" class="btn ghost" data-i18n="settingsBtn">⚙ Cài đặt</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME OVER -->
+  <div id="over" class="overlay">
+    <div class="panel">
+      <div class="gohead" id="goHead">Đổ tháp rồi!</div>
+      <div class="gosub" id="goSub">GAME OVER</div>
+      <div id="oDailyPill" class="badgepill" style="display:none" data-i18n="dailyBadge">🗓️ Thử thách hôm nay</div>
+      <div id="newBest" class="newbest" style="display:none" data-i18n="newBest">🏆 Kỷ lục mới!</div>
+      <div class="stats" style="margin-top:10px">
+        <div class="s gold"><b id="oScore">0</b><span data-i18n="hudScore">Điểm</span></div>
+        <div class="s cyan"><b id="oRounds">0</b><span data-i18n="hudRound">Vòng</span></div>
+        <div class="s teal"><b id="oCombo">0</b><span data-i18n="comboHighLbl">Combo cao</span></div>
+      </div>
+      <div class="tagline" id="oBestLine">Kỷ lục: 0</div>
+      <button id="againBtn" class="btn" data-i18n="restartArrow">↻ Chơi lại</button>
+      <div class="btnrow">
+        <button id="shareBtn" class="btn cyan" data-i18n="shareBtn">↗ Chia sẻ</button>
+        <button id="oMenuBtn" class="btn ghost" data-i18n="toMenu">Về menu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div id="settings" class="overlay">
+    <div class="panel">
+      <div class="logo" style="font-size:clamp(28px,8vw,40px)" data-i18n="settingsTitle">Cài đặt</div>
+      <div style="margin-top:10px">
+        <div class="setrow">
+          <div class="lab" data-i18n="setVolume">Âm lượng tổng</div>
+          <input id="setVol" type="range" min="0" max="100" step="1" value="90" data-i18n-aria="setVolume" aria-label="Âm lượng tổng">
+        </div>
+        <div class="setrow">
+          <div class="lab" data-i18n="setSfx">Hiệu ứng âm thanh (SFX)</div>
+          <button id="setSfx" class="switch" role="switch" aria-checked="true" data-i18n-aria="setSfx" aria-label="Hiệu ứng âm thanh"></button>
+        </div>
+        <div class="setrow">
+          <div class="lab"><span data-i18n="setReduce">Giảm hiệu ứng động</span><small data-i18n="setReduceSub">Tắt rung/nháy/hạt</small></div>
+          <button id="setReduce" class="switch" role="switch" aria-checked="false" data-i18n-aria="setReduce" aria-label="Giảm hiệu ứng động"></button>
+        </div>
+        <div class="setrow">
+          <div class="lab"><span data-i18n="setCB">Hỗ trợ mù màu</span><small data-i18n="setCBSub">Nhãn PERFECT/GOOD + khắc vạch</small></div>
+          <button id="setCB" class="switch" role="switch" aria-checked="false" data-i18n-aria="setCB" aria-label="Hỗ trợ mù màu"></button>
+        </div>
+        <div class="setrow">
+          <div class="lab" data-i18n="setLang">Ngôn ngữ</div>
+          <div class="seg" id="setLangSeg">
+            <button data-lang="vi">VI</button>
+            <button data-lang="ja">JA</button>
+          </div>
+        </div>
+        <div class="setrow" style="align-items:flex-start">
+          <div class="lab" data-i18n="setTheme">Giao diện</div>
+          <div class="themegrid" id="themeGrid"></div>
+        </div>
+      </div>
+      <button id="setCloseBtn" class="btn" style="margin-top:14px" data-i18n="closeBtn">Đóng</button>
+    </div>
+  </div>
+
+  <!-- STATS / ACHIEVEMENTS -->
+  <div id="statsView" class="overlay">
+    <div class="panel">
+      <div class="logo" style="font-size:clamp(28px,8vw,40px)" data-i18n="statsTitle">Thành tích</div>
+      <div class="tabrow" style="margin-top:10px">
+        <button id="tabClassic" class="sel" data-lb="classic" data-i18n="modeClassicTab">クラシック</button>
+        <button id="tabScore" data-lb="score" data-i18n="modeScoreTab">スコア</button>
+        <button id="tabDaily" data-lb="daily" data-i18n="modeDailyTab">毎日</button>
+      </div>
+      <div class="lblist" id="lbList"></div>
+      <div class="seclabel help" style="margin:8px 2px 6px" data-i18n="overallStats">Tổng quan</div>
+      <div class="statgrid">
+        <div class="s"><b id="stPlayed">0</b><span data-i18n="stPlayed">Lượt chơi</span></div>
+        <div class="s"><b id="stBestScore">0</b><span data-i18n="stBestScore">Điểm cao nhất</span></div>
+        <div class="s"><b id="stBestRounds">0</b><span data-i18n="stBestRounds">Vòng cao nhất</span></div>
+        <div class="s"><b id="stBestCombo">0</b><span data-i18n="stBestCombo">Combo cao nhất</span></div>
+        <div class="s"><b id="stPerfect">0</b><span data-i18n="stPerfect">Cú PERFECT</span></div>
+        <div class="s"><b id="stStreak">0</b><span data-i18n="stStreak">Chuỗi ngày</span></div>
+      </div>
+      <div class="seclabel help" style="margin:8px 2px 6px" data-i18n="badgesLbl">Huy hiệu</div>
+      <div class="achgrid" id="achGrid"></div>
+      <button id="statsCloseBtn" class="btn" style="margin-top:14px" data-i18n="closeBtn">Đóng</button>
+    </div>
+  </div>
+</div>
+
+<div id="toastWrap" aria-hidden="true"></div>
+
+<script>
+"use strict";
+(function(){
+  /* =========================================================================
+     だるま落とし ✦ 1000×  —  Daruma Otoshi
+     Single file, vanilla JS, WebAudio synth, dt-based physics.
+     ========================================================================= */
+
+  // ---------- Utility ----------
+  function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+  function lerp(a,b,t){ return a+(b-a)*t; }
+  function rand(a,b){ return a+Math.random()*(b-a); }
+  function ease(t){ return t<.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2; }
+  function easeOut(t){ return 1-Math.pow(1-t,3); }
+
+  // ---------- DOM ----------
+  var $ = function(id){ return document.getElementById(id); };
+  var boardWrap = $("boardWrap");
+  var canvas = $("board");
+  var ctx = canvas.getContext("2d");
+  var elScore=$("score"), elRound=$("round"), elCombo=$("combo"), elBest=$("best");
+  var elHint=$("hint");
+
+  // ---------- i18n (Vietnamese / Japanese) ----------
+  var I18N = {
+    vi:{
+      // HUD
+      hudScore:"Điểm", hudRound:"Vòng", hudCombo:"Combo", hudBest:"Kỷ lục",
+      // top controls
+      pauseTip:"Tạm dừng (P)", pauseAria:"Tạm dừng",
+      muteTip:"Âm thanh (M)", muteAria:"Bật tắt âm thanh",
+      // hint under board
+      hintAim:"Vung búa khi vạch vào <b>vùng vàng</b>",
+      hintTime:"Còn <b>{s}s</b> — gõ thật nhanh và chuẩn!",
+      // menu
+      menuTagline:"Gõ búa văng từng khối gỗ ở đáy, để chồng tháp rơi thẳng xuống.<br>Canh đúng nhịp · giữ thăng bằng · đừng để đổ tháp daruma.",
+      modeClassicDesc:"Classic · vòng vô tận",
+      modeScoreDesc:"Score Attack · 60 giây",
+      bestLbl:"Kỷ lục", bestRoundsLbl:"Vòng tốt nhất",
+      playNow:"▶ Chơi ngay",
+      howToPlay:"Cách chơi",
+      tut1a:"Vung búa (canh nhịp)", kbdTap:"Chạm",
+      tut2a:"Trúng đẹp khi vạch ở vùng vàng", tut2b:"khối văng — combo tăng",
+      tut3a:"Lệch nhịp → tháp lung lay", tut3b:"lệch nhiều → đổ tháp",
+      tut4a:"Dọn hết thân, giữ đầu daruma", tut4b:"qua vòng mới khó hơn",
+      tut5a:"Tạm dừng",
+      credit:"和 · gỗ & sơn mài · WebAudio · không cần mạng",
+      // pause
+      pauseTitle:"Tạm dừng", pauseSub:"Cây búa đang chờ bạn quay lại.",
+      resume:"Tiếp tục", restart:"Chơi lại", menuBtn:"Menu",
+      // game over
+      newBest:"🏆 Kỷ lục mới!",
+      comboHighLbl:"Combo cao",
+      restartArrow:"↻ Chơi lại", toMenu:"Về menu",
+      goHeadTopple:"Đổ tháp rồi!", goSubTopple:"GAME OVER",
+      goHeadTime:"Hết giờ!", goSubTime:"SCORE ATTACK",
+      bestLine:"Kỷ lục: {score}  ·  Vòng tốt nhất: {rounds}",
+      // canvas popups & prompts
+      readyPrompt:"Chạm / Cách để bắt đầu",
+      popMiss:"Hụt!", popOff:"Lệch quá!",
+      popCombo:"COMBO", popRoundDone:"VÒNG {n} XONG!",
+      popPerfect:"PERFECT!", popGood:"ĐẸP!",
+      // gauge colorblind labels
+      gaugePerfect:"PERFECT", gaugeGood:"GOOD",
+      // settings
+      settingsTip:"Cài đặt", statsTip:"Thành tích & kỷ lục",
+      settingsTitle:"Cài đặt", settingsBtn:"⚙ Cài đặt", closeBtn:"Đóng",
+      setVolume:"Âm lượng tổng", setSfx:"Hiệu ứng âm thanh (SFX)",
+      setReduce:"Giảm hiệu ứng động", setReduceSub:"Tắt rung/nháy/hạt",
+      setCB:"Hỗ trợ mù màu", setCBSub:"Nhãn PERFECT/GOOD + khắc vạch",
+      setLang:"Ngôn ngữ", setTheme:"Giao diện",
+      themeNight:"Đêm", themeSakura:"Sakura", themeMatcha:"Trà xanh", themeIndigo:"Chàm", themeLight:"Sáng",
+      // stats / achievements
+      statsTitle:"Thành tích",
+      modeClassicTab:"Classic", modeScoreTab:"Score", modeDailyTab:"Daily",
+      overallStats:"Tổng quan", badgesLbl:"Huy hiệu",
+      stPlayed:"Lượt chơi", stBestScore:"Điểm cao nhất", stBestRounds:"Vòng cao nhất",
+      stBestCombo:"Combo cao nhất", stPerfect:"Cú PERFECT", stStreak:"Chuỗi ngày",
+      lbEmpty:"Chưa có kỷ lục — chơi ngay!",
+      // daily
+      dailyTitle:"Thử thách hôm nay", dailyPlay:"Chơi", dailyBadge:"🗓️ Thử thách hôm nay",
+      dailyInfo:"Tháp cố định · ai cũng giống nhau",
+      dailyToday:"Hôm nay: {score} · chuỗi {streak}🔥",
+      dailyNone:"Chưa chơi · chuỗi {streak}🔥",
+      // share
+      shareBtn:"↗ Chia sẻ", shareCopied:"Đã chép kết quả!", shareFail:"Không chép được",
+      shareLineClassic:"だるま落とし 1000× — {score} điểm, {rounds} vòng, combo ×{combo}",
+      shareLineScore:"だるま落とし 1000× Score Attack — {score} điểm trong 60s, combo ×{combo}",
+      shareLineDaily:"だるま落とし 1000× Daily #{date} — {score} điểm, combo ×{combo}",
+      // live best
+      liveNewBest:"KỶ LỤC MỚI!",
+      // achievements (name + desc)
+      achFirstN:"Cú đầu", achFirstD:"Văng khối đầu tiên",
+      achPerfectN:"Chuẩn xác", achPerfectD:"Một cú PERFECT",
+      achCombo5N:"Liên hoàn", achCombo5D:"Combo ×5",
+      achCombo10N:"Bậc thầy", achCombo10D:"Combo ×10",
+      achRound5N:"Kiên trì", achRound5D:"Qua vòng 5",
+      achScore5kN:"Cao thủ", achScore5kD:"Đạt 5000 điểm",
+      achDailyN:"Đều đặn", achDailyD:"Chơi Daily 3 ngày",
+      achPerf10N:"Hoàn mỹ", achPerf10D:"10 cú PERFECT một ván",
+      // aria-live messages
+      ariaScore:"Điểm {score}", ariaPerfect:"Trúng hoàn hảo, combo {combo}",
+      ariaTopple:"Đổ tháp", ariaTime:"Hết giờ", ariaRound:"Vòng {n}"
+    },
+    ja:{
+      hudScore:"スコア", hudRound:"ラウンド", hudCombo:"コンボ", hudBest:"ベスト",
+      pauseTip:"一時停止 (P)", pauseAria:"一時停止",
+      muteTip:"サウンド (M)", muteAria:"サウンドの切り替え",
+      hintAim:"目盛りが<b>黄色のゾーン</b>に来たら振る",
+      hintTime:"残り <b>{s}秒</b> — 速く正確に叩こう！",
+      menuTagline:"一番下の木片を叩き飛ばして、塔をまっすぐ落とそう。<br>リズムを合わせ · バランスを保ち · だるまの塔を崩さないで。",
+      modeClassicDesc:"クラシック · 無限ラウンド",
+      modeScoreDesc:"スコアアタック · 60秒",
+      bestLbl:"ベスト", bestRoundsLbl:"最高ラウンド",
+      playNow:"▶ 今すぐプレイ",
+      howToPlay:"遊び方",
+      tut1a:"槌を振る（タイミング）", kbdTap:"タップ",
+      tut2a:"目盛りが黄色で見事に命中", tut2b:"木片が飛ぶ — コンボ増加",
+      tut3a:"タイミングずれ → 塔がぐらつく", tut3b:"ずれ過ぎ → 塔が崩れる",
+      tut4a:"胴体を全部片付け、だるまの頭を守る", tut4b:"新ラウンドはさらに難しく",
+      tut5a:"一時停止",
+      credit:"和 · 木 & 漆 · WebAudio · オフライン対応",
+      pauseTitle:"一時停止", pauseSub:"槌があなたの再開を待っています。",
+      resume:"再開", restart:"リスタート", menuBtn:"メニュー",
+      newBest:"🏆 新記録！",
+      comboHighLbl:"最高コンボ",
+      restartArrow:"↻ リスタート", toMenu:"メニューへ",
+      goHeadTopple:"タワー崩壊！", goSubTopple:"GAME OVER",
+      goHeadTime:"時間切れ！", goSubTime:"SCORE ATTACK",
+      bestLine:"ベスト: {score}  ·  最高ラウンド: {rounds}",
+      readyPrompt:"タップ / スペースで開始",
+      popMiss:"ミス！", popOff:"ずれ過ぎ！",
+      popCombo:"COMBO", popRoundDone:"ラウンド {n} クリア！",
+      popPerfect:"PERFECT！", popGood:"いいね！",
+      gaugePerfect:"PERFECT", gaugeGood:"GOOD",
+      settingsTip:"設定", statsTip:"実績とベスト",
+      settingsTitle:"設定", settingsBtn:"⚙ 設定", closeBtn:"閉じる",
+      setVolume:"全体の音量", setSfx:"効果音 (SFX)",
+      setReduce:"モーションを減らす", setReduceSub:"振動・点滅・粒子をオフ",
+      setCB:"色覚サポート", setCBSub:"PERFECT/GOOD表示＋目盛りの刻み",
+      setLang:"言語", setTheme:"テーマ",
+      themeNight:"夜", themeSakura:"桜", themeMatcha:"抹茶", themeIndigo:"藍", themeLight:"明",
+      statsTitle:"実績",
+      modeClassicTab:"Classic", modeScoreTab:"Score", modeDailyTab:"Daily",
+      overallStats:"全体", badgesLbl:"バッジ",
+      stPlayed:"プレイ数", stBestScore:"最高スコア", stBestRounds:"最高ラウンド",
+      stBestCombo:"最高コンボ", stPerfect:"PERFECT数", stStreak:"連続日数",
+      lbEmpty:"記録なし — 今すぐプレイ！",
+      dailyTitle:"今日のチャレンジ", dailyPlay:"プレイ", dailyBadge:"🗓️ 今日のチャレンジ",
+      dailyInfo:"固定タワー · 全員同じ",
+      dailyToday:"今日: {score} · 連続 {streak}🔥",
+      dailyNone:"未プレイ · 連続 {streak}🔥",
+      shareBtn:"↗ シェア", shareCopied:"結果をコピーしました！", shareFail:"コピーできません",
+      shareLineClassic:"だるま落とし 1000× — {score}点、{rounds}ラウンド、コンボ ×{combo}",
+      shareLineScore:"だるま落とし 1000× スコアアタック — 60秒で{score}点、コンボ ×{combo}",
+      shareLineDaily:"だるま落とし 1000× Daily #{date} — {score}点、コンボ ×{combo}",
+      liveNewBest:"新記録！",
+      achFirstN:"初撃", achFirstD:"最初の木片を飛ばす",
+      achPerfectN:"精密", achPerfectD:"PERFECTを1回",
+      achCombo5N:"連撃", achCombo5D:"コンボ ×5",
+      achCombo10N:"達人", achCombo10D:"コンボ ×10",
+      achRound5N:"忍耐", achRound5D:"ラウンド5到達",
+      achScore5kN:"強者", achScore5kD:"5000点達成",
+      achDailyN:"皆勤", achDailyD:"Dailyを3日",
+      achPerf10N:"完璧", achPerf10D:"1ゲームでPERFECT10回",
+      ariaScore:"スコア {score}", ariaPerfect:"パーフェクト、コンボ {combo}",
+      ariaTopple:"タワー崩壊", ariaTime:"時間切れ", ariaRound:"ラウンド {n}"
+    }
+  };
+  var LANG_KEY = "otoshi1000_lang";
+  var uiLang = "vi";
+  try{ var _l = localStorage.getItem(LANG_KEY); if(_l==="vi"||_l==="ja") uiLang=_l; }catch(e){}
+  function t(k){ return (I18N[uiLang] && I18N[uiLang][k]) || I18N.vi[k] || k; }
+  function applyLang(){
+    document.documentElement.lang = uiLang;
+    document.querySelectorAll("[data-i18n]").forEach(function(e){ e.innerHTML = t(e.getAttribute("data-i18n")); });
+    document.querySelectorAll("[data-i18n-title]").forEach(function(e){ e.title = t(e.getAttribute("data-i18n-title")); });
+    document.querySelectorAll("[data-i18n-aria]").forEach(function(e){ e.setAttribute("aria-label", t(e.getAttribute("data-i18n-aria"))); });
+    document.querySelectorAll(".langbtn").forEach(function(b){ b.classList.toggle("sel", b.getAttribute("data-lang")===uiLang); });
+    setHint();
+    // refresh dynamic JS-rendered content (declared later; hoisted)
+    if(typeof refreshOverLabels==="function" && $("over") && $("over").classList.contains("show")){ refreshOverLabels(); }
+    if(typeof buildThemeGrid==="function") buildThemeGrid();
+    if(typeof refreshDaily==="function") refreshDaily();
+    if(typeof refreshStatsView==="function" && $("statsView") && $("statsView").classList.contains("show")){ refreshStatsView(); }
+  }
+  function setLang(l){
+    if(l!=="vi" && l!=="ja") return;
+    uiLang = l;
+    try{ localStorage.setItem(LANG_KEY, l); }catch(e){}
+    applyLang();
+  }
+
+  // ---------- High score persistence ----------
+  var STORE_KEY = "otoshi1000_v1";
+  var best = { score:0, rounds:0 };
+  (function loadBest(){
+    try{
+      var raw = localStorage.getItem(STORE_KEY);
+      if(raw){
+        var o = JSON.parse(raw);
+        if(o && typeof o==="object"){
+          best.score = (+o.score)||0;
+          best.rounds = (+o.rounds)||0;
+        }
+      }
+    }catch(e){ best={score:0,rounds:0}; }
+  })();
+  function saveBest(){
+    try{ localStorage.setItem(STORE_KEY, JSON.stringify(best)); }catch(e){}
+  }
+
+  // ---------- Settings (persisted) ----------
+  var SET_KEY = "otoshi1000_settings";
+  var THEMES = ["night","sakura","matcha","indigo","light"];
+  var THEME_SWATCH = {                  // little color preview for each chip
+    night:"#15224a", sakura:"#ff9bc4", matcha:"#34d3b6", indigo:"#5a78ff", light:"#eef1fb"
+  };
+  var prefersReduce = false;
+  try{ prefersReduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){}
+  var settings = {
+    vol: 0.9,            // 0..1 master volume
+    sfx: true,
+    reduce: prefersReduce,   // default honors prefers-reduced-motion
+    cb: false,           // colorblind-safe cues
+    theme: "night"
+  };
+  (function loadSettings(){
+    try{
+      var raw = localStorage.getItem(SET_KEY);
+      if(raw){
+        var o = JSON.parse(raw);
+        if(o && typeof o==="object"){
+          if(typeof o.vol==="number") settings.vol = clamp(o.vol,0,1);
+          if(typeof o.sfx==="boolean") settings.sfx = o.sfx;
+          if(typeof o.reduce==="boolean") settings.reduce = o.reduce;
+          if(typeof o.cb==="boolean") settings.cb = o.cb;
+          if(THEMES.indexOf(o.theme)>=0) settings.theme = o.theme;
+        }
+      }
+    }catch(e){}
+  })();
+  function saveSettings(){ try{ localStorage.setItem(SET_KEY, JSON.stringify(settings)); }catch(e){} }
+  function applyTheme(){
+    if(settings.theme==="night"){ document.documentElement.removeAttribute("data-theme"); }
+    else{ document.documentElement.setAttribute("data-theme", settings.theme); }
+    // keep mobile browser chrome matching
+    var mt = document.querySelector('meta[name="theme-color"]');
+    if(mt){ mt.setAttribute("content", settings.theme==="light"? "#e2e7f6" : "#0b1020"); }
+  }
+  function applyReduce(){
+    if(settings.reduce) document.documentElement.setAttribute("data-reduce","1");
+    else document.documentElement.removeAttribute("data-reduce");
+  }
+  // resolved CSS color helper (reads computed theme var → canvas-usable hex/rgb)
+  function cssVar(name, fallback){
+    try{
+      var v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      return v || fallback;
+    }catch(e){ return fallback; }
+  }
+
+  // ---------- Stats / Personal Bests (per-mode top 5) ----------
+  var STATS_KEY = "otoshi1000_stats";
+  var stats = {
+    played:0, bestScore:0, bestRounds:0, bestCombo:0, totalPerfect:0,
+    boards:{ classic:[], score:[], daily:[] },  // arrays of top-5 scores (numbers, desc)
+    daily:{ date:"", best:0, streak:0, lastPlayed:"", count:0 }  // daily progress + day-streak
+  };
+  (function loadStats(){
+    try{
+      var raw = localStorage.getItem(STATS_KEY);
+      if(raw){
+        var o = JSON.parse(raw);
+        if(o && typeof o==="object"){
+          stats.played = (+o.played)||0;
+          stats.bestScore = (+o.bestScore)||0;
+          stats.bestRounds = (+o.bestRounds)||0;
+          stats.bestCombo = (+o.bestCombo)||0;
+          stats.totalPerfect = (+o.totalPerfect)||0;
+          if(o.boards){
+            ["classic","score","daily"].forEach(function(m){
+              if(Array.isArray(o.boards[m])) stats.boards[m] = o.boards[m].map(Number).filter(function(n){return !isNaN(n);}).slice(0,5);
+            });
+          }
+          if(o.daily && typeof o.daily==="object"){
+            stats.daily.date = o.daily.date||"";
+            stats.daily.best = (+o.daily.best)||0;
+            stats.daily.streak = (+o.daily.streak)||0;
+            stats.daily.lastPlayed = o.daily.lastPlayed||"";
+            stats.daily.count = (+o.daily.count)||0;
+          }
+        }
+      }
+    }catch(e){}
+  })();
+  function saveStats(){ try{ localStorage.setItem(STATS_KEY, JSON.stringify(stats)); }catch(e){} }
+  // returns true if score is a new #1 for that mode's board
+  function pushScore(modeKey, score){
+    var arr = stats.boards[modeKey] || (stats.boards[modeKey]=[]);
+    var wasTop = arr.length===0 ? true : (score > arr[0]);
+    arr.push(score);
+    arr.sort(function(a,b){ return b-a; });
+    if(arr.length>5) arr.length=5;
+    stats.boards[modeKey]=arr;
+    return wasTop && score>0;
+  }
+  function bestOf(modeKey){ var a=stats.boards[modeKey]; return (a && a.length)? a[0] : 0; }
+
+  // ---------- Achievements ----------
+  var ACH_KEY = "otoshi1000_ach";
+  var ACH_DEFS = [
+    { id:"first",  ico:"🔨", n:"achFirstN",  d:"achFirstD" },
+    { id:"perfect",ico:"🎯", n:"achPerfectN",d:"achPerfectD" },
+    { id:"combo5", ico:"🔥", n:"achCombo5N", d:"achCombo5D" },
+    { id:"combo10",ico:"⚡", n:"achCombo10N",d:"achCombo10D" },
+    { id:"round5", ico:"🏯", n:"achRound5N", d:"achRound5D" },
+    { id:"score5k",ico:"💎", n:"achScore5kN",d:"achScore5kD" },
+    { id:"daily3", ico:"🗓️", n:"achDailyN",  d:"achDailyD" },
+    { id:"perf10", ico:"🌸", n:"achPerf10N", d:"achPerf10D" }
+  ];
+  var unlocked = {};
+  (function loadAch(){
+    try{ var raw=localStorage.getItem(ACH_KEY); if(raw){ var o=JSON.parse(raw); if(o&&typeof o==="object") unlocked=o; } }catch(e){}
+  })();
+  function saveAch(){ try{ localStorage.setItem(ACH_KEY, JSON.stringify(unlocked)); }catch(e){} }
+  function unlock(id){
+    if(unlocked[id]) return;
+    unlocked[id]=true; saveAch();
+    var def=null; for(var i=0;i<ACH_DEFS.length;i++){ if(ACH_DEFS[i].id===id){ def=ACH_DEFS[i]; break; } }
+    if(def){ showToast(def.ico, t(def.n), t(def.d)); }
+  }
+
+  // ---------- Daily challenge (mulberry32, date-seeded) ----------
+  function mulberry32(a){
+    return function(){
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function todayKey(){
+    var d = new Date();
+    return "" + d.getFullYear() + String(d.getMonth()+1).padStart(2,"0") + String(d.getDate()).padStart(2,"0");
+  }
+  function dateSeed(key){ return parseInt(key,10) || 1; }
+  // streak bookkeeping when the daily run finishes
+  function recordDailyResult(score){
+    var key = todayKey();
+    if(stats.daily.date !== key){ stats.daily.date = key; stats.daily.best = 0; }
+    if(score > stats.daily.best) stats.daily.best = score;
+    // day streak: increment if last played was yesterday, reset if older, keep if same day
+    if(stats.daily.lastPlayed !== key){
+      var prev = stats.daily.lastPlayed;
+      var y = new Date(); y.setDate(y.getDate()-1);
+      var yKey = "" + y.getFullYear() + String(y.getMonth()+1).padStart(2,"0") + String(y.getDate()).padStart(2,"0");
+      if(prev === yKey) stats.daily.streak = (stats.daily.streak||0)+1;
+      else stats.daily.streak = 1;
+      stats.daily.lastPlayed = key;
+      stats.daily.count = (stats.daily.count||0)+1;
+      if(stats.daily.count>=3) unlock("daily3");
+    }
+    saveStats();
+  }
+
+  // ---------- Toast (achievement unlock) ----------
+  var toastTimers = [];
+  function showToast(ico, title, sub){
+    var wrap = $("toastWrap"); if(!wrap) return;
+    var el = document.createElement("div");
+    el.className = "toast";
+    el.innerHTML = '<div class="ti">'+ico+'</div><div class="tt"><small>'+t("badgesLbl")+'</small>'+title+(sub?' · '+sub:'')+'</div>';
+    wrap.appendChild(el);
+    requestAnimationFrame(function(){ el.classList.add("show"); });
+    var dur = settings.reduce ? 1600 : 2600;
+    var tm = setTimeout(function(){
+      el.classList.remove("show");
+      setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 350);
+    }, dur);
+    toastTimers.push(tm);
+    announce(title);
+  }
+
+  // ---------- aria-live announcer ----------
+  var _lastAnnounce = "";
+  function announce(msg){
+    var el = $("ariaLive"); if(!el || msg===_lastAnnounce) return;
+    _lastAnnounce = msg; el.textContent = msg;
+  }
+
+  // ---------- Mid-run "NEW BEST!" moment ----------
+  var _liveBestTimer = null;
+  function modeBoardKey(){ if(!G) return "classic"; return G.daily? "daily" : G.mode; }
+  function checkLiveBest(){
+    if(!G || G.liveBestShown) return;
+    var prevBest = bestOf(modeBoardKey());
+    if(prevBest>0 && G.score>prevBest){
+      G.liveBestShown = true;
+      showLiveBest();
+    }
+  }
+  function showLiveBest(){
+    var el=$("liveBest"); if(!el) return;
+    el.textContent = t("liveNewBest");
+    el.classList.add("show");
+    if(!settings.reduce){ addFlash(0.5); }
+    announce(t("liveNewBest"));
+    if(_liveBestTimer) clearTimeout(_liveBestTimer);
+    _liveBestTimer = setTimeout(hideLiveBest, 1500);
+  }
+  function hideLiveBest(){ var el=$("liveBest"); if(el) el.classList.remove("show"); }
+
+  // ---------- Share result (clipboard, offline) ----------
+  function buildShareText(){
+    var combo = G ? G.maxCombo : 0;
+    if(G && G.daily){
+      return t("shareLineDaily").replace("{date}", todayKey()).replace("{score}", G.score).replace("{combo}", combo);
+    }
+    if(G && G.mode==="score"){
+      return t("shareLineScore").replace("{score}", G.score).replace("{combo}", combo);
+    }
+    var rounds = G ? (G.round-1) : 0;
+    return t("shareLineClassic").replace("{score}", G.score).replace("{rounds}", rounds).replace("{combo}", combo);
+  }
+  function doShare(){
+    var txt = buildShareText() + "  🎴";
+    var btn = $("shareBtn"), orig = btn? btn.textContent : "";
+    function ok(){ if(btn){ btn.textContent = t("shareCopied"); setTimeout(function(){ btn.textContent=orig; }, 1600); } announce(t("shareCopied")); }
+    function fail(){ if(btn){ btn.textContent = t("shareFail"); setTimeout(function(){ btn.textContent=orig; }, 1600); } }
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(txt).then(ok, function(){ legacyCopy(txt)? ok() : fail(); });
+      } else { legacyCopy(txt)? ok() : fail(); }
+    }catch(e){ legacyCopy(txt)? ok() : fail(); }
+  }
+  function legacyCopy(txt){
+    try{
+      var ta=document.createElement("textarea"); ta.value=txt;
+      ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta);
+      ta.focus(); ta.select(); var done=document.execCommand("copy");
+      document.body.removeChild(ta); return done;
+    }catch(e){ return false; }
+  }
+
+  // ---------- Audio (WebAudio synth only) ----------
+  var Audio = {
+    ctx:null, muted:false,
+    init:function(){
+      if(!this.ctx){
+        try{ this.ctx = new (window.AudioContext||window.webkitAudioContext)(); }
+        catch(e){ this.ctx=null; }
+      }
+      try{
+        var m = localStorage.getItem(STORE_KEY+"_mute");
+        if(m!==null) this.muted = (m==="1");
+      }catch(e){}
+      // SFX setting also gates audio
+      if(!settings.sfx) this.muted = true;
+    },
+    resume:function(){
+      if(this.ctx && this.ctx.state==="suspended"){ try{ this.ctx.resume(); }catch(e){} }
+    },
+    setMute:function(m){
+      this.muted=m;
+      try{ localStorage.setItem(STORE_KEY+"_mute", m?"1":"0"); }catch(e){}
+    },
+    // recompute master gain & effective mute from settings + manual mute
+    applySettings:function(){
+      var manual = false;
+      try{ manual = (localStorage.getItem(STORE_KEY+"_mute")==="1"); }catch(e){}
+      this.muted = manual || !settings.sfx;
+      if(this.ctx && this.ctx.master){
+        this.ctx.master.gain.value = settings.vol;
+      }
+    },
+    now:function(){ return this.ctx?this.ctx.currentTime:0; },
+    // basic tone
+    tone:function(freq, dur, type, vol, slideTo, when){
+      if(this.muted || !this.ctx) return;
+      var c=this.ctx, t0=when||c.currentTime;
+      var o=c.createOscillator(), g=c.createGain();
+      o.type=type||"sine"; o.frequency.setValueAtTime(freq, t0);
+      if(slideTo){ o.frequency.exponentialRampToValueAtTime(Math.max(1,slideTo), t0+dur); }
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(vol||0.2, t0+0.006);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+      o.connect(g); g.connect(c.master);
+      o.start(t0); o.stop(t0+dur+0.02);
+    },
+    noise:function(dur, vol, lp, when){
+      if(this.muted || !this.ctx) return;
+      var c=this.ctx, t0=when||c.currentTime;
+      var len=Math.max(1,Math.floor(c.sampleRate*dur));
+      var buf=c.createBuffer(1,len,c.sampleRate), d=buf.getChannelData(0);
+      for(var i=0;i<len;i++){ d[i]=(Math.random()*2-1)*(1-i/len); }
+      var src=c.createBufferSource(); src.buffer=buf;
+      var g=c.createGain(); g.gain.setValueAtTime(vol||0.3,t0);
+      g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+      var f=c.createBiquadFilter(); f.type="lowpass"; f.frequency.setValueAtTime(lp||1200,t0);
+      src.connect(f); f.connect(g); g.connect(c.master);
+      src.start(t0); src.stop(t0+dur+0.02);
+    },
+    // SFX
+    thwack:function(){              // hammer impact — clean hit
+      if(!this.ctx) return; this.resume();
+      this.noise(0.09, 0.5, 2600);
+      this.tone(180, 0.12, "square", 0.22, 70);
+      this.tone(420, 0.06, "triangle", 0.12, 220);
+    },
+    whoosh:function(){              // hammer swing / block fly
+      if(!this.ctx) return;
+      this.noise(0.16, 0.16, 900);
+      this.tone(700, 0.16, "sine", 0.05, 200);
+    },
+    drop:function(){                // stack drop bounce
+      if(!this.ctx) return; this.resume();
+      this.tone(120, 0.13, "sine", 0.2, 60);
+      this.noise(0.05, 0.18, 700);
+    },
+    weak:function(){                // off-timing partial hit
+      if(!this.ctx) return; this.resume();
+      this.tone(150, 0.1, "sawtooth", 0.14, 110);
+      this.noise(0.06, 0.14, 500);
+    },
+    wobble:function(){              // wobble warning
+      if(!this.ctx) return;
+      this.tone(240, 0.18, "sine", 0.08, 200);
+    },
+    crash:function(){               // topple
+      if(!this.ctx) return; this.resume();
+      this.noise(0.5, 0.5, 1400);
+      this.tone(140, 0.5, "sawtooth", 0.2, 50);
+      this.tone(90, 0.6, "square", 0.16, 40);
+    },
+    combo:function(n){              // combo blip rising
+      if(!this.ctx) return;
+      var f = 480 + Math.min(n,12)*55;
+      this.tone(f, 0.1, "triangle", 0.16, f*1.3);
+    },
+    headland:function(){            // daruma head seats
+      if(!this.ctx) return; this.resume();
+      this.tone(523.25,0.16,"sine",0.18);
+      this.tone(659.25,0.16,"sine",0.14);
+    },
+    win:function(){                 // clear round chime
+      if(!this.ctx) return; this.resume();
+      var c=this.ctx, t=c.currentTime;
+      var notes=[523.25,659.25,783.99,1046.5];
+      for(var i=0;i<notes.length;i++){
+        this.tone(notes[i],0.5,"triangle",0.18,null,t+i*0.085);
+      }
+      this.tone(1567.98,0.6,"sine",0.1,null,t+0.34);
+    }
+  };
+  Audio.init();
+  if(Audio.ctx){
+    Audio.ctx.master = Audio.ctx.createGain();
+    Audio.ctx.master.gain.value = settings.vol;
+    Audio.ctx.master.connect(Audio.ctx.destination);
+  }
+  Audio.applySettings();
+  // distinct PERFECT chime (synth, rising sparkle)
+  Audio.perfect = function(){
+    if(!this.ctx) return; this.resume();
+    var c=this.ctx, t0=c.currentTime;
+    this.tone(880,0.12,"triangle",0.2,1320,t0);
+    this.tone(1318.5,0.16,"sine",0.16,null,t0+0.05);
+    this.tone(1760,0.22,"sine",0.12,null,t0+0.11);
+    this.noise(0.06,0.12,5000,t0);
+  };
+
+  // ---------- Canvas sizing ----------
+  var DPR=1, W=0, H=0;             // CSS pixel logical dims
+  // Virtual coordinate system: we render in CSS px scaled to fit a target aspect.
+  function pickSize(){
+    var maxW = window.innerWidth - 16;
+    var maxH = window.innerHeight - 16;
+    // reserve room for HUD (~70px) + hint (~28px) + gaps
+    var reserve = 120;
+    var availH = maxH - reserve;
+    var availW = maxW;
+    // aspect 3:4 portrait-ish board
+    var aspect = 0.74; // w/h
+    var h = availH;
+    var w = h*aspect;
+    if(w>availW){ w=availW; h=w/aspect; }
+    w = clamp(w, 240, 560);
+    h = clamp(h, 360, 760);
+    return {w:Math.round(w), h:Math.round(h)};
+  }
+  function resize(){
+    var s = pickSize();
+    W = s.w; H = s.h;
+    DPR = Math.min(window.devicePixelRatio||1, 2.5);
+    canvas.style.width = W+"px";
+    canvas.style.height = H+"px";
+    canvas.width = Math.round(W*DPR);
+    canvas.height = Math.round(H*DPR);
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    layout();
+  }
+  window.addEventListener("resize", resize);
+  window.addEventListener("orientationchange", function(){ setTimeout(resize,120); });
+
+  // ---------- Game geometry ----------
+  // Stack is centered horizontally. Blocks have width and height in CSS px (computed in layout()).
+  var GROUND = 0;     // y of stand top (blocks sit on the stand)
+  var CX = 0;         // center x of stack
+  var blockW = 0, blockH = 0, headR = 0, standY = 0;
+
+  function layout(){
+    CX = W*0.5;
+    standY = H*0.90;
+    GROUND = standY;
+    blockW = clamp(W*0.46, 110, 260);
+    blockH = clamp(H*0.072, 22, 54);
+    headR  = blockW*0.42;
+  }
+
+  // ---------- Game state ----------
+  var STATE = { MENU:0, READY:1, AIM:2, SWING:3, RESOLVE:4, DROP:5, BETWEEN:6, OVER:7, PAUSED:8 };
+  var G = null;
+  var mode = "classic";
+
+  // Block colors (the 5 daruma-body discs) — suite palette + wood tones
+  var DISC_COLORS = [
+    { base:"#34e0ff", dark:"#1186a3", light:"#bff4ff" }, // cyan
+    { base:"#ffce54", dark:"#b88717", light:"#fff0c2" }, // gold
+    { base:"#b388ff", dark:"#6f49c0", light:"#e7d8ff" }, // violet
+    { base:"#34d3b6", dark:"#168f78", light:"#bdf5ea" }, // teal
+    { base:"#ff6b9d", dark:"#b23a66", light:"#ffd0e0" }, // rose
+    { base:"#7ee08a", dark:"#2f9d44", light:"#d4f7d9" }, // green (extra rounds)
+    { base:"#ff9f6b", dark:"#bf5c2e", light:"#ffe0cf" }  // amber (extra rounds)
+  ];
+
+  function makeBlock(idx, color){
+    return {
+      idx:idx,
+      color:color,
+      x:CX, y:0,            // center position
+      w:blockW, h:blockH,
+      vx:0, vy:0, vr:0,
+      rot:0,
+      offset:0,             // lateral lean offset accumulated by weak hits (visual + balance)
+      flying:false,
+      gone:false,
+      seated:true,
+      spin:0
+    };
+  }
+
+  function buildRound(roundNum){
+    // Deterministic RNG for daily mode (same towers for everyone today); Math.random otherwise.
+    var rng = (G && G.daily) ? mulberry32(G.seed + roundNum*101) : Math.random;
+    var rnd = function(){ return rng(); };
+    // number of body discs grows; min 4, +1 each pair of rounds, cap 7
+    var discs = clamp(4 + Math.floor((roundNum-1)/2), 4, 7);
+    // difficulty scalars
+    var diff = roundNum-1;
+    blockH = clamp(H*0.072 - diff*1.1, 16, 54);   // blocks get thinner
+    var g = {
+      round: roundNum,
+      blocks: [],
+      head: null,
+      // gauge
+      gaugePos: (G && G.daily) ? rnd() : 0,   // daily: deterministic start phase
+      gaugeDir: (rnd()<0.5? -1:1),
+      gaugeSpeed: clamp(0.95 + diff*0.10, 0.9, 2.6),  // cycles/sec-ish
+      sweetCenter: 0.5,
+      sweetHalf: clamp(0.155 - diff*0.0085, 0.05, 0.16), // window shrinks
+      goodHalf: clamp(0.30 - diff*0.012, 0.14, 0.31),    // partial-hit window
+      // hammer
+      hammerAngle: -0.5,  // rest angle
+      hammerTarget: -0.5,
+      swingT: 0,
+      // lean / wobble
+      lean: 0,            // accumulated tilt (radians) of whole standing stack
+      leanVel: 0,
+      wobble: 0,          // transient wobble amplitude
+      wobblePhase: 0,
+      toppleLimit: clamp(0.42 - diff*0.012, 0.22, 0.42),
+      // current target index = bottom standing block
+      bottom: 0,
+      // dropping animation
+      dropY: 0, dropVy:0, dropping:false, dropBounce:0,
+      // flying block
+      flyer: null,
+      // face state
+      faceMood: "calm", faceTimer:0,
+      eyeWiden:0,
+      dizzy:0,
+      cleared:false
+    };
+    // positions: blocks stacked from standY upward
+    var n = discs;
+    // Special blocks unlock from round 2+. At most one golden + one of fragile/steady per tower.
+    var specialChance = clamp(0.10 + diff*0.04, 0, 0.5);
+    var goldPlaced=false, altPlaced=false;
+    for(var i=0;i<n;i++){
+      var c = DISC_COLORS[i % DISC_COLORS.length];
+      var b = makeBlock(i, c);
+      b.w = blockW; b.h = blockH;
+      b.kind = "normal";
+      if(roundNum>=2){
+        var r0 = rnd();
+        if(!goldPlaced && r0 < specialChance*0.5){ b.kind="golden"; goldPlaced=true; }
+        else if(!altPlaced && r0 < specialChance){ b.kind = (rnd()<0.5? "fragile":"steady"); altPlaced=true; }
+      }
+      g.blocks.push(b);
+    }
+    // head sits on top
+    g.head = {
+      x:CX, y:0, r:headR, vx:0, vy:0, vr:0, rot:0,
+      seated:true, settling:false, settleT:0,
+      bounce:0
+    };
+    positionStack(g);
+    return g;
+  }
+
+  // place standing blocks (those not gone/flying) bottom-up from standY
+  function positionStack(g){
+    var y = standY;
+    var standing = [];
+    for(var i=0;i<g.blocks.length;i++){
+      if(!g.blocks[i].gone && !g.blocks[i].flying){ standing.push(g.blocks[i]); }
+    }
+    // standing[0] is lowest index that remains; lowest remaining sits on stand
+    for(var k=0;k<standing.length;k++){
+      var b = standing[k];
+      b.y = y - b.h*0.5;
+      b.x = CX + b.offset;
+      y -= b.h;
+    }
+    g.stackTopY = y;           // top edge of highest standing block
+    g.head.x = CX;
+    g.head.y = y - g.head.r;   // head rests above top block
+    g.head.baseY = g.head.y;
+  }
+
+  // ---------- Particles ----------
+  var parts = [];
+  function partScale(){ return settings.reduce ? 0.25 : 1; }
+  function spawnChips(x,y,color,n,spread){
+    n = Math.max(settings.reduce?0:1, Math.round(n*partScale()));
+    for(var i=0;i<n;i++){
+      var a = rand(0,Math.PI*2);
+      var sp = rand(40,260)*(spread||1);
+      parts.push({
+        x:x, y:y, vx:Math.cos(a)*sp + rand(-40,40), vy:Math.sin(a)*sp - rand(20,160),
+        life:rand(0.4,0.95), age:0, sz:rand(2,6), rot:rand(0,6.28), vr:rand(-10,10),
+        color: color, kind: Math.random()<0.5?"chip":"dust"
+      });
+    }
+  }
+  function spawnDust(x,y,n){
+    n = Math.round(n*partScale());
+    for(var i=0;i<n;i++){
+      parts.push({
+        x:x+rand(-20,20), y:y+rand(-4,4), vx:rand(-60,60), vy:rand(-30,-90),
+        life:rand(0.5,1.1), age:0, sz:rand(6,16), rot:0, vr:0,
+        color:"rgba(220,200,170,", kind:"smoke"
+      });
+    }
+  }
+  function spawnBurst(x,y,colors,n){
+    n = Math.round(n*partScale());
+    for(var i=0;i<n;i++){
+      var a=rand(0,6.28), sp=rand(120,420);
+      parts.push({
+        x:x, y:y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-rand(40,160),
+        life:rand(0.6,1.3), age:0, sz:rand(2.5,6), rot:rand(0,6.28), vr:rand(-12,12),
+        color: colors[i%colors.length], kind:"star"
+      });
+    }
+  }
+  function updateParts(dt){
+    for(var i=parts.length-1;i>=0;i--){
+      var p=parts[i]; p.age+=dt;
+      if(p.age>=p.life){ parts.splice(i,1); continue; }
+      p.vy += (p.kind==="smoke"? -10 : 760)*dt;  // smoke rises, others fall
+      p.vx *= (1-1.2*dt);
+      p.x += p.vx*dt; p.y += p.vy*dt; p.rot += p.vr*dt;
+      if(p.kind!=="smoke" && p.y>standY+4 && p.vy>0){ p.vy*=-0.32; p.vx*=0.6; p.y=standY+4; }
+    }
+  }
+  function drawParts(){
+    for(var i=0;i<parts.length;i++){
+      var p=parts[i], t=p.age/p.life, al=1-t;
+      ctx.save();
+      ctx.globalAlpha = al;
+      if(p.kind==="smoke"){
+        ctx.fillStyle = p.color + (al*0.4)+")";
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.sz*(1+t*1.4),0,6.28); ctx.fill();
+      } else if(p.kind==="star"){
+        ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+        ctx.fillStyle=p.color;
+        drawStar(0,0,p.sz*1.4,p.sz*0.6,5);
+      } else if(p.kind==="dust"){
+        ctx.fillStyle=p.color;
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.sz*al,0,6.28); ctx.fill();
+      } else { // chip (wood)
+        ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+        ctx.fillStyle=p.color;
+        ctx.fillRect(-p.sz*0.5,-p.sz*0.3, p.sz, p.sz*0.6);
+      }
+      ctx.restore();
+    }
+  }
+  function drawStar(cx,cy,ro,ri,n){
+    ctx.beginPath();
+    for(var i=0;i<n*2;i++){
+      var r = i%2===0?ro:ri;
+      var a = (Math.PI/n)*i - Math.PI/2;
+      var x=cx+Math.cos(a)*r, y=cy+Math.sin(a)*r;
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.closePath(); ctx.fill();
+  }
+
+  // ---------- Floating texts (popups) ----------
+  var pops=[];
+  function popText(x,y,txt,color,big){
+    pops.push({x:x,y:y,txt:txt,color:color||"#fff",age:0,life:big?1.1:0.85,big:!!big,vy:-46});
+  }
+  function updatePops(dt){
+    for(var i=pops.length-1;i>=0;i--){
+      var p=pops[i]; p.age+=dt; p.y+=p.vy*dt; p.vy*=(1-0.9*dt);
+      if(p.age>=p.life) pops.splice(i,1);
+    }
+  }
+  function drawPops(){
+    for(var i=0;i<pops.length;i++){
+      var p=pops[i], t=p.age/p.life;
+      var al = t<0.15? t/0.15 : (1-(t-0.15)/0.85);
+      ctx.save();
+      ctx.globalAlpha=clamp(al,0,1);
+      var sz = (p.big? Math.min(W*0.085,34) : Math.min(W*0.05,20));
+      var sc = 1 + (1-Math.min(t*3,1))*0.4;
+      ctx.translate(p.x,p.y); ctx.scale(sc,sc);
+      ctx.font = "900 "+sz+"px 'Segoe UI',system-ui,sans-serif";
+      ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.lineWidth=4; ctx.strokeStyle="rgba(0,0,0,.55)";
+      ctx.strokeText(p.txt,0,0);
+      ctx.fillStyle=p.color; ctx.fillText(p.txt,0,0);
+      ctx.restore();
+    }
+  }
+
+  // ---------- Screen shake & flash ----------
+  var shake=0, shakeX=0, shakeY=0, flash=0, slowmo=1, slowTarget=1, slowHold=0;
+  function addShake(a){ if(settings.reduce){ shake = Math.min(shake+a*0.18, 5); return; } shake = Math.min(shake+a, 26); }
+  function addFlash(a){ if(settings.reduce){ flash = Math.min(flash+a*0.3, 0.3); return; } flash = Math.min(flash+a, 1); }
+
+  // ---------- Combo / scoring ----------
+  function addScore(n){
+    G.score += n;
+    elScore.textContent = G.score;
+    flashEl(elScore);
+    checkLiveBest();
+  }
+  function flashEl(el){
+    el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+  }
+
+  // ---------- Start / control ----------
+  // daily: when true, towers are date-seeded (same for everyone today) and timed like score-attack.
+  function newGame(m, daily){
+    mode = m||"classic";
+    var isDaily = !!daily;
+    G = {
+      state: STATE.READY,
+      score: 0,
+      maxCombo: 0,
+      combo: 0,
+      perfectCount: 0,
+      round: 1,
+      mode: mode,
+      daily: isDaily,
+      seed: isDaily ? dateSeed(todayKey()) : 0,   // base seed for the day
+      liveBestShown: false,
+      timeLeft: (mode==="score") ? 60 : (isDaily ? 60 : 0),
+      cur: null,
+      readyT: 0
+    };
+    G.cur = buildRound(1);
+    G.state = STATE.READY; G.readyT = 0;
+    elScore.textContent="0"; elRound.textContent="1"; elCombo.textContent="×1";
+    elBest.textContent = best.score;
+    parts.length=0; pops.length=0; shake=0; flash=0; slowmo=1; slowTarget=1; slowHold=0;
+    hideLiveBest();
+    setHint();
+  }
+
+  function setHint(){
+    if(!G){ return; }
+    if(G.mode==="score" || G.daily){
+      elHint.innerHTML = t("hintTime").replace("{s}", Math.ceil(G.timeLeft));
+    } else {
+      elHint.innerHTML = t("hintAim");
+    }
+  }
+
+  // initiate a hammer swing on player input
+  function tryStrike(){
+    if(!G) return;
+    if(G.state===STATE.READY){ G.state=STATE.AIM; }   // first input starts aiming
+    if(G.state!==STATE.AIM) return;
+    var g=G.cur;
+    // capture gauge position at strike
+    var pos = g.gaugePos;
+    var dist = Math.abs(pos - g.sweetCenter);
+    Audio.whoosh();
+    // begin swing animation; resolution happens at swing apex
+    g.swingT = 0;
+    g.struckPos = pos;
+    g.struckDist = dist;
+    G.state = STATE.SWING;
+  }
+
+  // resolve the strike outcome (called at hammer impact apex)
+  function resolveStrike(){
+    var g=G.cur;
+    var dist = g.struckDist;
+    var bottom = currentBottom(g);
+    if(bottom<0){ return; }
+    var b = g.blocks[bottom];
+    var impactY = b.y;
+    var impactX = CX - blockW*0.5;
+    // Special-block window modifiers: fragile = tighter, steady = wider/forgiving.
+    var kind = b.kind || "normal";
+    var sweetHalf = g.sweetHalf, goodHalf = g.goodHalf;
+    if(kind==="fragile"){ sweetHalf*=0.7; goodHalf*=0.85; }
+    else if(kind==="steady"){ sweetHalf*=1.45; goodHalf*=1.2; }
+
+    addShake(6);
+    addFlash(0.4);
+
+    if(dist <= sweetHalf){
+      // CLEAN HIT — block flies out, stack drops intact
+      var perfect = (dist < sweetHalf*0.4);   // PERFECT tier: tight center band
+      Audio.thwack();
+      if(perfect && !settings.reduce){ Audio.perfect(); slowTarget = 0.42; slowHold = 0.45; }  // distinct SFX + slow-mo flourish
+      else if(perfect){ Audio.perfect(); }   // reduced-motion: SFX only, no slow-mo
+      addShake(perfect?12:8);
+      addFlash(perfect?0.6:0.45);
+      // launch flyer
+      var dir = (Math.random()<0.5? -1:1);
+      b.flying=true;
+      g.flyer = {
+        x:b.x, y:b.y, w:b.w, h:b.h, color:b.color, kind:b.kind,
+        vx: dir*rand(perfect?520:420, perfect?680:560), vy:rand(-180,-60), vr: dir*rand(-12,-7), rot:0,
+        trail:[]
+      };
+      spawnChips(impactX, impactY, b.color.light, perfect?28:18, perfect?1.5:1.2);
+      spawnChips(CX, impactY, b.color.base, perfect?16:10, 0.8);
+      spawnDust(CX, impactY, 6);
+      if(perfect){ spawnBurst(CX, impactY, [cssVar("--gold","#ffce54"), cssVar("--cyan","#34e0ff"), "#ffffff"], 26); }
+      // combo
+      G.combo++;
+      if(G.combo>G.maxCombo) G.maxCombo=G.combo;
+      if(G.combo>stats.bestCombo){ stats.bestCombo=G.combo; }
+      if(G.combo===5) unlock("combo5");
+      if(G.combo>=10) unlock("combo10");
+      var mult = comboMult();
+      var goldBonus = (kind==="golden")? 2.5 : 1;   // golden block = big bonus
+      var gain = Math.round(100 * mult * (1 + (g.round-1)*0.12) * (perfect?1.6:1) * goldBonus);
+      addScore(gain);
+      Audio.combo(G.combo);
+      g.faceMood="happy"; g.faceTimer=0.6;
+      if(kind==="golden"){ spawnBurst(CX, impactY, ["#ffe680","#ffce54","#ffb347"], 22); }
+      if(kind==="steady"){ g.lean*=0.4; g.leanVel*=0.3; }   // steady block calms the tower
+      if(perfect){
+        G.perfectCount=(G.perfectCount||0)+1;
+        stats.totalPerfect++;
+        unlock("perfect");
+        if(G.perfectCount>=10) unlock("perf10");
+        popText(CX, impactY-blockH*1.1, t("popPerfect")+" +"+gain, cssVar("--gold","#ffce54"), true);
+        announce(t("ariaPerfect").replace("{combo}", G.combo));
+      } else if(kind==="golden"){
+        popText(CX, impactY-blockH, "★ +"+gain, cssVar("--gold","#ffce54"), true);
+      } else if(G.combo>=2){
+        popText(CX, impactY-blockH, "×"+mult.toFixed(G.combo>=5?1:0)+" "+t("popCombo"), cssVar("--gold","#ffce54"), true);
+      } else {
+        popText(CX, impactY-blockH*0.4, "+"+gain, cssVar("--cyan","#34e0ff"), false);
+      }
+      unlock("first");
+      elCombo.textContent = "×"+mult.toFixed(G.combo>=5?1:0);
+      flashEl(elCombo);
+      checkLiveBest();
+      // a tiny lean correction toward center on clean hit (reward)
+      g.lean *= (perfect?0.5:0.72); g.leanVel *= 0.5;
+      // trigger stack drop
+      startDrop(g);
+    } else if(dist <= goodHalf){
+      // PARTIAL HIT — block partially knocked, stack wobbles and leans
+      Audio.weak();
+      Audio.wobble();
+      var dir2 = (g.struckPos < g.sweetCenter)? 1 : -1; // lean opposite of mishit
+      var sev = (dist - sweetHalf)/(goodHalf - sweetHalf); // 0..1
+      g.lean += dir2 * (0.05 + sev*0.10);
+      g.leanVel += dir2 * (0.25 + sev*0.5);
+      g.wobble = Math.max(g.wobble, 0.14+sev*0.16);
+      g.wobblePhase = 0;
+      // shift the bottom block a bit (partial knock)
+      b.offset += dir2 * (8 + sev*16);
+      spawnChips(impactX, impactY, b.color.base, 6, 0.7);
+      // break combo
+      G.combo = 0; elCombo.textContent="×1"; flashEl(elCombo);
+      g.faceMood="worried"; g.faceTimer=0.7; g.eyeWiden=1;
+      popText(CX, impactY-blockH*0.5, t("popMiss"), "#ff9f6b", false);
+      G.state = STATE.AIM;  // stay, try again on this block
+      // resettle hammer
+      g.hammerTarget=-0.5;
+      checkTopple(g);
+    } else {
+      // BAD HIT — strong wobble, big lean; may topple
+      Audio.weak();
+      Audio.wobble();
+      var dir3 = (g.struckPos < g.sweetCenter)? 1 : -1;
+      g.lean += dir3 * 0.18;
+      g.leanVel += dir3 * 1.05;
+      g.wobble = Math.max(g.wobble, 0.34);
+      g.wobblePhase=0;
+      b.offset += dir3 * 22;
+      spawnChips(impactX, impactY, b.color.base, 8, 0.8);
+      G.combo=0; elCombo.textContent="×1"; flashEl(elCombo);
+      g.faceMood="shock"; g.faceTimer=0.9; g.eyeWiden=1.4;
+      popText(CX, impactY-blockH*0.5, t("popOff"), "#ff6b9d", false);
+      G.state = STATE.AIM;
+      g.hammerTarget=-0.5;
+      checkTopple(g);
+    }
+  }
+
+  function comboMult(){
+    var c=G.combo;
+    if(c<=1) return 1;
+    if(c<=2) return 2;
+    if(c<=4) return 3;
+    if(c<=6) return 4;
+    return Math.min(4 + (c-6)*0.5, 9);
+  }
+
+  function currentBottom(g){
+    for(var i=0;i<g.blocks.length;i++){
+      if(!g.blocks[i].gone && !g.blocks[i].flying) return i;
+    }
+    return -1;
+  }
+  function standingCount(g){
+    var n=0;
+    for(var i=0;i<g.blocks.length;i++){ if(!g.blocks[i].gone && !g.blocks[i].flying) n++; }
+    return n;
+  }
+
+  function startDrop(g){
+    g.dropping=true;
+    g.dropY=0; g.dropVy=0; g.dropBounce=0;
+    G.state = STATE.DROP;
+  }
+
+  function checkTopple(g){
+    if(Math.abs(g.lean) > g.toppleLimit){
+      doTopple(g);
+    }
+  }
+
+  function doTopple(g){
+    G.state = STATE.RESOLVE;
+    g.toppling=true;
+    g.faceMood="dizzy"; g.faceTimer=99; g.dizzy=0;
+    Audio.crash();
+    addShake(22); flash=1;
+    slowTarget=0.35;
+    // give every standing block + head a velocity in lean direction
+    var dir = g.lean>0?1:-1;
+    var standing=[];
+    for(var i=0;i<g.blocks.length;i++){ if(!g.blocks[i].gone && !g.blocks[i].flying) standing.push(g.blocks[i]); }
+    for(var k=0;k<standing.length;k++){
+      var b=standing[k];
+      b.flying=true; b.toppled=true;
+      b.vx = dir*rand(120,260) + k*dir*22;
+      b.vy = -rand(60,200) - k*20;
+      b.vr = dir*rand(4,10);
+      spawnChips(b.x,b.y,b.color.base,5,0.7);
+    }
+    g.head.settling=false;
+    g.head.vx = dir*rand(160,300);
+    g.head.vy = -rand(120,260);
+    g.head.vr = dir*rand(5,11);
+    g.head.toppled=true;
+    g.toppleEndT=0;
+  }
+
+  // round cleared (all body discs gone, head needs to land)
+  function clearRound(g){
+    g.cleared=true;
+    G.state = STATE.RESOLVE;
+    g.faceMood="happy"; g.faceTimer=2;
+    // head drops onto stand and seats
+    g.head.settling=true; g.head.settleT=0;
+    g.head.targetY = standY - g.head.r;
+    slowTarget=0.45;       // slow-mo on final head landing
+    Audio.whoosh();
+  }
+
+  function nextRound(){
+    var g=G.cur;
+    // celebration
+    Audio.win();
+    spawnBurst(CX, standY-headR, ["#ffce54","#34e0ff","#b388ff","#34d3b6","#ff6b9d"], 60);
+    spawnBurst(CX, H*0.4, ["#ffd54a","#ff8d5c","#ffffff"], 30);
+    popText(CX, H*0.36, t("popRoundDone").replace("{n}", G.round), "#ffce54", true);
+    addScore(Math.round(200 + G.round*40));   // round clear bonus
+    flash=0.8;
+    G.round++;
+    elRound.textContent = G.round; flashEl(elRound);
+    G.state = STATE.BETWEEN;
+    G.betweenT = 0;
+  }
+
+  function gameOver(){
+    if(G.state===STATE.OVER) return;
+    G.state = STATE.OVER;
+    hideLiveBest();
+    var roundsCleared = G.round-1;
+    // legacy global best (drives HUD "Kỷ lục")
+    var rec=false;
+    if(G.score > best.score){ best.score=G.score; rec=true; }
+    if(roundsCleared > best.rounds){ best.rounds = roundsCleared; }
+    saveBest();
+    // ---- stats & per-mode leaderboard ----
+    stats.played++;
+    if(G.score>stats.bestScore) stats.bestScore=G.score;
+    if(roundsCleared>stats.bestRounds) stats.bestRounds=roundsCleared;
+    var boardKey = modeBoardKey();
+    var newTop = pushScore(boardKey, G.score);
+    // achievements that resolve at run end
+    if(roundsCleared>=5) unlock("round5");
+    if(G.score>=5000) unlock("score5k");
+    // ---- daily bookkeeping ----
+    if(G.daily){ recordDailyResult(G.score); }
+    saveStats();
+    refreshMenu(); refreshDaily();
+    // ---- fill over panel ----
+    $("oScore").textContent = G.score;
+    $("oRounds").textContent = roundsCleared;
+    $("oCombo").textContent = G.maxCombo;
+    $("newBest").style.display = (rec||newTop)? "inline-block":"none";
+    $("oDailyPill").style.display = G.daily? "inline-block":"none";
+    refreshOverLabels();
+    elBest.textContent = best.score;
+    announce((G.daily||G.mode==="score"? t("ariaTime") : t("ariaTopple")) + " · " + t("ariaScore").replace("{score}", G.score));
+    showOverlay("over");
+  }
+
+  // (re)fill the localized game-over labels — also used when switching language mid-overlay
+  function refreshOverLabels(){
+    $("oBestLine").innerHTML = t("bestLine").replace("{score}", best.score).replace("{rounds}", best.rounds);
+    var timed = (G && (G.mode==="score" || G.daily));
+    $("goHead").textContent = timed ? t("goHeadTime") : t("goHeadTopple");
+    $("goSub").textContent  = timed ? t("goSubTime")  : t("goSubTopple");
+  }
+
+  // ---------- Update loop ----------
+  function update(dt){
+    if(!G) return;
+    // slowmo easing; slowHold keeps a temporary slow-mo (PERFECT flourish) then recovers
+    if(slowHold>0){ slowHold-=dt; if(slowHold<=0){ slowHold=0; slowTarget=1; } }
+    slowmo += (slowTarget - slowmo) * Math.min(1, dt*6);
+    var sdt = dt * slowmo;
+
+    // shake decay
+    shake *= Math.pow(0.0009, dt);  // fast decay
+    if(shake<0.05) shake=0;
+    shakeX = (Math.random()*2-1)*shake;
+    shakeY = (Math.random()*2-1)*shake;
+    flash *= Math.pow(0.0008, dt);
+    if(flash<0.01) flash=0;
+
+    updateParts(sdt);
+    updatePops(sdt);
+
+    var g = G.cur;
+    if(!g) return;
+
+    // score-attack / daily timer — uses slow-mo-scaled time (sdt) so PERFECT slow-mo
+    // flourishes don't burn the real clock faster than the on-screen action.
+    if((G.mode==="score" || G.daily) && (G.state===STATE.AIM || G.state===STATE.READY || G.state===STATE.SWING || G.state===STATE.DROP || G.state===STATE.BETWEEN)){
+      G.timeLeft -= sdt;
+      setHint();
+      if(G.timeLeft<=0){ G.timeLeft=0; gameOver(); return; }
+    }
+
+    // face timers
+    if(g.faceTimer>0){ g.faceTimer-=dt; if(g.faceTimer<=0 && !g.cleared && !g.toppling){ g.faceMood="calm"; } }
+    if(g.eyeWiden>0){ g.eyeWiden=Math.max(0,g.eyeWiden-dt*2.2); }
+    if(g.dizzy!==undefined) g.dizzy += dt*6;
+
+    // gauge oscillation (AIM)
+    if(G.state===STATE.AIM){
+      g.gaugePos += g.gaugeDir * g.gaugeSpeed * dt;
+      if(g.gaugePos>=1){ g.gaugePos=1; g.gaugeDir=-1; }
+      else if(g.gaugePos<=0){ g.gaugePos=0; g.gaugeDir=1; }
+      // idle hammer hover
+      g.hammerAngle += (-0.5 - g.hammerAngle)*Math.min(1,dt*10);
+    }
+
+    // lean spring (standing stack physics) — when not dropping/toppling
+    if(G.state===STATE.AIM || G.state===STATE.SWING || G.state===STATE.DROP || G.state===STATE.READY){
+      // restoring force toward 0 (balance), but weak so leans accumulate tension
+      var k = 14, damp = 3.2;
+      g.leanVel += (-k*g.lean) * dt;
+      g.leanVel -= g.leanVel*damp*dt;
+      g.lean += g.leanVel*dt;
+      // wobble decay
+      if(g.wobble>0){
+        g.wobblePhase += dt*16;
+        g.wobble = Math.max(0, g.wobble - dt*0.5);
+      }
+      checkTopple(g);
+    }
+
+    // hammer swing
+    if(G.state===STATE.SWING){
+      g.swingT += dt;
+      var dur=0.16;
+      var t = g.swingT/dur;
+      if(t<1){
+        // wind back then slam: angle goes from rest to impact
+        g.hammerAngle = lerp(-0.5, 0.95, easeOut(clamp(t,0,1)));
+      } else {
+        g.hammerAngle = 0.95;
+        // impact!
+        resolveStrike();
+      }
+    }
+
+    // hammer recoil back to rest after non-clean handled in resolveStrike (state->AIM)
+    if(G.state===STATE.AIM){
+      g.hammerAngle += (g.hammerTarget - g.hammerAngle)*Math.min(1,dt*12);
+    }
+
+    // flyer (clean-hit block flying out)
+    if(g.flyer){
+      var f=g.flyer;
+      f.vy += 900*sdt; f.x += f.vx*sdt; f.y += f.vy*sdt; f.rot += f.vr*sdt;
+      f.trail.push({x:f.x,y:f.y,rot:f.rot});
+      if(f.trail.length>8) f.trail.shift();
+      if(f.x < -W*0.5 || f.x > W*1.5 || f.y > H+200){
+        // mark its block gone
+        for(var i=0;i<g.blocks.length;i++){ if(g.blocks[i].flying && !g.blocks[i].toppled && !g.blocks[i].gone){ g.blocks[i].gone=true; g.blocks[i].flying=false; break; } }
+        g.flyer=null;
+      }
+    }
+
+    // stack drop (clean hit) — move standing stack down by one blockH with bounce
+    if(G.state===STATE.DROP){
+      // mark the struck (flying, non-toppled) block as 'leaving' — already flying
+      // animate dropY
+      g.dropVy += 2600*sdt;
+      g.dropY += g.dropVy*sdt;
+      var target = currentDropTarget(g);
+      if(g.dropY >= target){
+        g.dropY = target;
+        if(g.dropVy>240){
+          // bounce
+          g.dropVy *= -0.32;
+          g.dropBounce++;
+          Audio.drop();
+          addShake(5);
+          // squash particles
+          spawnDust(CX, standY, 4);
+          if(g.dropBounce>=2){ finishDrop(g); }
+        } else {
+          finishDrop(g);
+        }
+      }
+    }
+
+    // resolve: toppling animation
+    if(G.state===STATE.RESOLVE && g.toppling){
+      g.toppleEndT += dt;
+      // physics for all flying blocks + head
+      stepFlyers(g, sdt);
+      if(g.toppleEndT>1.4){ slowTarget=1; gameOver(); return; }
+    }
+
+    // resolve: head settling (round clear)
+    if(G.state===STATE.RESOLVE && g.cleared){
+      var h=g.head;
+      if(h.settling){
+        h.settleT += sdt;
+        h.vy += 1700*sdt;
+        h.y += h.vy*sdt;
+        if(h.y >= h.targetY){
+          h.y=h.targetY;
+          if(h.vy>200){
+            h.vy*=-0.34; h.bounce=(h.bounce||0)+1;
+            Audio.headland();
+            spawnChips(CX, standY, "#c0392b", 10, 0.8);
+            spawnDust(CX, standY, 4);
+            addShake(6);
+            if(h.bounce>=2){ h.settling=false; h.landed=true; h.landT=0; }
+          } else {
+            h.settling=false; h.landed=true; h.landT=0;
+          }
+        }
+      } else if(h.landed){
+        h.landT=(h.landT||0)+dt;
+        slowTarget=1;
+        if(h.landT>0.5){ nextRound(); }
+      }
+    }
+
+    // between rounds -> spawn next
+    if(G.state===STATE.BETWEEN){
+      G.betweenT += dt;
+      if(G.betweenT>0.9){
+        G.cur = buildRound(G.round);
+        G.state = STATE.READY; G.readyT=0;
+        setHint();
+      }
+    }
+
+    if(G.state===STATE.READY){
+      G.readyT += dt;
+    }
+  }
+
+  function currentDropTarget(g){
+    // the stack should descend by exactly one block height (the removed bottom)
+    return blockH;
+  }
+
+  function finishDrop(g){
+    // commit: remove the flying (clean) block, shift positions down (re-layout)
+    for(var i=0;i<g.blocks.length;i++){
+      if(g.blocks[i].flying && !g.blocks[i].toppled){ /* flyer still in air, keep */ }
+    }
+    // The bottom block was set flying; mark it gone now if its flyer already off-screen handled, else keep flyer animating.
+    // Reset dropY by repositioning stack (positions recompute from standY).
+    g.dropY=0; g.dropVy=0; g.dropBounce=0;
+    positionStack(g);
+    // check win / continue
+    if(standingCount(g)===0){
+      clearRound(g);
+      return;
+    }
+    G.state = STATE.AIM;
+    g.gaugeDir = (Math.random()<0.5?1:-1);
+    g.hammerTarget=-0.5;
+  }
+
+  function stepFlyers(g, dt){
+    for(var i=0;i<g.blocks.length;i++){
+      var b=g.blocks[i];
+      if(b.flying && b.toppled){
+        b.vy += 1500*dt; b.x += b.vx*dt; b.y += b.vy*dt; b.rot += b.vr*dt;
+        if(b.y > standY+10 && b.vy>0){ b.vy*=-0.4; b.vx*=0.7; b.vr*=0.7; b.y=standY+10; }
+      }
+    }
+    var h=g.head;
+    if(h.toppled){
+      h.vy += 1500*dt; h.x += h.vx*dt; h.y += h.vy*dt; h.rot += h.vr*dt;
+      if(h.y > standY+10 && h.vy>0){ h.vy*=-0.45; h.vx*=0.7; h.vr*=0.6; h.y=standY+10; }
+    }
+  }
+
+  // ---------- Render ----------
+  function render(){
+    ctx.clearRect(0,0,W,H);
+    ctx.save();
+    ctx.translate(shakeX, shakeY);
+
+    drawBackdrop();
+
+    if(G){
+      var g=G.cur;
+      if(g){
+        drawStand();
+        drawStack(g);
+        drawHead(g);
+        drawFlyer(g);
+        drawHammer(g);
+        drawGauge(g);
+      }
+    }
+
+    drawParts();
+    drawPops();
+
+    ctx.restore();
+
+    // flash overlay
+    if(flash>0.01){
+      ctx.save();
+      ctx.globalAlpha = flash*0.5;
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0,0,W,H);
+      ctx.restore();
+    }
+
+    // ready prompt pulse
+    if(G && (G.state===STATE.READY)){
+      drawReadyPrompt();
+    }
+  }
+
+  function drawBackdrop(){
+    // subtle vignette + tatami floor band
+    var fy = standY+blockH*0.5;
+    var dark = (settings.theme==="light");   // light theme uses lighter floor shading
+    // floor shadow band
+    var grd = ctx.createLinearGradient(0, fy-30, 0, H);
+    grd.addColorStop(0, "rgba(0,0,0,0)");
+    grd.addColorStop(1, dark? "rgba(40,50,90,0.18)" : "rgba(0,0,0,0.35)");
+    ctx.fillStyle=grd;
+    ctx.fillRect(0, fy-30, W, H-(fy-30));
+    // faint 和 sun disc behind stack (themed accent)
+    ctx.save();
+    ctx.globalAlpha=0.10;
+    ctx.fillStyle=cssVar("--sun","#ff6b6b");
+    ctx.beginPath(); ctx.arc(CX, H*0.34, Math.min(W,H)*0.30, 0, 6.28); ctx.fill();
+    ctx.restore();
+  }
+
+  function roundRectPath(x,y,w,h,r){
+    r=Math.min(r,w*0.5,h*0.5);
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+  }
+
+  function drawStand(){
+    // wooden stand/base the stack sits on
+    var w = blockW*1.18, h = clamp(blockH*0.7,16,40);
+    var x = CX - w*0.5, y = standY;
+    ctx.save();
+    // shadow
+    ctx.fillStyle="rgba(0,0,0,.4)";
+    ctx.beginPath(); ctx.ellipse(CX, y+h+4, w*0.55, h*0.5, 0,0,6.28); ctx.fill();
+    // base body
+    var grd=ctx.createLinearGradient(x,y,x,y+h);
+    grd.addColorStop(0,"#6b4a2b"); grd.addColorStop(0.5,"#4d3420"); grd.addColorStop(1,"#33220f");
+    ctx.fillStyle=grd;
+    roundRectPath(x,y,w,h,8); ctx.fill();
+    // top edge highlight
+    ctx.fillStyle="rgba(255,210,150,.25)";
+    roundRectPath(x,y,w,5,4); ctx.fill();
+    ctx.restore();
+  }
+
+  // Returns the lean transform applied to the standing stack around its base pivot
+  function applyStackTransform(g){
+    var pivotX = CX, pivotY = standY;
+    var wob = g.wobble>0 ? Math.sin(g.wobblePhase)*g.wobble*0.4 : 0;
+    var ang = g.lean + wob;
+    var dropOff = (G.state===STATE.DROP)? g.dropY : 0;
+    ctx.translate(pivotX, pivotY);
+    ctx.rotate(ang);
+    ctx.translate(-pivotX, -pivotY + dropOff);
+  }
+
+  function drawStack(g){
+    ctx.save();
+    if(!g.toppling){ applyStackTransform(g); }
+    for(var i=0;i<g.blocks.length;i++){
+      var b=g.blocks[i];
+      if(b.gone) continue;
+      if(b.flying && b.toppled){
+        // toppled block flying freely
+        drawBlock(b.x,b.y,b.w,b.h,b.color,b.rot,b.kind);
+      } else if(b.flying && !b.toppled){
+        // clean-hit flyer drawn separately
+      } else {
+        // standing
+        drawBlock(b.x, b.y, b.w, b.h, b.color, 0, b.kind);
+      }
+    }
+    ctx.restore();
+  }
+
+  function drawBlock(cx,cy,w,h,color,rot,kind){
+    ctx.save();
+    ctx.translate(cx,cy);
+    if(rot) ctx.rotate(rot);
+    var x=-w*0.5, y=-h*0.5;
+    // golden block glow halo (under shadow)
+    if(kind==="golden"){
+      ctx.save();
+      ctx.shadowColor="rgba(255,206,84,.9)"; ctx.shadowBlur=14;
+      ctx.fillStyle="rgba(255,206,84,.0)";
+      roundRectPath(x,y,w,h,Math.min(h*0.45,11)); ctx.fill();
+      ctx.restore();
+    }
+    // drop shadow
+    ctx.fillStyle="rgba(0,0,0,.28)";
+    roundRectPath(x+3,y+4,w,h,9); ctx.fill();
+    // body: cylindrical disc with vertical sheen
+    var grd=ctx.createLinearGradient(x,0,x+w,0);
+    grd.addColorStop(0, color.dark);
+    grd.addColorStop(0.18, color.base);
+    grd.addColorStop(0.5, color.light);
+    grd.addColorStop(0.82, color.base);
+    grd.addColorStop(1, color.dark);
+    ctx.fillStyle=grd;
+    roundRectPath(x,y,w,h,Math.min(h*0.45,11)); ctx.fill();
+    // top ellipse rim (gives cylinder feel)
+    ctx.fillStyle="rgba(255,255,255,.18)";
+    roundRectPath(x+4,y+2,w-8,Math.max(3,h*0.16),5); ctx.fill();
+    // bottom shade
+    ctx.fillStyle="rgba(0,0,0,.18)";
+    roundRectPath(x+4,y+h-Math.max(3,h*0.16)-2,w-8,Math.max(3,h*0.16),5); ctx.fill();
+    // lacquer outline
+    ctx.lineWidth=1.5; ctx.strokeStyle="rgba(0,0,0,.35)";
+    roundRectPath(x,y,w,h,Math.min(h*0.45,11)); ctx.stroke();
+    // gold pin-stripe (和 accent) centered
+    ctx.strokeStyle="rgba(255,255,255,.35)"; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(x+6, 0); ctx.lineTo(x+w-6, 0); ctx.stroke();
+    // ---- special-block markings (shape cues, colorblind-safe) ----
+    if(kind==="golden"){
+      // gilded double border + ★ icon
+      ctx.lineWidth=2.5; ctx.strokeStyle="rgba(255,206,84,.95)";
+      roundRectPath(x+2.5,y+2.5,w-5,h-5,Math.min(h*0.4,9)); ctx.stroke();
+      if(h>20){ ctx.fillStyle="rgba(255,240,180,.95)"; drawStar(0,0,h*0.28,h*0.12,5); }
+    } else if(kind==="fragile"){
+      // crack lines + dashed border
+      ctx.strokeStyle="rgba(255,255,255,.6)"; ctx.lineWidth=1.4;
+      ctx.beginPath();
+      ctx.moveTo(-w*0.18,-h*0.5); ctx.lineTo(-w*0.05,0); ctx.lineTo(-w*0.20,h*0.5);
+      ctx.moveTo(w*0.10,-h*0.5); ctx.lineTo(w*0.20,0); ctx.lineTo(w*0.06,h*0.5);
+      ctx.stroke();
+      ctx.setLineDash([5,4]); ctx.strokeStyle="rgba(255,255,255,.5)"; ctx.lineWidth=1.5;
+      roundRectPath(x+3,y+3,w-6,h-6,Math.min(h*0.4,9)); ctx.stroke();
+      ctx.setLineDash([]);
+    } else if(kind==="steady"){
+      // bold solid ring (anchor) cue
+      ctx.lineWidth=3; ctx.strokeStyle="rgba(60,211,182,.85)";
+      roundRectPath(x+3,y+3,w-6,h-6,Math.min(h*0.4,9)); ctx.stroke();
+      ctx.fillStyle="rgba(189,245,234,.85)";
+      ctx.beginPath(); ctx.arc(0,0,Math.min(h*0.16,4),0,6.28); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawFlyer(g){
+    if(!g.flyer) return;
+    var f=g.flyer;
+    // motion-blur trail
+    for(var i=0;i<f.trail.length;i++){
+      var tp=f.trail[i], al=(i/f.trail.length)*0.4;
+      ctx.save(); ctx.globalAlpha=al;
+      drawBlock(tp.x,tp.y,f.w,f.h,f.color,tp.rot,f.kind);
+      ctx.restore();
+    }
+    drawBlock(f.x,f.y,f.w,f.h,f.color,f.rot,f.kind);
+    // sparkle chips occasionally
+    if(Math.random()<0.5) spawnChips(f.x,f.y,f.color.light,1,0.5);
+  }
+
+  function drawHead(g){
+    var h=g.head;
+    ctx.save();
+    if(!g.toppling && !g.cleared && !h.toppled){
+      applyStackTransform(g);
+    }
+    var cx=h.x, cy=h.y, r=h.r, rot=h.rot||0;
+    drawDaruma(cx,cy,r,rot,g);
+    ctx.restore();
+  }
+
+  function drawDaruma(cx,cy,r,rot,g){
+    ctx.save();
+    ctx.translate(cx,cy);
+    if(rot) ctx.rotate(rot);
+    // shadow
+    ctx.fillStyle="rgba(0,0,0,.3)";
+    ctx.beginPath(); ctx.ellipse(2,4,r,r*0.98,0,0,6.28); ctx.fill();
+    // red body (sphere-ish)
+    var grd=ctx.createRadialGradient(-r*0.3,-r*0.4,r*0.2, 0,0,r*1.1);
+    grd.addColorStop(0,"#ff6a5a");
+    grd.addColorStop(0.5,"#d83a2c");
+    grd.addColorStop(1,"#8e1f15");
+    ctx.fillStyle=grd;
+    ctx.beginPath(); ctx.arc(0,0,r,0,6.28); ctx.fill();
+    // gold rim
+    ctx.lineWidth=Math.max(2,r*0.06); ctx.strokeStyle="rgba(255,206,84,.55)";
+    ctx.beginPath(); ctx.arc(0,0,r-ctx.lineWidth*0.5,0,6.28); ctx.stroke();
+    // face cream area
+    ctx.fillStyle="#f6e3c8";
+    ctx.beginPath(); ctx.ellipse(0, r*0.04, r*0.62, r*0.66, 0, 0, 6.28); ctx.fill();
+    // eyebrows (thick black)
+    ctx.fillStyle="#1a1208";
+    drawBrow(-r*0.30, -r*0.28, r*0.26, r*0.10);
+    drawBrow( r*0.30, -r*0.28, r*0.26, r*0.10, true);
+    // mustache
+    ctx.beginPath();
+    ctx.moveTo(0, r*0.12);
+    ctx.quadraticCurveTo(-r*0.34, r*0.06, -r*0.42, r*0.30);
+    ctx.quadraticCurveTo(-r*0.20, r*0.20, 0, r*0.22);
+    ctx.quadraticCurveTo( r*0.20, r*0.20, r*0.42, r*0.30);
+    ctx.quadraticCurveTo( r*0.34, r*0.06, 0, r*0.12);
+    ctx.fill();
+    // EYES — react to mood
+    var mood = g.faceMood;
+    var widen = g.eyeWiden||0;
+    var ex=r*0.22, ey=-r*0.06, er=r*0.12*(1+widen*0.6);
+    if(mood==="dizzy"){
+      drawDizzyEye(-ex,ey,er,g.dizzy);
+      drawDizzyEye(ex,ey,er,g.dizzy+1.5);
+    } else if(mood==="happy"){
+      // closed happy arcs ^_^
+      ctx.strokeStyle="#1a1208"; ctx.lineWidth=Math.max(2,r*0.05); ctx.lineCap="round";
+      ctx.beginPath(); ctx.arc(-ex, ey+er*0.4, er, Math.PI*1.15, Math.PI*1.85); ctx.stroke();
+      ctx.beginPath(); ctx.arc( ex, ey+er*0.4, er, Math.PI*1.15, Math.PI*1.85); ctx.stroke();
+    } else {
+      // open eyes (white + pupil); widen on worry/shock
+      ctx.fillStyle="#fff";
+      ctx.beginPath(); ctx.ellipse(-ex,ey,er,er*1.05,0,0,6.28); ctx.fill();
+      ctx.beginPath(); ctx.ellipse( ex,ey,er,er*1.05,0,0,6.28); ctx.fill();
+      ctx.fillStyle="#0a0805";
+      var pr=er*(mood==="shock"?0.4:0.55);
+      ctx.beginPath(); ctx.arc(-ex,ey,pr,0,6.28); ctx.fill();
+      ctx.beginPath(); ctx.arc( ex,ey,pr,0,6.28); ctx.fill();
+      // sweat drop on worry/shock
+      if(mood==="worried"||mood==="shock"){
+        ctx.fillStyle="rgba(120,200,255,.85)";
+        ctx.beginPath();
+        ctx.moveTo(r*0.5,-r*0.1);
+        ctx.quadraticCurveTo(r*0.62,r*0.04,r*0.55,r*0.12);
+        ctx.quadraticCurveTo(r*0.46,r*0.12,r*0.5,-r*0.1);
+        ctx.fill();
+      }
+    }
+    // mouth
+    ctx.strokeStyle="#1a1208"; ctx.lineWidth=Math.max(2,r*0.05); ctx.lineCap="round";
+    ctx.beginPath();
+    if(mood==="happy"){ ctx.arc(0, r*0.30, r*0.18, 0.15*Math.PI, 0.85*Math.PI); }
+    else if(mood==="shock"){ ctx.arc(0, r*0.40, r*0.10, 0, 6.28); }
+    else if(mood==="dizzy"){ ctx.arc(0, r*0.42, r*0.10, 1.1*Math.PI, 1.9*Math.PI); }
+    else { ctx.moveTo(-r*0.14, r*0.36); ctx.lineTo(r*0.14, r*0.36); }
+    ctx.stroke();
+    ctx.restore();
+  }
+  function drawBrow(x,y,w,h,flip){
+    ctx.save();
+    ctx.beginPath();
+    ctx.ellipse(x,y,w*0.5,h, flip?0.3:-0.3, 0, 6.28);
+    ctx.fill();
+    ctx.restore();
+  }
+  function drawDizzyEye(x,y,r,phase){
+    ctx.save(); ctx.translate(x,y);
+    ctx.strokeStyle="#1a1208"; ctx.lineWidth=Math.max(1.5,r*0.22); ctx.lineCap="round";
+    ctx.beginPath();
+    for(var a=0;a<6.5;a+=0.3){
+      var rr = (a/6.5)*r*1.1;
+      var px=Math.cos(a+phase)*rr, py=Math.sin(a+phase)*rr;
+      if(a===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    }
+    ctx.stroke(); ctx.restore();
+  }
+
+  function drawHammer(g){
+    if(G.state!==STATE.AIM && G.state!==STATE.SWING && G.state!==STATE.READY) return;
+    var bottom = currentBottom(g);
+    if(bottom<0) return;
+    var b=g.blocks[bottom];
+    // hammer pivots from a point to the side of the bottom block
+    var side = -1; // hammer comes from left
+    var pivotX = CX + side*(blockW*0.5 + clamp(W*0.16,30,90));
+    var pivotY = b.y - blockH*0.2;
+    var ang = g.hammerAngle; // -0.5 rest (raised), 0.95 slammed toward block
+    ctx.save();
+    ctx.translate(pivotX, pivotY);
+    ctx.rotate(-ang*side); // swing toward block
+    // handle
+    var hl = clamp(W*0.30,70,170);
+    ctx.fillStyle="#7a5230";
+    roundRectPath(0,-5, hl, 10, 5); ctx.fill();
+    ctx.fillStyle="rgba(255,220,170,.2)";
+    roundRectPath(0,-5, hl, 3, 3); ctx.fill();
+    // head (mallet)
+    var hw=clamp(W*0.13,34,76), hh=clamp(blockH*1.1,30,64);
+    ctx.save();
+    ctx.translate(hl, 0);
+    var grd=ctx.createLinearGradient(-hw*0.5,-hh*0.5,-hw*0.5,hh*0.5);
+    grd.addColorStop(0,"#a8703f"); grd.addColorStop(0.5,"#7a4e28"); grd.addColorStop(1,"#5a3819");
+    ctx.fillStyle=grd;
+    roundRectPath(-hw*0.5,-hh*0.5,hw,hh,8); ctx.fill();
+    ctx.lineWidth=2; ctx.strokeStyle="rgba(0,0,0,.35)";
+    roundRectPath(-hw*0.5,-hh*0.5,hw,hh,8); ctx.stroke();
+    // metal band
+    ctx.fillStyle="rgba(255,206,84,.45)";
+    roundRectPath(-hw*0.5+3,-hh*0.5,4,hh,2); ctx.fill();
+    roundRectPath(hw*0.5-7,-hh*0.5,4,hh,2); ctx.fill();
+    ctx.restore();
+    ctx.restore();
+  }
+
+  function drawGauge(g){
+    if(G.state!==STATE.AIM) return;
+    // horizontal timing gauge below the stand
+    var gw = clamp(W*0.66, 180, 380), gh = clamp(H*0.026,12,22);
+    var gx = CX - gw*0.5, gy = standY + clamp(blockH*0.7,16,40) + 18;
+    if(gy+gh > H-6) gy = H-6-gh;
+    ctx.save();
+    // track
+    ctx.fillStyle="rgba(8,12,30,.7)";
+    roundRectPath(gx,gy,gw,gh, gh*0.5); ctx.fill();
+    ctx.lineWidth=1; ctx.strokeStyle="rgba(255,255,255,.12)";
+    roundRectPath(gx,gy,gw,gh, gh*0.5); ctx.stroke();
+    // good zone
+    var gc = g.sweetCenter;
+    var gix = gx + (gc-g.goodHalf)*gw, giw = g.goodHalf*2*gw;
+    ctx.fillStyle="rgba(52,224,255,.22)";
+    roundRectPath(gix,gy+2,giw,gh-4, (gh-4)*0.5); ctx.fill();
+    // sweet zone (gold)
+    var six = gx + (gc-g.sweetHalf)*gw, siw = g.sweetHalf*2*gw;
+    var sg = ctx.createLinearGradient(six,0,six+siw,0);
+    sg.addColorStop(0,"#ffb347"); sg.addColorStop(0.5,"#ffe680"); sg.addColorStop(1,"#ffb347");
+    ctx.fillStyle=sg;
+    roundRectPath(six,gy+2,siw,gh-4,(gh-4)*0.5); ctx.fill();
+    // PERFECT sub-band (tight center) — drawn lighter so it reads as a brighter core
+    var ph = g.sweetHalf*0.4;
+    var pix = gx + (gc-ph)*gw, piw = ph*2*gw;
+    ctx.fillStyle="rgba(255,255,255,.85)";
+    roundRectPath(pix,gy+3,piw,gh-6,(gh-6)*0.5); ctx.fill();
+    // glow on sweet
+    ctx.save(); ctx.globalAlpha=0.5+0.3*Math.sin(performance.now()/200);
+    ctx.fillStyle="rgba(255,230,128,.35)";
+    roundRectPath(six-2,gy,siw+4,gh,gh*0.5); ctx.fill();
+    ctx.restore();
+    // ---- Colorblind-safe cues: center notch + PERFECT / GOOD labels (shape & text, not color) ----
+    // center notch tick (always shown — marks the exact PERFECT center)
+    var ncx = gx + gc*gw;
+    ctx.fillStyle="rgba(8,12,30,.9)";
+    roundRectPath(ncx-1, gy+1, 2, gh-2, 1); ctx.fill();
+    if(settings.cb){
+      // boundary ticks at sweet & good edges
+      ctx.strokeStyle="rgba(255,255,255,.8)"; ctx.lineWidth=1.5;
+      [six, six+siw, gix, gix+giw].forEach(function(bx){
+        ctx.beginPath(); ctx.moveTo(bx, gy); ctx.lineTo(bx, gy+gh); ctx.stroke();
+      });
+      // labels above the bands
+      ctx.font="900 "+clamp(gh*0.62,8,12)+"px 'Segoe UI',system-ui,sans-serif";
+      ctx.textAlign="center"; ctx.textBaseline="bottom";
+      ctx.lineWidth=3; ctx.strokeStyle="rgba(0,0,0,.6)";
+      ctx.strokeText(t("gaugePerfect"), ncx, gy-2);
+      ctx.fillStyle="#ffe680"; ctx.fillText(t("gaugePerfect"), ncx, gy-2);
+      // GOOD labels on either side
+      var goodMidL = gx + ((gc-g.goodHalf)+ (gc-g.sweetHalf))*0.5*gw;
+      var goodMidR = gx + ((gc+g.sweetHalf)+ (gc+g.goodHalf))*0.5*gw;
+      ctx.font="800 "+clamp(gh*0.5,7,10)+"px 'Segoe UI',system-ui,sans-serif";
+      ctx.strokeText(t("gaugeGood"), goodMidL, gy-2); ctx.fillStyle="#bdf0ff"; ctx.fillText(t("gaugeGood"), goodMidL, gy-2);
+      ctx.strokeText(t("gaugeGood"), goodMidR, gy-2); ctx.fillStyle="#bdf0ff"; ctx.fillText(t("gaugeGood"), goodMidR, gy-2);
+    }
+    // indicator marker
+    var mx = gx + g.gaugePos*gw;
+    ctx.fillStyle="#fff";
+    ctx.beginPath();
+    ctx.moveTo(mx, gy-7);
+    ctx.lineTo(mx-7, gy-16);
+    ctx.lineTo(mx+7, gy-16);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle="rgba(255,255,255,.9)";
+    roundRectPath(mx-2, gy-2, 4, gh+4, 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawReadyPrompt(){
+    var a = 0.5+0.5*Math.sin(performance.now()/300);
+    ctx.save();
+    ctx.globalAlpha = 0.6+0.4*a;
+    ctx.font="900 "+Math.min(W*0.07,28)+"px 'Segoe UI',system-ui,sans-serif";
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.lineWidth=4; ctx.strokeStyle="rgba(0,0,0,.5)";
+    var msg = t("readyPrompt");
+    ctx.strokeText(msg, CX, H*0.16);
+    ctx.fillStyle="#ffce54";
+    ctx.fillText(msg, CX, H*0.16);
+    ctx.restore();
+  }
+
+  // ---------- Main loop ----------
+  var lastT = 0, rafId=0;
+  function frame(ts){
+    rafId = requestAnimationFrame(frame);
+    if(!lastT) lastT=ts;
+    var dt = (ts-lastT)/1000;
+    lastT = ts;
+    if(dt>0.05) dt=0.05;   // clamp big gaps
+    if(G && G.state!==STATE.PAUSED && G.state!==STATE.OVER && G.state!==STATE.MENU){
+      update(dt);
+    }
+    render();
+  }
+
+  // ---------- Overlays ----------
+  function showOverlay(id){
+    var el=$(id); if(el) el.classList.add("show");
+  }
+  function hideOverlay(id){
+    var el=$(id); if(el) el.classList.remove("show");
+  }
+  function hideAllOverlays(){
+    hideOverlay("menu"); hideOverlay("pause"); hideOverlay("over");
+    hideOverlay("settings"); hideOverlay("statsView");
+  }
+
+  // ---------- Input ----------
+  function onPrimary(){
+    Audio.resume();
+    if(!G) return;
+    if(G.state===STATE.MENU || G.state===STATE.OVER || G.state===STATE.PAUSED) return;
+    if(G.state===STATE.READY){ G.state=STATE.AIM; return; }
+    tryStrike();
+  }
+
+  // keyboard
+  function subOverlayOpen(){ return $("settings").classList.contains("show") || $("statsView").classList.contains("show"); }
+  window.addEventListener("keydown", function(e){
+    if(e.repeat) return;
+    var k=e.key;
+    if(k==="Escape" && subOverlayOpen()){
+      hideOverlay("settings"); hideOverlay("statsView"); e.preventDefault(); return;
+    }
+    if(k===" " || k==="Spacebar" || k==="Enter"){
+      // let real buttons handle Space/Enter when focused (a11y)
+      var ae=document.activeElement;
+      if(ae && (ae.tagName==="BUTTON" || ae.tagName==="INPUT")) return;
+      if(subOverlayOpen()) return;
+      if(menuVisible()){ startSelected(); e.preventDefault(); return; }
+      if($("over").classList.contains("show")){ restart(); e.preventDefault(); return; }
+      if($("pause").classList.contains("show")){ resume(); e.preventDefault(); return; }
+      e.preventDefault(); onPrimary(); return;
+    }
+    if(k==="p"||k==="P"||k==="Escape"){
+      if(G){
+        if(G.state===STATE.PAUSED) resume();
+        else if(canPause()) pause();
+      }
+      e.preventDefault(); return;
+    }
+    if(k==="m"||k==="M"){ toggleMute(); }
+  }, {passive:false});
+
+  function menuVisible(){ return $("menu").classList.contains("show"); }
+
+  // pointer / touch on board area & whole window during play
+  function pointerHandler(e){
+    // ignore if tapping UI buttons / overlays
+    var t=e.target;
+    if(t.closest && (t.closest(".overlay") || t.closest(".iconbtn") || t.closest("button"))) return;
+    e.preventDefault();
+    onPrimary();
+  }
+  canvas.addEventListener("pointerdown", function(e){ e.preventDefault(); onPrimary(); }, {passive:false});
+  // also allow tap anywhere in stage during play
+  $("stage").addEventListener("pointerdown", function(e){
+    var t=e.target;
+    if(t===canvas) return; // handled above
+    if(t.closest && (t.closest(".iconbtn"))) return;
+    if(G && (G.state===STATE.AIM||G.state===STATE.READY||G.state===STATE.SWING||G.state===STATE.DROP)){
+      e.preventDefault(); onPrimary();
+    }
+  }, {passive:false});
+
+  // ---------- Buttons & flow ----------
+  function startSelected(){
+    Audio.resume();
+    hideAllOverlays();
+    newGame(mode);
+  }
+  function restart(){
+    Audio.resume();
+    var wasDaily = !!(G && G.daily);
+    hideAllOverlays();
+    newGame(mode, wasDaily);
+  }
+  // Active gameplay states from which it is safe to pause (i.e. update() is running).
+  function isActiveState(s){
+    return s===STATE.READY || s===STATE.AIM || s===STATE.SWING ||
+           s===STATE.RESOLVE || s===STATE.DROP || s===STATE.BETWEEN;
+  }
+  function canPause(){
+    return G && isActiveState(G.state);
+  }
+  function pause(showPanel){
+    if(!canPause()) return;          // never pause from MENU/OVER/PAUSED/transient-less states
+    G._prev = G.state;               // remember the EXACT state (no AIM clobber)
+    G.state = STATE.PAUSED;
+    if(showPanel!==false) showOverlay("pause");
+  }
+  function resume(){
+    Audio.resume();
+    hideOverlay("pause");
+    if(!G) return;
+    // restore the exact prior state; only fall back to AIM if _prev is unusable
+    var p = G._prev;
+    if(p===undefined || p===null || p===STATE.MENU || p===STATE.OVER || p===STATE.PAUSED){
+      p = STATE.AIM;
+    }
+    G.state = p;
+    G._prev = null;
+    lastT = 0;                       // discard the long paused gap so dt doesn't spike
+  }
+  function toMenu(){
+    hideAllOverlays();
+    if(G) G.state=STATE.MENU;
+    showOverlay("menu");
+    refreshMenu();
+  }
+  function toggleMute(){
+    Audio.setMute(!Audio.muted);
+    $("muteBtn").textContent = Audio.muted? "🔈":"🔊";
+  }
+
+  function refreshMenu(){
+    $("mBest").textContent = best.score;
+    $("mRounds").textContent = best.rounds;
+    refreshDaily();
+  }
+
+  // ---------- Daily card ----------
+  function refreshDaily(){
+    var key = todayKey();
+    var info = $("dailyInfo"); if(!info) return;
+    var streak = stats.daily.streak||0;
+    if(stats.daily.date===key && stats.daily.best>0){
+      info.textContent = t("dailyToday").replace("{score}", stats.daily.best).replace("{streak}", streak);
+    } else {
+      info.textContent = t("dailyNone").replace("{streak}", streak);
+    }
+  }
+  function startDaily(){
+    Audio.resume();
+    hideAllOverlays();
+    newGame("classic", true);   // daily uses classic-style rounds, timed, seeded
+  }
+
+  // ---------- Settings panel ----------
+  function openSettings(){
+    syncSettingsUI();
+    showOverlay("settings");
+  }
+  function syncSettingsUI(){
+    $("setVol").value = Math.round(settings.vol*100);
+    $("setSfx").setAttribute("aria-checked", settings.sfx? "true":"false");
+    $("setReduce").setAttribute("aria-checked", settings.reduce? "true":"false");
+    $("setCB").setAttribute("aria-checked", settings.cb? "true":"false");
+    document.querySelectorAll("#setLangSeg button").forEach(function(b){
+      b.classList.toggle("sel", b.getAttribute("data-lang")===uiLang);
+    });
+    document.querySelectorAll(".themechip").forEach(function(c){
+      c.classList.toggle("sel", c.getAttribute("data-theme")===settings.theme);
+    });
+  }
+  function buildThemeGrid(){
+    var grid=$("themeGrid"); if(!grid) return;
+    grid.innerHTML="";
+    var labelKey={night:"themeNight",sakura:"themeSakura",matcha:"themeMatcha",indigo:"themeIndigo",light:"themeLight"};
+    THEMES.forEach(function(th){
+      var b=document.createElement("button");
+      b.className="themechip"+(th===settings.theme?" sel":"");
+      b.setAttribute("data-theme", th);
+      b.setAttribute("data-mark","✓");
+      b.style.background=THEME_SWATCH[th];
+      b.setAttribute("aria-label", t(labelKey[th]));
+      b.title = t(labelKey[th]);
+      b.addEventListener("click", function(){
+        settings.theme=th; saveSettings(); applyTheme(); syncSettingsUI();
+      });
+      grid.appendChild(b);
+    });
+  }
+
+  // ---------- Stats / achievements view ----------
+  var lbTab = "classic";
+  function openStats(){
+    refreshStatsView();
+    showOverlay("statsView");
+  }
+  function refreshStatsView(){
+    $("stPlayed").textContent = stats.played;
+    $("stBestScore").textContent = stats.bestScore;
+    $("stBestRounds").textContent = stats.bestRounds;
+    $("stBestCombo").textContent = stats.bestCombo;
+    $("stPerfect").textContent = stats.totalPerfect;
+    $("stStreak").textContent = stats.daily.streak||0;
+    renderLeaderboard();
+    renderAchievements();
+  }
+  function renderLeaderboard(){
+    var list=$("lbList"); if(!list) return;
+    document.querySelectorAll(".tabrow button").forEach(function(b){
+      b.classList.toggle("sel", b.getAttribute("data-lb")===lbTab);
+    });
+    var arr = stats.boards[lbTab]||[];
+    list.innerHTML="";
+    if(arr.length===0){
+      var e=document.createElement("div"); e.className="lbrow"; e.textContent=t("lbEmpty"); list.appendChild(e); return;
+    }
+    for(var i=0;i<arr.length;i++){
+      var row=document.createElement("div"); row.className="lbrow";
+      row.innerHTML='<span class="rk">'+(i+1)+'.</span><span class="sc">'+arr[i]+'</span>';
+      list.appendChild(row);
+    }
+  }
+  function renderAchievements(){
+    var grid=$("achGrid"); if(!grid) return;
+    grid.innerHTML="";
+    ACH_DEFS.forEach(function(def){
+      var cell=document.createElement("div");
+      cell.className="ach"+(unlocked[def.id]?" un":"");
+      cell.setAttribute("title", t(def.n)+" — "+t(def.d));
+      cell.innerHTML='<div class="ico">'+def.ico+'</div><div class="nm">'+t(def.n)+'</div>';
+      grid.appendChild(cell);
+    });
+  }
+
+  // mode select
+  function selectMode(m){
+    mode=m;
+    $("modeClassic").classList.toggle("sel", m==="classic");
+    $("modeScore").classList.toggle("sel", m==="score");
+  }
+  $("modeClassic").addEventListener("click", function(){ selectMode("classic"); });
+  $("modeScore").addEventListener("click", function(){ selectMode("score"); });
+
+  // language toggle (menu langbtns + settings segment)
+  document.querySelectorAll(".langbtn").forEach(function(b){
+    b.addEventListener("click", function(){ setLang(b.getAttribute("data-lang")); });
+  });
+  document.querySelectorAll("#setLangSeg button").forEach(function(b){
+    b.addEventListener("click", function(){ setLang(b.getAttribute("data-lang")); syncSettingsUI(); });
+  });
+
+  // ---------- Settings / stats / daily / share bindings ----------
+  $("settingsBtn").addEventListener("click", openSettings);
+  $("statsBtn").addEventListener("click", openStats);
+  $("pSettingsBtn").addEventListener("click", openSettings);
+  $("setCloseBtn").addEventListener("click", function(){ hideOverlay("settings"); });
+  $("statsCloseBtn").addEventListener("click", function(){ hideOverlay("statsView"); });
+  $("dailyBtn").addEventListener("click", startDaily);
+  $("shareBtn").addEventListener("click", doShare);
+
+  $("setVol").addEventListener("input", function(){
+    settings.vol = clamp((+this.value)/100, 0, 1); Audio.applySettings(); saveSettings();
+  });
+  function toggleSwitch(el, key, onChange){
+    el.addEventListener("click", function(){
+      settings[key] = !settings[key];
+      el.setAttribute("aria-checked", settings[key]?"true":"false");
+      saveSettings();
+      if(onChange) onChange();
+    });
+  }
+  toggleSwitch($("setSfx"), "sfx", function(){ Audio.applySettings(); $("muteBtn").textContent = Audio.muted?"🔈":"🔊"; });
+  toggleSwitch($("setReduce"), "reduce", applyReduce);
+  toggleSwitch($("setCB"), "cb");
+
+  // leaderboard tabs
+  document.querySelectorAll(".tabrow button").forEach(function(b){
+    b.addEventListener("click", function(){ lbTab=b.getAttribute("data-lb"); renderLeaderboard(); });
+  });
+
+  $("playBtn").addEventListener("click", startSelected);
+  $("againBtn").addEventListener("click", restart);
+  $("oMenuBtn").addEventListener("click", toMenu);
+  $("resumeBtn").addEventListener("click", resume);
+  $("pRestartBtn").addEventListener("click", restart);
+  $("pMenuBtn").addEventListener("click", toMenu);
+  $("pauseBtn").addEventListener("click", function(){
+    if(!G) return;
+    if(G.state===STATE.PAUSED) resume();
+    else if(canPause()) pause();
+  });
+  $("muteBtn").addEventListener("click", toggleMute);
+
+  // ---------- Auto-pause on tab blur / hide (CRITICAL BUG FIX) ----------
+  // Without this the Score-Attack timer & physics keep running off-screen.
+  function autoPause(){
+    if(canPause()){ pause(true); }   // only pauses from safe active states; shows panel
+  }
+  document.addEventListener("visibilitychange", function(){
+    if(document.hidden) autoPause();
+  });
+  window.addEventListener("blur", autoPause);
+  window.addEventListener("pagehide", autoPause);
+
+  // prevent context menu / double-tap zoom on game area
+  boardWrap.addEventListener("contextmenu", function(e){ e.preventDefault(); });
+  document.addEventListener("gesturestart", function(e){ e.preventDefault(); });
+
+  // ---------- Boot ----------
+  applyTheme();
+  applyReduce();
+  buildThemeGrid();
+  syncSettingsUI();
+  $("muteBtn").textContent = Audio.muted? "🔈":"🔊";
+  applyLang();
+  refreshMenu();
+  resize();
+  // Start in MENU; G holds a placeholder so render shows a calm idle stack
+  G = {
+    state: STATE.MENU, score:0, maxCombo:0, combo:0, round:1, mode:"classic",
+    timeLeft:0, cur: buildRound(1), readyT:0
+  };
+  // make the menu stack look calm
+  elBest.textContent = best.score;
+  requestAnimationFrame(frame);
+
+})();
+</script>
+</body>
+</html>

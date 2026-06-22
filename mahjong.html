@@ -1,0 +1,2432 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0b1020" />
+<meta name="description" content="麻雀ソリティア 1000× — Mahjong Solitaire kiểu Thượng Hải, ghép cặp quân bài đẹp mắt, mượt mà. Chơi miễn phí, đảm bảo luôn có lời giải." />
+<title>麻雀ソリティア ✦ 1000×</title>
+<style>
+  :root{
+    --bg0:#0b1020; --bg1:#0e1428;
+    --bgA:#16264f; --bgB:#1c1342; --bgC:#0c2a2a;
+    --gold:#ffce54; --cyan:#34e0ff; --violet:#b388ff; --teal:#34d3b6; --rose:#ff6b9d;
+    --jade:#34d3b6;
+    --ink:#08122a; --txt:#eaf0ff; --mut:#9fa9d2;
+    --panel-a:rgba(28,34,72,.80); --panel-b:rgba(14,18,40,.88);
+    --line:rgba(255,255,255,.12);
+    --tile-face1:#fbfdff; --tile-face2:#dfe7f2; --tile-edge:#b3c0d4;
+    --focus:#34e0ff;
+  }
+  /* ---- Themes (data-theme on <html>) ---- */
+  html[data-theme="sakura"]{
+    --bg0:#1a0c14; --bg1:#240e1c; --bgA:#5a1f3a; --bgB:#3a1438; --bgC:#2a1224;
+    --gold:#ffb3c8; --cyan:#ff8fb5; --violet:#d6a8ff; --teal:#ffb6d9; --rose:#ff6b9d;
+    --jade:#ff9ec4;
+    --panel-a:rgba(72,28,52,.82); --panel-b:rgba(34,14,28,.9);
+    --focus:#ff8fb5;
+  }
+  html[data-theme="jade"]{
+    --bg0:#06150f; --bg1:#08201a; --bgA:#0f3a2c; --bgB:#0a2a2a; --bgC:#0c2a18;
+    --gold:#ffe08a; --cyan:#54f0c8; --violet:#9affd0; --teal:#34d3b6; --rose:#ffb86b;
+    --jade:#54f0c8;
+    --panel-a:rgba(16,48,40,.82); --panel-b:rgba(8,26,22,.9);
+    --focus:#54f0c8;
+  }
+  html[data-theme="sumi"]{
+    --bg0:#0a0a0d; --bg1:#121218; --bgA:#26262f; --bgB:#1c1c26; --bgC:#161620;
+    --gold:#e8c060; --cyan:#9aa7c8; --violet:#b0a8d0; --teal:#88c0b0; --rose:#d08a9a;
+    --jade:#9aa7c8;
+    --panel-a:rgba(38,38,50,.84); --panel-b:rgba(16,16,22,.92);
+    --focus:#e8c060;
+  }
+  html[data-theme="light"]{
+    --bg0:#e8edf7; --bg1:#dde4f2; --bgA:#cdd8ef; --bgB:#d8d0ef; --bgC:#cce6df;
+    --gold:#b8860b; --cyan:#1278b0; --violet:#7a4fd6; --teal:#0f9a80; --rose:#d23b6b;
+    --jade:#0f9a80;
+    --ink:#1a2a4a; --txt:#16213a; --mut:#5a6a8a;
+    --panel-a:rgba(255,255,255,.82); --panel-b:rgba(232,238,248,.92);
+    --line:rgba(20,30,60,.16);
+    --focus:#1278b0;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{
+    margin:0; height:100%; overflow:hidden;
+    background:
+      radial-gradient(1200px 800px at 18% -12%, var(--bgA) 0%, transparent 55%),
+      radial-gradient(1000px 760px at 112% 8%, var(--bgB) 0%, transparent 52%),
+      radial-gradient(900px 700px at 50% 120%, var(--bgC) 0%, transparent 55%),
+      linear-gradient(160deg, var(--bg0), var(--bg1));
+    transition:background .4s ease;
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif; color:var(--txt);
+    user-select:none; -webkit-user-select:none; touch-action:manipulation;
+  }
+  #app{ position:fixed; inset:0; display:flex; flex-direction:column; }
+
+  /* ---------- Top bar ---------- */
+  #bar{
+    display:flex; align-items:center; gap:clamp(6px,1.4vw,14px);
+    padding:clamp(6px,1.4vw,12px) clamp(8px,2vw,18px);
+    flex-wrap:wrap; justify-content:center;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; margin-right:auto; }
+  .brand .kanji{
+    font-size:clamp(20px,3.4vw,30px); font-weight:900; line-height:1;
+    background:linear-gradient(180deg,#fff,var(--gold) 70%,#e0a92e);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 2px 12px rgba(255,206,84,.18);
+    letter-spacing:1px;
+  }
+  .brand .sub{ font-size:clamp(9px,1.5vw,12px); color:var(--mut); letter-spacing:3px; text-transform:uppercase; font-weight:800; }
+
+  .stats{ display:flex; gap:clamp(6px,1.4vw,12px); flex-wrap:wrap; justify-content:center; }
+  .stat{
+    background:linear-gradient(180deg,var(--panel-a),var(--panel-b));
+    border:1px solid var(--line); border-radius:14px;
+    padding:6px clamp(8px,1.4vw,14px); min-width:62px; text-align:center;
+    box-shadow:0 14px 30px -22px #000, inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  .stat .k{ font-size:clamp(8px,1.3vw,10px); letter-spacing:2px; text-transform:uppercase; color:var(--mut); font-weight:800; }
+  .stat .v{ font-size:clamp(15px,2.6vw,22px); font-weight:900; line-height:1.15; }
+  .stat.gold .v{ color:var(--gold); }
+  .stat.cyan .v{ color:var(--cyan); }
+  .stat.teal .v{ color:var(--teal); }
+  .stat.rose .v{ color:var(--rose); }
+
+  /* ---------- Buttons ---------- */
+  .btns{ display:flex; gap:clamp(5px,1.1vw,9px); flex-wrap:wrap; justify-content:center; }
+  button.b{
+    appearance:none; cursor:pointer; color:var(--txt);
+    font-family:inherit; font-weight:800; font-size:clamp(11px,1.6vw,14px);
+    background:linear-gradient(180deg,rgba(40,48,92,.9),rgba(20,26,54,.92));
+    border:1px solid var(--line); border-radius:13px;
+    padding:9px clamp(9px,1.5vw,15px);
+    display:inline-flex; align-items:center; gap:7px;
+    box-shadow:0 14px 28px -20px #000, inset 0 1px 0 rgba(255,255,255,.07);
+    transition:transform .08s ease, box-shadow .15s ease, border-color .15s ease, filter .15s ease;
+    white-space:nowrap;
+  }
+  button.b:hover{ transform:translateY(-1px); border-color:rgba(255,255,255,.24); filter:brightness(1.08); }
+  button.b:active{ transform:translateY(1px) scale(.98); }
+  button.b:disabled{ opacity:.4; cursor:not-allowed; transform:none; filter:none; }
+  button.b .ico{ font-size:1.1em; line-height:1; }
+  button.b.gold{ background:linear-gradient(180deg,#ffd874,#e9a92b); color:#3a2a02; border-color:rgba(255,255,255,.4); text-shadow:0 1px 0 rgba(255,255,255,.3); }
+  button.b.teal{ background:linear-gradient(180deg,#52e6c6,#1aa588); color:#05241d; border-color:rgba(255,255,255,.36); }
+  button.b.ghost{ background:linear-gradient(180deg,rgba(30,36,70,.7),rgba(16,20,42,.8)); }
+
+  .badge{ font-size:.78em; background:rgba(255,255,255,.14); border-radius:9px; padding:1px 6px; font-weight:900; }
+
+  /* ---------- Board ---------- */
+  #stage{ position:relative; flex:1; min-height:0; display:flex; align-items:center; justify-content:center; padding:clamp(4px,1.2vw,14px); }
+  #boardWrap{
+    position:relative; border-radius:20px;
+  }
+  #board{ display:block; touch-action:none; }
+  #fx{ position:absolute; inset:0; pointer-events:none; }
+
+  /* combo float */
+  #comboLayer{ position:absolute; inset:0; pointer-events:none; overflow:visible; }
+  .floatTxt{
+    position:absolute; transform:translate(-50%,-50%); pointer-events:none;
+    font-weight:900; white-space:nowrap; will-change:transform,opacity;
+    text-shadow:0 2px 10px rgba(0,0,0,.6); letter-spacing:.5px;
+  }
+
+  /* ---------- Overlays ---------- */
+  .overlay{
+    position:fixed; inset:0; z-index:40; display:flex; align-items:center; justify-content:center;
+    padding:18px; background:rgba(5,8,20,.62); backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px);
+    animation:fade .25s ease both;
+  }
+  .overlay.hidden{ display:none; }
+  @keyframes fade{ from{opacity:0} to{opacity:1} }
+  .card{
+    width:min(560px,94vw); max-height:92vh; overflow:auto;
+    background:linear-gradient(180deg,var(--panel-a),var(--panel-b));
+    border:1px solid var(--line); border-radius:24px;
+    box-shadow:0 50px 110px -40px #000, inset 0 1px 0 rgba(255,255,255,.08);
+    padding:clamp(18px,3.4vw,30px); text-align:center;
+    animation:pop .32s cubic-bezier(.2,1.2,.3,1) both;
+  }
+  @keyframes pop{ from{opacity:0; transform:translateY(14px) scale(.95)} to{opacity:1; transform:none} }
+  .card h1{
+    margin:0 0 4px; font-size:clamp(26px,5.6vw,44px); line-height:1.05; letter-spacing:1px;
+    background:linear-gradient(180deg,#fff,var(--gold) 75%,#e0a92e);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .card .jp{ font-size:clamp(13px,2.2vw,17px); color:var(--jade); font-weight:800; letter-spacing:5px; margin-bottom:14px; }
+  .card p.lead{ color:var(--mut); font-size:clamp(12px,1.9vw,15px); line-height:1.6; margin:0 0 16px; }
+
+  .layoutGrid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:14px 0 18px; }
+  @media (max-width:460px){ .layoutGrid{ grid-template-columns:repeat(3,1fr); gap:7px; } }
+  .lay{
+    cursor:pointer; border:1.5px solid var(--line); border-radius:16px; padding:12px 8px 10px;
+    background:linear-gradient(180deg,rgba(30,38,74,.66),rgba(16,20,42,.7));
+    transition:transform .1s ease, border-color .15s ease, box-shadow .15s ease, background .15s ease;
+    display:flex; flex-direction:column; align-items:center; gap:7px;
+  }
+  .lay:hover{ transform:translateY(-2px); border-color:rgba(255,255,255,.28); }
+  .lay.sel{ border-color:var(--gold); box-shadow:0 0 0 2px rgba(255,206,84,.3), 0 18px 38px -22px #000; background:linear-gradient(180deg,rgba(50,44,20,.5),rgba(20,18,42,.7)); }
+  .lay .ico{ font-size:clamp(26px,5vw,34px); line-height:1; filter:drop-shadow(0 4px 8px rgba(0,0,0,.5)); }
+  .lay .nm{ font-weight:900; font-size:clamp(12px,2vw,15px); }
+  .lay .nm small{ display:block; font-weight:700; color:var(--mut); font-size:.74em; letter-spacing:1px; margin-top:2px; }
+
+  .best{
+    display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin:6px 0 16px;
+  }
+  .best .chip{
+    background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:12px;
+    padding:8px 14px; font-size:clamp(11px,1.8vw,14px);
+  }
+  .best .chip b{ color:var(--gold); }
+
+  .summary{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin:8px 0 18px; }
+  .summary .box{
+    background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:16px;
+    padding:12px 18px; min-width:96px;
+  }
+  .summary .box .k{ font-size:clamp(9px,1.5vw,11px); letter-spacing:2px; text-transform:uppercase; color:var(--mut); font-weight:800; }
+  .summary .box .v{ font-size:clamp(19px,3.4vw,28px); font-weight:900; margin-top:2px; }
+
+  .actions{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:8px; }
+
+  .hintbar{ font-size:clamp(10px,1.7vw,13px); color:var(--mut); margin-top:12px; line-height:1.55; }
+  .hintbar kbd{ background:rgba(255,255,255,.1); border:1px solid var(--line); border-radius:6px; padding:1px 6px; font-family:inherit; font-weight:800; color:var(--txt); }
+
+  /* toast */
+  #toast{
+    position:fixed; left:50%; bottom:clamp(14px,4vh,30px); transform:translateX(-50%) translateY(20px);
+    background:linear-gradient(180deg,rgba(40,48,92,.95),rgba(18,24,52,.96));
+    border:1px solid var(--line); border-radius:14px; padding:10px 18px;
+    font-weight:800; font-size:clamp(12px,1.9vw,15px); color:var(--txt); z-index:50;
+    box-shadow:0 24px 50px -24px #000; opacity:0; pointer-events:none;
+    transition:opacity .25s ease, transform .25s ease; max-width:90vw; text-align:center;
+  }
+  #toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  .mutewrap{ display:flex; align-items:center; }
+
+  /* ---------- Language toggle ---------- */
+  .langrow{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin:0 0 14px; }
+  button.langbtn{
+    appearance:none; cursor:pointer; color:var(--txt); font-family:inherit;
+    font-weight:800; font-size:clamp(11px,1.7vw,13px);
+    background:linear-gradient(180deg,rgba(30,36,70,.7),rgba(16,20,42,.8));
+    border:1.5px solid var(--line); border-radius:12px; padding:7px 14px;
+    display:inline-flex; align-items:center; gap:6px;
+    box-shadow:0 14px 28px -20px #000, inset 0 1px 0 rgba(255,255,255,.07);
+    transition:transform .08s ease, border-color .15s ease, filter .15s ease, background .15s ease;
+  }
+  button.langbtn:hover{ transform:translateY(-1px); border-color:rgba(255,255,255,.24); filter:brightness(1.08); }
+  button.langbtn.sel{ border-color:var(--gold); box-shadow:0 0 0 2px rgba(255,206,84,.3), 0 14px 28px -20px #000; background:linear-gradient(180deg,rgba(50,44,20,.5),rgba(20,18,42,.7)); }
+
+  /* ---------- A11y focus ---------- */
+  :focus{ outline:none; }
+  :focus-visible{ outline:3px solid var(--focus); outline-offset:2px; border-radius:8px; }
+  .lay:focus-visible{ outline:3px solid var(--focus); outline-offset:3px; }
+  .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+  /* ---------- Settings / Stats panels ---------- */
+  .setRow{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 4px; border-bottom:1px solid var(--line); text-align:left; }
+  .setRow:last-child{ border-bottom:none; }
+  .setRow .lab{ font-weight:800; font-size:clamp(12px,2vw,15px); }
+  .setRow .lab small{ display:block; font-weight:600; color:var(--mut); font-size:.78em; margin-top:2px; }
+  .setRow input[type=range]{ width:clamp(110px,38vw,180px); accent-color:var(--gold); cursor:pointer; }
+  .seg{ display:inline-flex; border:1px solid var(--line); border-radius:11px; overflow:hidden; }
+  .seg button{ appearance:none; cursor:pointer; font-family:inherit; font-weight:800; font-size:clamp(11px,1.7vw,13px);
+    background:transparent; color:var(--mut); border:none; padding:7px 13px; transition:background .15s,color .15s; }
+  .seg button.on{ background:linear-gradient(180deg,#ffd874,#e9a92b); color:#3a2a02; }
+  .themeRow{ display:flex; gap:9px; flex-wrap:wrap; justify-content:flex-end; }
+  .swatch{ width:34px; height:34px; border-radius:10px; cursor:pointer; border:2px solid var(--line); position:relative; padding:0;
+    transition:transform .1s, border-color .15s; }
+  .swatch:hover{ transform:translateY(-2px); }
+  .swatch.sel{ border-color:var(--gold); box-shadow:0 0 0 2px rgba(255,206,84,.35); }
+  .swatch::after{ content:""; position:absolute; inset:4px; border-radius:6px; background:var(--sw,#444); }
+
+  .statsGrid{ display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin:10px 0 6px; }
+  @media (max-width:460px){ .statsGrid{ grid-template-columns:repeat(2,1fr); } }
+  .statsGrid .box{ background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:14px; padding:10px 8px; text-align:center; }
+  .statsGrid .box .k{ font-size:clamp(8px,1.4vw,10px); letter-spacing:1.5px; text-transform:uppercase; color:var(--mut); font-weight:800; }
+  .statsGrid .box .v{ font-size:clamp(16px,2.8vw,22px); font-weight:900; margin-top:3px; }
+
+  .achGrid{ display:grid; grid-template-columns:repeat(4,1fr); gap:9px; margin:8px 0; }
+  @media (max-width:460px){ .achGrid{ grid-template-columns:repeat(3,1fr); } }
+  .ach{ background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:14px; padding:10px 6px 8px; text-align:center;
+    opacity:.42; filter:grayscale(1); transition:opacity .2s, filter .2s, transform .15s; }
+  .ach.got{ opacity:1; filter:none; box-shadow:inset 0 0 0 1px rgba(255,206,84,.3); }
+  .ach .ico{ font-size:clamp(20px,4vw,28px); line-height:1; }
+  .ach .nm{ font-weight:900; font-size:clamp(9px,1.6vw,11px); margin-top:4px; }
+  .ach .ds{ font-weight:600; font-size:clamp(8px,1.4vw,10px); color:var(--mut); margin-top:2px; line-height:1.3; }
+
+  .stars{ font-size:clamp(26px,6vw,40px); letter-spacing:6px; margin:4px 0 10px; }
+  .stars .on{ color:var(--gold); text-shadow:0 2px 12px rgba(255,206,84,.4); }
+  .stars .off{ color:rgba(255,255,255,.18); }
+
+  .dailyBadge{ display:inline-flex; align-items:center; gap:6px; background:rgba(52,224,255,.14); border:1px solid var(--line);
+    border-radius:11px; padding:5px 12px; font-weight:800; font-size:clamp(10px,1.7vw,13px); color:var(--cyan); margin:2px 0 4px; }
+
+  /* combo meter */
+  #comboMeter{ position:absolute; left:50%; top:8px; transform:translateX(-50%); display:none; z-index:5;
+    background:linear-gradient(180deg,rgba(40,48,92,.9),rgba(18,24,52,.92)); border:1px solid var(--line);
+    border-radius:13px; padding:5px 14px; font-weight:900; font-size:clamp(12px,2.2vw,16px); pointer-events:none;
+    box-shadow:0 14px 28px -20px #000; white-space:nowrap; }
+  #comboMeter.show{ display:block; }
+  #comboMeter .bar{ height:4px; border-radius:3px; margin-top:4px; background:linear-gradient(90deg,var(--cyan),var(--gold)); transform-origin:left; }
+
+  /* reduced motion: gate heavy juice */
+  html[data-rm="1"] .card{ animation:none; }
+  html[data-rm="1"] .overlay{ animation:none; }
+  html[data-rm="1"] *{ scroll-behavior:auto; }
+  @media (prefers-reduced-motion: reduce){
+    html:not([data-rm="0"]) .card{ animation:none; }
+    html:not([data-rm="0"]) .overlay{ animation:none; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="bar">
+    <div class="brand">
+      <div>
+        <div class="kanji">麻雀ソリティア</div>
+        <div class="sub">Mahjong Solitaire ✦ 1000×</div>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat cyan"><div class="k" data-i18n="stRemain">Còn lại</div><div class="v" id="stRemain">144</div></div>
+      <div class="stat teal"><div class="k" data-i18n="stPairs">Cặp ghép</div><div class="v" id="stPairs">0</div></div>
+      <div class="stat gold"><div class="k" data-i18n="stScore">Điểm</div><div class="v" id="stScore">0</div></div>
+      <div class="stat rose"><div class="k" data-i18n="stTime">Thời gian</div><div class="v" id="stTime">0:00</div></div>
+    </div>
+    <div class="btns">
+      <button class="b teal" id="btnHint"><span class="ico">💡</span><span data-i18n="btnHint">Gợi ý</span></button>
+      <button class="b ghost" id="btnUndo"><span class="ico">↶</span><span data-i18n="btnUndo">Hoàn tác</span></button>
+      <button class="b ghost" id="btnShuffle"><span class="ico">🔀</span><span data-i18n="btnShuffle">Xáo</span></button>
+      <button class="b ghost" id="btnNew"><span class="ico">✦</span><span data-i18n="btnNew">Ván mới</span></button>
+      <button class="b ghost" id="btnSettings" data-i18n-title="settingsTitle" data-i18n-aria="settingsTitle" title="Cài đặt"><span class="ico">⚙</span></button>
+      <button class="b ghost mutewrap" id="btnMute" data-i18n-title="muteTitle" data-i18n-aria="muteTitle" title="Bật/tắt âm thanh"><span class="ico" id="muteIco">🔊</span></button>
+    </div>
+  </div>
+
+  <div id="stage">
+    <div id="boardWrap">
+      <div id="comboMeter"><span id="comboMeterTxt">COMBO ×2</span><div class="bar" id="comboMeterBar"></div></div>
+      <canvas id="board"></canvas>
+      <canvas id="fx"></canvas>
+      <div id="comboLayer"></div>
+    </div>
+  </div>
+  <div id="ariaLive" class="sr-only" aria-live="polite" role="status"></div>
+</div>
+
+<!-- MENU -->
+<div class="overlay" id="menu">
+  <div class="card">
+    <div class="langrow">
+      <button class="langbtn" data-lang="vi">🇻🇳 Tiếng Việt</button>
+      <button class="langbtn" data-lang="ja">🇯🇵 日本語</button>
+    </div>
+    <h1>麻雀ソリティア</h1>
+    <div class="jp">M A H J O N G</div>
+    <p class="lead" data-i18n="menuLead">Ghép các cặp quân bài giống nhau để dọn sạch bàn cờ. Quân chỉ chọn được khi không có quân nào đè lên và trống ít nhất một bên trái/phải. Hoa ghép với hoa, mùa ghép với mùa. Mỗi ván đều đảm bảo có lời giải.</p>
+
+    <div class="best" id="bestWrap"></div>
+
+    <div id="resumeWrap" style="display:none; margin:0 0 14px;">
+      <button class="b teal" id="btnResume" style="font-size:clamp(13px,2.2vw,16px); padding:11px 24px;"><span class="ico">⏵</span> <span data-i18n="btnResume">Chơi tiếp ván cũ</span></button>
+    </div>
+
+    <div data-i18n="chooseLayout" style="font-size:clamp(11px,1.8vw,13px); color:var(--mut); letter-spacing:2px; text-transform:uppercase; font-weight:800; margin-bottom:2px;">Chọn thế bài</div>
+    <div class="layoutGrid" id="layoutGrid"></div>
+
+    <div data-i18n="chooseMode" style="font-size:clamp(11px,1.8vw,13px); color:var(--mut); letter-spacing:2px; text-transform:uppercase; font-weight:800; margin:6px 0 8px;">Chế độ</div>
+    <div class="seg" id="modeSeg" role="group" style="margin-bottom:16px;">
+      <button data-mode="relaxed" data-i18n="modeRelaxed">Thư giãn</button>
+      <button data-mode="classic" class="on" data-i18n="modeClassic">Cổ điển</button>
+      <button data-mode="timed" data-i18n="modeTimed">Tính giờ</button>
+    </div>
+
+    <div class="actions">
+      <button class="b gold" id="btnStart" style="font-size:clamp(14px,2.4vw,18px); padding:12px 28px;"><span class="ico">▶</span> <span data-i18n="btnStart">Bắt đầu</span></button>
+      <button class="b teal" id="btnDaily"><span class="ico">📅</span> <span data-i18n="btnDaily">Thử thách ngày</span></button>
+    </div>
+    <div class="actions" style="margin-top:10px;">
+      <button class="b ghost" id="btnStats"><span class="ico">📊</span> <span data-i18n="btnStats">Thành tích</span></button>
+      <button class="b ghost" id="btnMenuSettings"><span class="ico">⚙</span> <span data-i18n="btnSettings">Cài đặt</span></button>
+    </div>
+
+    <div class="hintbar" id="menuHint" data-i18n-html="menuHint">
+      Mẹo: ghép thật nhanh để tạo <b style="color:var(--cyan)">combo</b> ăn điểm thưởng. Phím <kbd>H</kbd> gợi ý · <kbd>U</kbd> hoàn tác · <kbd>S</kbd> xáo · <kbd>M</kbd> tắt tiếng.
+    </div>
+  </div>
+</div>
+
+<!-- WIN -->
+<div class="overlay hidden" id="win">
+  <div class="card">
+    <h1 data-i18n="winTitle">勝利 ✦ Chiến thắng!</h1>
+    <div class="jp" data-i18n="winJp">よくできました</div>
+    <div class="stars" id="winStars" aria-hidden="true"></div>
+    <p class="lead" data-i18n="winLead">Bạn đã dọn sạch toàn bộ bàn cờ. Xuất sắc!</p>
+    <div class="summary">
+      <div class="box"><div class="k" data-i18n="lblTime">Thời gian</div><div class="v" id="winTime">0:00</div></div>
+      <div class="box"><div class="k" data-i18n="lblScore">Điểm</div><div class="v" id="winScore" style="color:var(--gold)">0</div></div>
+      <div class="box"><div class="k" data-i18n="lblMaxCombo">Combo cao nhất</div><div class="v" id="winCombo" style="color:var(--cyan)">0</div></div>
+    </div>
+    <div id="winBest" class="hintbar"></div>
+    <div class="actions">
+      <button class="b gold" id="btnWinReplay"><span class="ico">↻</span> <span data-i18n="btnReplay">Chơi lại</span></button>
+      <button class="b teal" id="btnWinShare"><span class="ico">📋</span> <span data-i18n="btnShare">Chia sẻ</span></button>
+      <button class="b ghost" id="btnWinMenu"><span class="ico">☰</span> <span data-i18n="btnToMenu">Về menu</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- NO MOVES (neutral) -->
+<div class="overlay hidden" id="lose">
+  <div class="card">
+    <h1 data-i18n="loseTitle">Hết nước đi</h1>
+    <div class="jp" data-i18n="loseJp">手詰まり</div>
+    <p class="lead" data-i18n="loseLead">Tạm thời không còn cặp nào ghép được. Xáo lại các quân còn lại (vẫn đảm bảo có lời giải) để chơi tiếp, hoặc bắt đầu ván mới.</p>
+    <div class="summary">
+      <div class="box"><div class="k" data-i18n="stRemain">Còn lại</div><div class="v" id="loseRemain" style="color:var(--cyan)">0</div></div>
+      <div class="box"><div class="k" data-i18n="lblScore">Điểm</div><div class="v" id="loseScore" style="color:var(--gold)">0</div></div>
+    </div>
+    <div class="actions">
+      <button class="b teal" id="btnLoseShuffle"><span class="ico">🔀</span> <span data-i18n="btnReshuffle">Xáo lại</span></button>
+      <button class="b ghost" id="btnLoseNew"><span class="ico">✦</span> <span data-i18n="btnNewGame">Ván mới</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="overlay hidden" id="settings">
+  <div class="card" style="text-align:left;">
+    <h1 style="text-align:center;" data-i18n="settingsTitle">Cài đặt</h1>
+    <div class="jp" style="text-align:center;" data-i18n="settingsJp">設定</div>
+    <div class="setRow">
+      <div class="lab" data-i18n="setVolume">Âm lượng</div>
+      <input type="range" id="setVol" min="0" max="100" step="1" data-i18n-aria="setVolume" aria-label="Âm lượng">
+    </div>
+    <div class="setRow">
+      <div class="lab" data-i18n="setSfx">Hiệu ứng âm thanh</div>
+      <div class="seg" id="setSfxSeg" role="group">
+        <button data-v="1" data-i18n="onWord">Bật</button><button data-v="0" data-i18n="offWord">Tắt</button>
+      </div>
+    </div>
+    <div class="setRow">
+      <div class="lab" data-i18n="setMusic">Nhạc nền<small data-i18n="setMusicSub">Giai điệu nhẹ khi chơi</small></div>
+      <div class="seg" id="setMusicSeg" role="group">
+        <button data-v="1" data-i18n="onWord">Bật</button><button data-v="0" data-i18n="offWord">Tắt</button>
+      </div>
+    </div>
+    <div class="setRow">
+      <div class="lab" data-i18n="setReduceMotion">Giảm chuyển động<small data-i18n="setReduceMotionSub">Tắt rung/lóe/hạt</small></div>
+      <div class="seg" id="setRmSeg" role="group">
+        <button data-v="1" data-i18n="onWord">Bật</button><button data-v="0" data-i18n="offWord">Tắt</button>
+      </div>
+    </div>
+    <div class="setRow" style="align-items:flex-start;">
+      <div class="lab" data-i18n="setTheme">Giao diện</div>
+      <div class="themeRow" id="themeRow"></div>
+    </div>
+    <div class="actions" style="margin-top:16px;">
+      <button class="b gold" id="btnSettingsClose"><span class="ico">✓</span> <span data-i18n="btnClose">Xong</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- STATS / ACHIEVEMENTS -->
+<div class="overlay hidden" id="stats">
+  <div class="card">
+    <h1 data-i18n="statsTitle">Thành tích</h1>
+    <div class="jp" data-i18n="statsJp">記録</div>
+    <div class="statsGrid" id="statsGrid"></div>
+    <div data-i18n="achievements" style="font-size:clamp(11px,1.8vw,13px); color:var(--mut); letter-spacing:2px; text-transform:uppercase; font-weight:800; margin:14px 0 6px;">Huy hiệu</div>
+    <div class="achGrid" id="achGrid"></div>
+    <div class="actions" style="margin-top:14px;">
+      <button class="b ghost" id="btnStatsClose"><span class="ico">☰</span> <span data-i18n="btnClose">Xong</span></button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+"use strict";
+(function(){
+
+/* ====================================================================== */
+/*  Constants & helpers                                                    */
+/* ====================================================================== */
+const LS_KEY = "mahjong1000_v1";
+const clamp = (v,a,b)=> v<a?a:(v>b?b:v);
+const lerp = (a,b,t)=> a+(b-a)*t;
+const now = ()=> performance.now();
+
+/* Swappable RNG: default Math.random; daily mode installs a seeded mulberry32
+   so every player gets the same board/sequence for a given date. */
+let _rng = Math.random;
+function mulberry32(seed){
+  let a = seed>>>0;
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function setSeed(seed){ _rng = mulberry32(seed); }
+function clearSeed(){ _rng = Math.random; }
+const rand = (n)=> Math.floor(_rng()*n);
+function dateKey(d){ d=d||new Date(); return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate(); }
+function seedFromDateKey(k){ // mix the YYYYMMDD into a 32-bit seed
+  let h = k>>>0; h = Math.imul(h ^ 0x9E3779B9, 0x85EBCA6B); h ^= h>>>13; h = Math.imul(h, 0xC2B2AE35); h ^= h>>>16; return h>>>0;
+}
+
+/* ====================================================================== */
+/*  i18n (VI / JA)                                                         */
+/* ====================================================================== */
+const I18N = {
+  vi:{
+    /* top bar */
+    stRemain:"Còn lại", stPairs:"Cặp ghép", stScore:"Điểm", stTime:"Thời gian",
+    btnHint:"Gợi ý", btnUndo:"Hoàn tác", btnShuffle:"Xáo", btnNew:"Ván mới",
+    muteTitle:"Bật/tắt âm thanh", settingsTitle:"Cài đặt",
+    /* menu */
+    menuLead:"Ghép các cặp quân bài giống nhau để dọn sạch bàn cờ. Quân chỉ chọn được khi không có quân nào đè lên và trống ít nhất một bên trái/phải. Hoa ghép với hoa, mùa ghép với mùa. Mỗi ván đều đảm bảo có lời giải.",
+    chooseLayout:"Chọn thế bài", chooseMode:"Chế độ",
+    btnStart:"Bắt đầu", btnDaily:"Thử thách ngày", btnStats:"Thành tích",
+    btnResume:"Chơi tiếp ván cũ",
+    menuHint:'Mẹo: ghép thật nhanh để tạo <b style="color:var(--cyan)">combo</b> ăn điểm thưởng. Phím <kbd>H</kbd> gợi ý · <kbd>U</kbd> hoàn tác · <kbd>S</kbd> xáo · <kbd>M</kbd> tắt tiếng · <kbd>Esc</kbd> menu.',
+    /* modes */
+    modeRelaxed:"Thư giãn", modeClassic:"Cổ điển", modeTimed:"Tính giờ",
+    /* layouts */
+    layTurtle:"Con Rùa", layPyramid:"Kim Tự Tháp", layDragon:"Con Rồng",
+    layFortress:"Pháo Đài", layButterfly:"Cánh Bướm", layWell:"Giếng Trời", layArena:"Đấu Trường",
+    /* win */
+    winTitle:"勝利 ✦ Chiến thắng!", winJp:"よくできました",
+    winLead:"Bạn đã dọn sạch toàn bộ bàn cờ. Xuất sắc!",
+    lblTime:"Thời gian", lblScore:"Điểm", lblMaxCombo:"Combo cao nhất",
+    btnReplay:"Chơi lại", btnToMenu:"Về menu", btnShare:"Chia sẻ",
+    /* no-moves (neutral) */
+    loseTitle:"Hết nước đi", loseJp:"手詰まり",
+    loseLead:"Tạm thời không còn cặp nào ghép được. Xáo lại các quân còn lại (vẫn đảm bảo có lời giải) để chơi tiếp, hoặc bắt đầu ván mới.",
+    btnReshuffle:"Xáo lại", btnNewGame:"Ván mới",
+    /* settings */
+    settingsJp:"設定", setVolume:"Âm lượng", setSfx:"Hiệu ứng âm thanh",
+    setMusic:"Nhạc nền", setMusicSub:"Giai điệu nhẹ khi chơi",
+    setReduceMotion:"Giảm chuyển động", setReduceMotionSub:"Tắt rung/lóe/hạt",
+    setTheme:"Giao diện", onWord:"Bật", offWord:"Tắt", btnClose:"Xong",
+    themeMidnight:"Đêm xanh", themeSakura:"Hoa anh đào", themeJade:"Ngọc bích", themeSumi:"Mực tàu", themeLight:"Sáng",
+    /* stats */
+    statsTitle:"Thành tích", statsJp:"記録", achievements:"Huy hiệu",
+    stGamesPlayed:"Số ván", stGamesWon:"Thắng", stBestScore:"Điểm cao nhất",
+    stBestTime:"Nhanh nhất", stBestCombo:"Combo cao nhất", stDayStreak:"Chuỗi ngày",
+    stHintsUsed:"Gợi ý đã dùng", stShufflesUsed:"Đã xáo", stTotalPairs:"Tổng cặp ghép",
+    /* daily */
+    dailyToday:"Hôm nay", dailyBest:"Tốt nhất hôm nay", dailyStreak:"Chuỗi ngày",
+    dailyTag:"THỬ THÁCH NGÀY", dailyDone:"✓ Đã hoàn thành hôm nay",
+    /* toasts */
+    toastNoPairHint:"Không còn cặp nào — hãy xáo lại!",
+    toastNothingUndo:"Không có gì để hoàn tác",
+    toastShuffled:"Đã xáo lại — vẫn có lời giải ✦",
+    toastNewBest:"⭐ KỶ LỤC MỚI!",
+    toastSaved:"Đã lưu ván đang chơi",
+    toastShareOk:"Đã sao chép kết quả ✦",
+    toastShareFail:"Không sao chép được",
+    toastAchUnlock:"🏅 Mở khóa huy hiệu:",
+    toastNoHintsLeft:"Hết lượt gợi ý ván này",
+    toastNoShufflesLeft:"Hết lượt xáo ván này",
+    /* achievements */
+    achFirstWinNm:"Tân binh", achFirstWinDs:"Thắng ván đầu tiên",
+    achCombo5Nm:"Liên hoàn", achCombo5Ds:"Đạt combo ×5",
+    achCombo10Nm:"Bão combo", achCombo10Ds:"Đạt combo ×10",
+    achSpeedNm:"Thần tốc", achSpeedDs:"Thắng dưới 4 phút",
+    achNoHintNm:"Tự lực", achNoHintDs:"Thắng không dùng gợi ý",
+    achThreeStarNm:"Hoàn hảo", achThreeStarDs:"Đạt 3 sao",
+    achStreak3Nm:"Bền bỉ", achStreak3Ds:"Chuỗi 3 ngày",
+    achAllLayoutsNm:"Nhà thám hiểm", achAllLayoutsDs:"Thắng mọi thế bài",
+    /* records / chips */
+    newRecord:"Kỷ lục mới!", recordLabel:"Kỷ lục:", ptsUnit:"điểm", ptsShort:"đ",
+    noRecord:"Chưa có kỷ lục — hãy lập kỷ lục đầu tiên! 🏆",
+    starsWord:"sao", shareTitle:"Mạt chược Solitaire 1000×",
+    locale:"vi-VN",
+  },
+  ja:{
+    /* top bar */
+    stRemain:"残り", stPairs:"ペア", stScore:"スコア", stTime:"タイム",
+    btnHint:"ヒント", btnUndo:"もとに戻す", btnShuffle:"シャッフル", btnNew:"新しいゲーム",
+    muteTitle:"サウンドのオン/オフ", settingsTitle:"設定",
+    /* menu */
+    menuLead:"同じ絵柄の牌を2枚ずつ取り除いて盤面をすべてクリアしましょう。牌は上に他の牌が重なっておらず、左右どちらかが空いているときだけ取れます。花は花同士、季節は季節同士で合います。どの局も必ず解ける配牌です。",
+    chooseLayout:"配置を選ぶ", chooseMode:"モード",
+    btnStart:"スタート", btnDaily:"デイリー", btnStats:"記録",
+    btnResume:"続きから",
+    menuHint:'コツ：すばやく取って<b style="color:var(--cyan)">コンボ</b>を決めるとボーナス点が入ります。キー <kbd>H</kbd> ヒント · <kbd>U</kbd> もとに戻す · <kbd>S</kbd> シャッフル · <kbd>M</kbd> ミュート · <kbd>Esc</kbd> メニュー。',
+    /* modes */
+    modeRelaxed:"リラックス", modeClassic:"クラシック", modeTimed:"タイム",
+    /* layouts */
+    layTurtle:"亀", layPyramid:"ピラミッド", layDragon:"龍",
+    layFortress:"城", layButterfly:"蝶", layWell:"井戸", layArena:"闘技場",
+    /* win */
+    winTitle:"勝利！", winJp:"よくできました",
+    winLead:"盤面をすべてクリアしました。お見事！",
+    lblTime:"タイム", lblScore:"スコア", lblMaxCombo:"最大コンボ",
+    btnReplay:"もう一度", btnToMenu:"メニューへ", btnShare:"シェア",
+    /* no-moves (neutral) */
+    loseTitle:"手詰まり", loseJp:"手詰まり",
+    loseLead:"今は取れるペアがありません。残りの牌をシャッフル（必ず解けます）して続けるか、新しいゲームを始めましょう。",
+    btnReshuffle:"シャッフル", btnNewGame:"新しいゲーム",
+    /* settings */
+    settingsJp:"設定", setVolume:"音量", setSfx:"効果音",
+    setMusic:"BGM", setMusicSub:"プレイ中の静かな旋律",
+    setReduceMotion:"動きを減らす", setReduceMotionSub:"振動・点滅・粒子をオフ",
+    setTheme:"テーマ", onWord:"オン", offWord:"オフ", btnClose:"完了",
+    themeMidnight:"真夜中", themeSakura:"桜", themeJade:"翡翠", themeSumi:"墨", themeLight:"ライト",
+    /* stats */
+    statsTitle:"記録", statsJp:"記録", achievements:"バッジ",
+    stGamesPlayed:"プレイ数", stGamesWon:"勝利", stBestScore:"最高スコア",
+    stBestTime:"最速", stBestCombo:"最大コンボ", stDayStreak:"連続日数",
+    stHintsUsed:"使ったヒント", stShufflesUsed:"シャッフル回数", stTotalPairs:"合計ペア",
+    /* daily */
+    dailyToday:"今日", dailyBest:"今日のベスト", dailyStreak:"連続日数",
+    dailyTag:"デイリーチャレンジ", dailyDone:"✓ 今日はクリア済み",
+    /* toasts */
+    toastNoPairHint:"取れるペアがありません — シャッフルしましょう！",
+    toastNothingUndo:"戻せる操作がありません",
+    toastShuffled:"シャッフルしました — まだ解けます ✦",
+    toastNewBest:"⭐ 新記録！",
+    toastSaved:"ゲームを保存しました",
+    toastShareOk:"結果をコピーしました ✦",
+    toastShareFail:"コピーできませんでした",
+    toastAchUnlock:"🏅 バッジ獲得：",
+    toastNoHintsLeft:"この局のヒントはもうありません",
+    toastNoShufflesLeft:"この局のシャッフルはもうありません",
+    /* achievements */
+    achFirstWinNm:"新人", achFirstWinDs:"初クリア",
+    achCombo5Nm:"連鎖", achCombo5Ds:"コンボ×5達成",
+    achCombo10Nm:"コンボ嵐", achCombo10Ds:"コンボ×10達成",
+    achSpeedNm:"電光石火", achSpeedDs:"4分未満でクリア",
+    achNoHintNm:"自力", achNoHintDs:"ヒントなしでクリア",
+    achThreeStarNm:"完璧", achThreeStarDs:"星3つ達成",
+    achStreak3Nm:"継続", achStreak3Ds:"3日連続",
+    achAllLayoutsNm:"探検家", achAllLayoutsDs:"全配置クリア",
+    /* records / chips */
+    newRecord:"新記録！", recordLabel:"記録：", ptsUnit:"点", ptsShort:"点",
+    noRecord:"記録はまだありません — 最初の記録を作ろう！ 🏆",
+    starsWord:"星", shareTitle:"上海ソリティア 1000×",
+    locale:"ja-JP",
+  },
+};
+let uiLang = localStorage.getItem("mahjong1000_lang") || "vi";
+if(!I18N[uiLang]) uiLang = "vi";
+function t(k){ return (I18N[uiLang] && I18N[uiLang][k]) || I18N.vi[k] || k; }
+function fmtNum(n){ try{ return n.toLocaleString(t("locale")); }catch(e){ return String(n); } }
+
+function applyLang(){
+  document.documentElement.lang = uiLang;
+  document.querySelectorAll("[data-i18n]").forEach(e=>{ e.textContent = t(e.getAttribute("data-i18n")); });
+  document.querySelectorAll("[data-i18n-html]").forEach(e=>{ e.innerHTML = t(e.getAttribute("data-i18n-html")); });
+  document.querySelectorAll("[data-i18n-title]").forEach(e=>{ e.title = t(e.getAttribute("data-i18n-title")); });
+  document.querySelectorAll("[data-i18n-aria]").forEach(e=>{ e.setAttribute("aria-label", t(e.getAttribute("data-i18n-aria"))); });
+  document.querySelectorAll(".langbtn").forEach(b=> b.classList.toggle("sel", b.dataset.lang===uiLang));
+  // refresh dynamic UI that depends on language
+  if(typeof buildMenu==="function") buildMenu();
+}
+function setLang(lang){
+  if(!I18N[lang]) return;
+  uiLang = lang;
+  try{ localStorage.setItem("mahjong1000_lang", lang); }catch(e){}
+  applyLang();
+}
+
+/* Tile half-cell grid: each tile occupies 2x2 half-cells, layers stack.
+   Coordinates (layer, x, y) measured in HALF cells (so adjacent tiles
+   differ by 2). A tile body spans [x,x+1] x [y,y+1] half cells. */
+
+/* ---- Tile face glyph sets (Unicode Mahjong Tiles U+1F000..) ---- */
+/* We build 34 distinct "suit" faces (man/pin/sou 1-9, winds, dragons) ->
+   x4 copies = 136 tiles. Plus 4 flowers + 4 seasons = 8 bonus -> 144. */
+const SUITS = (function(){
+  const man=[], pin=[], sou=[];
+  // Characters (man) 🀇..🀏 = U+1F007..U+1F00F
+  for(let i=0;i<9;i++) man.push(String.fromCodePoint(0x1F007+i));
+  // Bamboo (sou) 🀐..🀘 = U+1F010..U+1F018
+  for(let i=0;i<9;i++) sou.push(String.fromCodePoint(0x1F010+i));
+  // Circles/dots (pin) 🀙..🀡 = U+1F019..U+1F021
+  for(let i=0;i<9;i++) pin.push(String.fromCodePoint(0x1F019+i));
+  // Winds 🀀🀁🀂🀃 = U+1F000..U+1F003
+  const winds=[]; for(let i=0;i<4;i++) winds.push(String.fromCodePoint(0x1F000+i));
+  // Dragons: red 🀄 U+1F004, green 🀅 U+1F005, white 🀆 U+1F006
+  const dragons=[ String.fromCodePoint(0x1F004), String.fromCodePoint(0x1F005), String.fromCodePoint(0x1F006) ];
+  return man.concat(pin, sou, winds, dragons); // 9+9+9+4+3 = 34
+})();
+/* Flowers 🀢🀣🀤🀥 = U+1F022..U+1F025 ; Seasons 🀦🀧🀨🀩 = U+1F026..U+1F029 */
+const FLOWERS = [0x1F022,0x1F023,0x1F024,0x1F025].map(c=>String.fromCodePoint(c));
+const SEASONS = [0x1F026,0x1F027,0x1F028,0x1F029].map(c=>String.fromCodePoint(c));
+
+/* A "kind" defines matching identity. Normal suits: kind = suit index (0..33).
+   Flowers: kind = "F" (any flower matches any flower).
+   Seasons: kind = "S".  Each tile also stores a glyph for display. */
+
+/* ====================================================================== */
+/*  Layout definitions                                                     */
+/*  Each returns array of {l, x, y} (half-cell coords). Must total 144.    */
+/* ====================================================================== */
+
+function rowRange(l, y, x0, x1){ // inclusive cell pairs, step 2
+  const a=[]; for(let x=x0; x<=x1; x+=2) a.push({l,x,y}); return a;
+}
+
+/* --- Classic Turtle (144) --- */
+function layoutTurtle(){
+  const t=[];
+  // Layer 0 (15 wide grid of half-cells -> columns at x = 0..28 step2)
+  // Standard turtle rows (counts): 12,8,10,12,12,10,8,12 = 84  + tweaks
+  // We'll use the well-known layout coordinates.
+  const L0 = [
+    {y:0,  x0:2,  x1:24},          // 12
+    {y:2,  x0:6,  x1:20},          // 8
+    {y:4,  x0:4,  x1:22},          // 10
+    {y:6,  x0:2,  x1:24},          // 12
+    {y:8,  x0:2,  x1:24},          // 12
+    {y:10, x0:4,  x1:22},          // 10
+    {y:12, x0:6,  x1:20},          // 8
+    {y:14, x0:2,  x1:24},          // 12
+  ];                                // = 84
+  L0.forEach(r=> rowRange(0,r.y,r.x0,r.x1).forEach(c=>t.push(c)));
+  // far left & right single tiles on the centre row (the "head"/"tail" of the turtle)
+  t.push({l:0, x:-4, y:7});  // tail far left
+  t.push({l:0, x:28, y:7});  // head step
+  t.push({l:0, x:30, y:7});  // head far right    => L0 = 87
+  // Layer 1 (6x6 block centered) x:6..16 step2, y:2..12 step2
+  for(let y=2;y<=12;y+=2) for(let x=6;x<=16;x+=2) t.push({l:1,x,y});
+  // Layer 2 (4x4) x:8..14, y:4..10
+  for(let y=4;y<=10;y+=2) for(let x=8;x<=14;x+=2) t.push({l:2,x,y});
+  // Layer 3 (2x2) x:10..12, y:6..8
+  for(let y=6;y<=8;y+=2) for(let x=10;x<=12;x+=2) t.push({l:3,x,y});
+  // Layer 4 (1) center cap
+  t.push({l:4, x:11, y:7});
+  return normalizeCount(t, 144);
+}
+
+/* --- Pyramid (144): a stepped square pyramid + base frame --- */
+function layoutPyramid(){
+  const t=[];
+  // base 12x10 = 120? too many. Build layered squares.
+  // Layer0: 12 x 10 grid minus corners -> aim 100ish, then layers.
+  // Simpler: concentric square layers.
+  const layers = [
+    {l:0, n:12, m:10}, // 12 wide,10 tall = 120
+    {l:1, n:10, m:8},  // 80? -> we instead inset
+  ];
+  void layers;
+  // Layer0 full 12x10 = 120
+  let c=0;
+  for(let y=0;y<10;y++) for(let x=0;x<12;x++){ t.push({l:0,x:x*2,y:y*2}); c++; }
+  // remove 0 -> have 120. Layer1 inset by 1 cell: x1..10 (10 wide), y1..8 (8 tall) but place on top centers
+  // place layer1 as 5x4 = 20 on top to total 140, then layer2 cap.
+  for(let y=0;y<4;y++) for(let x=0;x<5;x++) t.push({l:1, x: x*2*2+2, y: y*2*2+2});
+  // that's 20 -> 140. Layer2: 1x... add 4 caps
+  for(let i=0;i<4;i++) t.push({l:2, x: 4 + i*6, y: 6});
+  // total now 120+20+4 = 144
+  return normalizeCount(t, 144);
+}
+
+/* --- Dragon (144): a long horizontal serpent with a raised spine --- */
+function layoutDragon(){
+  const t=[];
+  // Body base: two long rows of 18 + middle rows tapering = base ~ make 100
+  // Base rows (layer 0)
+  const base = [
+    {y:2,  x0:0,  x1:34},  // 18
+    {y:4,  x0:0,  x1:34},  // 18
+    {y:6,  x0:0,  x1:34},  // 18
+    {y:8,  x0:0,  x1:34},  // 18
+  ];
+  base.forEach(r=> rowRange(0,r.y,r.x0,r.x1).forEach(cc=>t.push(cc)));
+  // = 72. Spine layer1: middle two rows length 16
+  for(let y=4;y<=6;y+=2) rowRange(1,y,2,32).forEach(cc=>t.push(cc)); // 16+16=32 ->104
+  // crest layer2: one row length 14
+  rowRange(2,5,4,30).forEach(cc=>t.push(cc)); // 14 ->118
+  // head bump layer1 extra + tail: add 26 more spread as little feet (layer0) on edges rows y0 and y10
+  rowRange(0,0,4,30).forEach(cc=>t.push(cc));  // top feet 14 ->132
+  rowRange(0,10,4,18).forEach(cc=>t.push(cc)); // bottom feet 8 ->140
+  // cap layer3 ridge x: 10..16
+  rowRange(3,5,10,16).forEach(cc=>t.push(cc)); // 4 ->144
+  return normalizeCount(t, 144);
+}
+
+/* --- Fortress (144): a square keep with corner towers --- */
+function layoutFortress(){
+  const t=[];
+  // Layer 0: outer 14x10 ring frame + filled interior gaps -> build a solid 14x10 minus a small inner court
+  for(let y=0;y<10;y++) for(let x=0;x<14;x++){
+    // leave a 4x2 inner courtyard empty (x 5..8, y 4..5)
+    if(x>=5&&x<=8&&y>=4&&y<=5) continue;
+    t.push({l:0,x:x*2,y:y*2});
+  }
+  // Layer 1: ramparts (inset ring) x1..12, y1..8 perimeter
+  for(let y=1;y<9;y++) for(let x=1;x<13;x++){
+    if(!(x===1||x===12||y===1||y===8)) continue;
+    t.push({l:1,x:x*2,y:y*2});
+  }
+  // Layer 2: four corner towers (2x2 each)
+  const corners=[[2,2],[9,2],[2,6],[9,6]];
+  corners.forEach(([cx,cy])=>{ for(let dy=0;dy<2;dy++) for(let dx=0;dx<2;dx++) t.push({l:2,x:(cx+dx)*2,y:(cy+dy)*2}); });
+  // Layer 3: central keep cap
+  t.push({l:3,x:6*2,y:4*2}); t.push({l:3,x:7*2,y:4*2});
+  return normalizeCount(t,144);
+}
+
+/* --- Butterfly (144): two symmetric wings --- */
+function layoutButterfly(){
+  const t=[];
+  // wing shape rows mirrored across a central column at x=18
+  const halfRows=[
+    {y:0,  x0:6,  x1:14},
+    {y:2,  x0:2,  x1:16},
+    {y:4,  x0:0,  x1:16},
+    {y:6,  x0:0,  x1:16},
+    {y:8,  x0:0,  x1:16},
+    {y:10, x0:2,  x1:16},
+    {y:12, x0:6,  x1:14},
+  ];
+  halfRows.forEach(r=>{
+    rowRange(0,r.y,r.x0,r.x1).forEach(c=>t.push(c));
+    // mirror to right wing (gap of 4 around centre 18..20)
+    rowRange(0,r.y,36-r.x1,36-r.x0).forEach(c=>t.push(c));
+  });
+  // body column (layer 0) centre
+  for(let y=2;y<=10;y+=2) t.push({l:0,x:18,y});
+  // upper-wing detail layer1
+  [{y:4,x0:4,x1:12},{y:6,x0:4,x1:12}].forEach(r=>{
+    rowRange(1,r.y,r.x0,r.x1).forEach(c=>t.push(c));
+    rowRange(1,r.y,36-r.x1,36-r.x0).forEach(c=>t.push(c));
+  });
+  // body spine layer1
+  for(let y=4;y<=8;y+=2) t.push({l:1,x:18,y});
+  // crest layer2
+  t.push({l:2,x:8,y:5}); t.push({l:2,x:28,y:5});
+  return normalizeCount(t,144);
+}
+
+/* --- Well (144): deep concentric square shaft --- */
+function layoutWell(){
+  const t=[];
+  // base 12x12 full = 144 exactly, then carve and stack to add depth feel
+  // Use concentric rings on rising layers (a well looking down).
+  function ring(l, x0,y0,x1,y1){
+    for(let x=x0;x<=x1;x+=2){ t.push({l,x,y:y0}); t.push({l,x,y:y1}); }
+    for(let y=y0+2;y<=y1-2;y+=2){ t.push({l,x:x0,y}); t.push({l,x:x1,y}); }
+  }
+  // Layer0 full 12 wide x 8 tall = 96
+  for(let y=0;y<8;y++) for(let x=0;x<12;x++) t.push({l:0,x:x*2,y:y*2});
+  // Layer1 ring 10 wide (x1..10) y1..6
+  ring(1, 2,2, 20,12); // x 2..20 (10 cols), y 2..12 (6 rows)
+  // Layer2 ring smaller
+  ring(2, 4,4, 18,10);
+  // Layer3 ring smaller
+  ring(3, 6,6, 16,8);
+  return normalizeCount(t,144);
+}
+
+/* --- Arena (144): oval stadium with tiered stands --- */
+function layoutArena(){
+  const t=[];
+  // Elliptical filled base on layer0
+  const cx=16, cy=8, rx=9, ry=6;
+  for(let gy=0; gy<=2*ry; gy++){
+    for(let gx=0; gx<=2*rx; gx++){
+      const nx=(gx-rx)/rx, ny=(gy-ry)/ry;
+      if(nx*nx+ny*ny<=1.02) t.push({l:0,x:gx*2,y:gy*2});
+    }
+  }
+  // Layer1 tier: smaller ellipse ring
+  for(let gy=0; gy<=2*ry; gy++){
+    for(let gx=0; gx<=2*rx; gx++){
+      const nx=(gx-rx)/rx, ny=(gy-ry)/ry; const d=nx*nx+ny*ny;
+      if(d<=0.72 && d>=0.30) t.push({l:1,x:gx*2,y:gy*2});
+    }
+  }
+  // Layer2 inner platform
+  for(let gy=ry-2; gy<=ry+2; gy++) for(let gx=rx-3; gx<=rx+3; gx++){
+    const nx=(gx-rx)/rx, ny=(gy-ry)/ry;
+    if(nx*nx+ny*ny<=0.22) t.push({l:2,x:gx*2,y:gy*2});
+  }
+  // Layer3 centre cap
+  t.push({l:3,x:cx*2-2,y:cy*2}); t.push({l:3,x:cx*2,y:cy*2});
+  void cx; void cy;
+  return normalizeCount(t,144);
+}
+
+/* Ensure exactly N tiles: if too many trim from end, if too few add safe
+   tiles at layer0 in empty spots near origin. (Layouts above are tuned to
+   144, this is a safety net so dealing never breaks.) */
+function normalizeCount(arr, N){
+  // de-dupe identical (l,x,y)
+  const seen=new Set(); const out=[];
+  for(const c of arr){ const k=c.l+","+c.x+","+c.y; if(!seen.has(k)){ seen.add(k); out.push(c); } }
+  if(out.length>N) out.length=N;
+  if(out.length<N){
+    // add filler on layer0 along a free strip far below
+    let x=0,y=40;
+    while(out.length<N){
+      const k="0,"+x+","+y;
+      if(!seen.has(k)){ seen.add(k); out.push({l:0,x,y}); }
+      x+=2; if(x>40){ x=0; y+=2; }
+    }
+  }
+  return out;
+}
+
+const LAYOUTS = {
+  turtle:    { nameKey:"layTurtle",    jp:"亀",   ico:"🐢", build:layoutTurtle },
+  pyramid:   { nameKey:"layPyramid",   jp:"塔",   ico:"🔺", build:layoutPyramid },
+  dragon:    { nameKey:"layDragon",    jp:"龍",   ico:"🐉", build:layoutDragon },
+  fortress:  { nameKey:"layFortress",  jp:"城",   ico:"🏯", build:layoutFortress },
+  butterfly: { nameKey:"layButterfly", jp:"蝶",   ico:"🦋", build:layoutButterfly },
+  well:      { nameKey:"layWell",      jp:"井戸", ico:"🪟", build:layoutWell },
+  arena:     { nameKey:"layArena",     jp:"闘技場", ico:"🏟", build:layoutArena },
+};
+function layoutName(key){ return t(LAYOUTS[key].nameKey); }
+
+/* ====================================================================== */
+/*  Spatial relationships (free-tile detection)                           */
+/* ====================================================================== */
+/* Two tiles overlap on a layer if their 2x2 half-cell footprints intersect.
+   A tile at (x,y) covers half-cells x,x+1 (cols) and y,y+1 (rows).
+   Overlap when |dx|<2 and |dy|<2.  */
+function overlaps(a,b){
+  return Math.abs(a.x-b.x)<2 && Math.abs(a.y-b.y)<2;
+}
+/* covered: any tile on layer L+1 overlapping this footprint */
+function isCovered(tile, tiles){
+  for(const o of tiles){
+    if(o.removed) continue;
+    if(o.l===tile.l+1 && overlaps(o,tile)) return true;
+  }
+  return false;
+}
+/* side blocked: a tile immediately to the left/right on SAME layer whose
+   row overlaps (|dy|<2) and exactly adjacent (dx == ±2 ... but also any
+   overlap on that side). We treat "left blocked" if any same-layer tile
+   occupies the cell directly left (x-2) overlapping rows. */
+function sideBlocked(tile, tiles, dir){
+  const tx = tile.x + dir*2;
+  for(const o of tiles){
+    if(o.removed || o===tile) continue;
+    if(o.l!==tile.l) continue;
+    if(Math.abs(o.y-tile.y)<2 && o.x===tx) return true;
+  }
+  return false;
+}
+function isFree(tile, tiles){
+  if(tile.removed) return false;
+  if(isCovered(tile, tiles)) return false;
+  const lb = sideBlocked(tile, tiles, -1);
+  const rb = sideBlocked(tile, tiles, +1);
+  return !(lb && rb); // free if at least one side open
+}
+
+/* ====================================================================== */
+/*  Reverse-solvable dealer                                                */
+/*  Place tiles by simulating REMOVAL from a full layout: repeatedly pick  */
+/*  two currently-"free" empty slots and assign them a matching kind, then */
+/*  mark them filled-from-the-future ... but easier: we work forward.      */
+/*                                                                          */
+/*  Algorithm (guaranteed solvable):                                       */
+/*   - Start: all positions EMPTY (none placed). We will PLACE tiles in    */
+/*     pairs in an order that is the reverse of a valid removal order.     */
+/*   - "Placeable" position = a position that, if it were the ONLY tiles   */
+/*     remaining-to-be-removed-last, is free. Equivalent: in the final     */
+/*     full board, removal order = reverse of placement order. A position  */
+/*     is free to REMOVE (in forward solve) exactly when at the moment of  */
+/*     placement (reverse) it is free given the tiles already placed.      */
+/*   - So: maintain set "placed". A candidate empty position p is valid to */
+/*     place next iff, considering ONLY already-placed tiles as present,    */
+/*     p would be free (no placed tile above it, at least one horizontal   */
+/*     side free among placed tiles). Because future-placed tiles go       */
+/*     UNDER/beside it in removal terms -> they are removed before p, i.e. */
+/*     they're gone when p is removed. Reverse: p placed first is removed  */
+/*     last, must be free w.r.t. everything (all placed). This builds a    */
+/*     stack from top down which guarantees a real solution exists.        */
+/* ====================================================================== */
+
+/* For dealing we treat "placed" tiles as the ones currently on the board
+   while building. A position is placeable if it's free relative to the
+   already-placed set. We place 72 pairs. Each pair gets a matching kind.
+   We must never run out of placeable positions; if a deadlock in dealing
+   occurs we restart (extremely rare with these layouts). */
+
+function buildKindBag(){
+  // 34 suits x4 = 136, +4 flowers (kind 'F'), +4 seasons (kind 'S') = 144
+  const bag=[];
+  for(let s=0;s<34;s++) for(let k=0;k<4;k++) bag.push({kind:s, glyph:SUITS[s]});
+  for(let i=0;i<4;i++) bag.push({kind:"F", glyph:FLOWERS[i]});
+  for(let i=0;i<4;i++) bag.push({kind:"S", glyph:SEASONS[i]});
+  // shuffle
+  for(let i=bag.length-1;i>0;i--){ const j=rand(i+1); const tmp=bag[i]; bag[i]=bag[j]; bag[j]=tmp; }
+  return bag; // 144 entries (72 matching pairs once we pair by kind)
+}
+
+/* Free relative to a given set "present" (array of positions with .x,.y,.l). */
+function freeIn(p, present){
+  for(const o of present){
+    if(o===p) continue;
+    if(o.l===p.l+1 && overlaps(o,p)) return false; // covered
+  }
+  let lb=false, rb=false;
+  for(const o of present){
+    if(o===p || o.l!==p.l) continue;
+    if(Math.abs(o.y-p.y)<2){
+      if(o.x===p.x-2) lb=true;
+      else if(o.x===p.x+2) rb=true;
+    }
+  }
+  return !(lb && rb);
+}
+
+/* Build a list of N/2 matching pairs from the standard 144-tile multiset. */
+function buildPairs(){
+  const bag = buildKindBag();           // 144 tiles
+  const pairs = [];
+  const byKind = new Map();
+  for(const e of bag){
+    if(!byKind.has(e.kind)) byKind.set(e.kind, []);
+    byKind.get(e.kind).push(e);
+  }
+  for(const list of byKind.values()){
+    // flowers/seasons: any matches any within group -> pair them sequentially
+    for(let i=0;i+1<list.length;i+=2){ pairs.push([list[i], list[i+1]]); }
+  }
+  for(let i=pairs.length-1;i>0;i--){ const j=rand(i+1); const tmp=pairs[i]; pairs[i]=pairs[j]; pairs[j]=tmp; }
+  return pairs;
+}
+
+/* Reverse-solvable dealer.
+   We SIMULATE a real game from the full board: repeatedly pick two currently
+   FREE positions and "remove" them together, recording the order. Because every
+   step obeys the true free-tile rules, the recorded removal order is itself a
+   guaranteed valid solution. We then assign each removed pair a matching kind.
+   Result: the board is always completable. */
+function dealSolvable(positions){
+  const order = recordRemovalOrder(positions);
+  if(!order) return null;
+  const pairs = buildPairs();
+  if(pairs.length < order.length) return null;
+  const placed = [];
+  for(let i=0;i<order.length;i++){
+    const [a,b] = order[i];
+    const pr = pairs[i];
+    a.kind = pr[0].kind; a.glyph = pr[0].glyph;
+    b.kind = pr[1].kind; b.glyph = pr[1].glyph;
+    placed.push(a, b);
+  }
+  return placed; // each has l,x,y,kind,glyph
+}
+
+/* Simulate removing free pairs from the full layout; return list of [a,b]
+   position pairs in removal order (these objects ARE the final tiles). */
+function recordRemovalOrder(positions){
+  const live = positions.map(p=>({l:p.l,x:p.x,y:p.y}));
+  const all = live.slice();
+  const order = [];
+  let guard = 0;
+  while(live.length>0){
+    guard++;
+    if(guard>100000) return null;
+    const free = [];
+    for(const p of live){ if(freeIn(p, live)) free.push(p); }
+    if(free.length<2) return null; // dead end during simulation -> caller retries
+    const i = rand(free.length);
+    let j = rand(free.length);
+    let safety=0;
+    while(j===i && safety++<10) j = rand(free.length);
+    if(j===i) j = (i+1)%free.length;
+    const a = free[i], b = free[j];
+    order.push([a,b]);
+    live.splice(live.indexOf(a),1);
+    live.splice(live.indexOf(b),1);
+  }
+  void all;
+  return order;
+}
+
+function removeFrom(arr, item){
+  const i = arr.indexOf(item);
+  if(i>=0) arr.splice(i,1);
+}
+
+/* match test for two kinds */
+function kindsMatch(a,b){
+  if(a===b) return true;
+  // flowers all match, seasons all match (already same 'F'/'S' so covered by a===b)
+  return false;
+}
+
+/* ====================================================================== */
+/*  Game state                                                            */
+/* ====================================================================== */
+const G = {
+  layoutKey: "turtle",
+  mode: "classic",    // relaxed | classic | timed
+  isDaily: false,
+  dailyKey: 0,        // YYYYMMDD when isDaily
+  tiles: [],          // {id,l,x,y,kind,glyph,removed, sx,sy (screen),  popT}
+  selected: null,
+  remaining: 0,
+  pairs: 0,
+  score: 0,
+  combo: 0,
+  maxCombo: 0,
+  hintsUsed: 0,
+  shufflesUsed: 0,
+  lastMatchT: 0,
+  startT: 0,
+  elapsed: 0,
+  pausedT: 0,         // accumulated paused time (ms)
+  pauseStart: 0,      // when current pause began
+  running: false,
+  history: [],        // for undo: [{a, b, gain, combo, prevCombo, lastMatchT, prevLastMatchT, lastForSpeed}]
+  hover: null,
+  hintPair: null,
+  hintT: 0,
+  muted: false,
+  newBestFired: false,
+  bounds: null,       // layout bounds in half-cells
+  geo: { cw:0, ch:0, ox:0, oy:0, depth:0 }, // cell pixel size, origin, layer depth
+};
+
+/* Mode tuning: hint/shuffle economy + timed pressure */
+const MODES = {
+  relaxed: { hints: Infinity, shuffles: Infinity, timed:false },
+  classic: { hints: 5,        shuffles: 3,        timed:false },
+  timed:   { hints: 3,        shuffles: 2,        timed:true  },
+};
+
+/* ====================================================================== */
+/*  Canvas setup                                                          */
+/* ====================================================================== */
+const boardWrap = document.getElementById("boardWrap");
+const board = document.getElementById("board");
+const fx = document.getElementById("fx");
+const bctx = board.getContext("2d");
+const fctx = fx.getContext("2d");
+const comboLayer = document.getElementById("comboLayer");
+let DPR = Math.min(window.devicePixelRatio||1, 2);
+
+function computeBounds(tiles){
+  let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity,maxL=0;
+  for(const t of tiles){
+    minX=Math.min(minX,t.x); maxX=Math.max(maxX,t.x+2);
+    minY=Math.min(minY,t.y); maxY=Math.max(maxY,t.y+2);
+    maxL=Math.max(maxL,t.l);
+  }
+  return {minX,maxX,minY,maxY,maxL};
+}
+
+function layout(){
+  DPR = Math.min(window.devicePixelRatio||1, 2);
+  const stage = document.getElementById("stage");
+  const availW = stage.clientWidth - 8;
+  const availH = stage.clientHeight - 8;
+  if(availW<=0||availH<=0) return;
+
+  const b = G.bounds;
+  if(!b) return;
+  const colsHalf = (b.maxX - b.minX);   // half-cells wide
+  const rowsHalf = (b.maxY - b.minY);   // half-cells tall
+  // a tile = 2 half-cells. cell pixel = size of ONE half-cell.
+  // tile width = 2*cw. We also add layer depth offset.
+  // total pixel width = (colsHalf)*cw + maxL*depthX + tileFacePad
+  // choose cw so it fits both dims.
+  const layerOffX = 0.16; // fraction of tile width per layer (3D shift)
+  const layerOffY = 0.22;
+  // tile width in cells = 2 ; so width pixels ~ colsHalf*cw + maxL*(layerOffX*2*cw)
+  // => widthFactor = colsHalf + maxL*layerOffX*2
+  const wFactor = colsHalf + b.maxL*layerOffX*2 + 0.6;
+  const hFactor = rowsHalf + b.maxL*layerOffY*2 + 0.7;
+
+  let cw = Math.min(availW / wFactor, availH / hFactor);
+  cw = Math.max(6, cw);
+
+  const tileW = 2*cw;       // px
+  const tileH = 2*cw*1.34;  // taller faces look like mahjong tiles
+  // recompute hFactor with taller tiles: tile spans 2 half-cells vertically
+  // but visual height tileH; vertical spacing uses cw*? We'll keep grid by cw
+  // for stacking math but draw faces tileW x tileH centered on cell.
+  const depthX = tileW * layerOffX;
+  const depthY = tileW * layerOffY;
+
+  const contentW = colsHalf*cw + b.maxL*depthX + (tileW-2*cw) ;
+  const contentH = rowsHalf*cw + b.maxL*depthY + (tileH-2*cw) ;
+
+  const W = Math.ceil(contentW + tileW*0.3);
+  const H = Math.ceil(contentH + tileH*0.35);
+
+  boardWrap.style.width = W+"px";
+  boardWrap.style.height = H+"px";
+  for(const cv of [board, fx]){
+    cv.style.width = W+"px"; cv.style.height = H+"px";
+    cv.width = Math.round(W*DPR); cv.height = Math.round(H*DPR);
+  }
+  comboLayer.style.width = W+"px"; comboLayer.style.height = H+"px";
+
+  // origin so the lowest-layer, top-left cell maps nicely; we add half tile pad
+  const ox = (tileW-2*cw)/2 + tileW*0.12;
+  const oy = (tileH-2*cw)/2 + tileH*0.10;
+
+  G.geo = { cw, tileW, tileH, depthX, depthY, ox, oy };
+
+  // compute each tile screen pos (top-left of face)
+  for(const t of G.tiles){
+    const px = ox + (t.x - b.minX)*cw + t.l*depthX;
+    const py = oy + (t.y - b.minY)*cw - t.l*depthY;
+    t.sx = px; t.sy = py;
+  }
+  draw();
+}
+
+/* drawing order: by layer asc, then y asc, then x asc so overlaps look right.
+   Within same layer, tiles further back (smaller y) drawn first. Higher
+   layers always on top. */
+function sortedForDraw(){
+  return G.tiles.filter(t=>!t.removed || t.popT>0)
+    .slice()
+    .sort((a,b)=> (a.l-b.l) || (a.y-b.y) || (a.x-b.x));
+}
+
+/* ====================================================================== */
+/*  Tile rendering (3D look)                                               */
+/* ====================================================================== */
+function roundRectPath(ctx,x,y,w,h,r){
+  r = Math.min(r, w/2, h/2);
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
+function suitColor(kind){
+  if(kind==="F") return "#ff6b9d";
+  if(kind==="S") return "#ffce54";
+  if(kind<9)  return "#2b6cff";   // man (characters) - blue ink
+  if(kind<18) return "#13a06a";   // sou (bamboo) - green
+  if(kind<27) return "#d23b57";   // pin (circles) - red
+  if(kind<31) return "#5b48c8";   // winds - violet
+  // dragons
+  return ["#d23b57","#13a06a","#3a4a6a"][kind-31] || "#3a4a6a";
+}
+
+function drawTile(ctx, t, scale, alpha, glow){
+  const g = G.geo;
+  const tw = g.tileW, th = g.tileH;
+  const cx = t.sx + tw/2, cy = t.sy + th/2;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(cx, cy);
+  ctx.scale(scale, scale);
+  ctx.translate(-tw/2, -th/2);
+
+  const r = Math.max(3, tw*0.14);
+  const depth = Math.max(3, tw*0.16); // thickness of the tile side
+
+  // --- drop shadow ---
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,0.45)";
+  ctx.shadowBlur = tw*0.28;
+  ctx.shadowOffsetX = tw*0.06;
+  ctx.shadowOffsetY = th*0.10;
+  roundRectPath(ctx, 0, 0, tw, th, r);
+  ctx.fillStyle = "rgba(0,0,0,0.5)";
+  ctx.fill();
+  ctx.restore();
+
+  // --- right/bottom edge (beveled side - gives 3D thickness) ---
+  ctx.fillStyle = "#9aa7bd";
+  roundRectPath(ctx, depth*0.2, depth*0.2, tw, th, r);
+  ctx.fill();
+  // darker bottom edge
+  const edgeGrad = ctx.createLinearGradient(0,th,0,th+depth);
+  edgeGrad.addColorStop(0,"#aebace"); edgeGrad.addColorStop(1,"#7c889c");
+  ctx.fillStyle = edgeGrad;
+  roundRectPath(ctx, 0, depth*0.5, tw, th, r);
+  ctx.fill();
+
+  // --- face ---
+  const faceGrad = ctx.createLinearGradient(0,0,tw,th);
+  faceGrad.addColorStop(0, "#ffffff");
+  faceGrad.addColorStop(0.5, "#f3f7fc");
+  faceGrad.addColorStop(1, "#dde6f2");
+  roundRectPath(ctx, 0, 0, tw, th, r);
+  ctx.fillStyle = faceGrad;
+  ctx.fill();
+
+  // inner top highlight
+  ctx.save();
+  roundRectPath(ctx, 0, 0, tw, th, r);
+  ctx.clip();
+  const hi = ctx.createLinearGradient(0,0,0,th*0.5);
+  hi.addColorStop(0,"rgba(255,255,255,0.9)");
+  hi.addColorStop(1,"rgba(255,255,255,0)");
+  ctx.fillStyle = hi;
+  ctx.fillRect(0,0,tw,th*0.5);
+  ctx.restore();
+
+  // face border
+  roundRectPath(ctx, 0.5, 0.5, tw-1, th-1, r);
+  ctx.lineWidth = Math.max(1, tw*0.03);
+  ctx.strokeStyle = "rgba(120,135,160,0.55)";
+  ctx.stroke();
+
+  // --- glyph ---
+  const col = suitColor(t.kind);
+  ctx.fillStyle = col;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  const fs = th*0.74;
+  ctx.font = fs+'px "Segoe UI Symbol","Apple Color Emoji","Noto Sans Symbols2","Segoe UI",system-ui,sans-serif';
+  // subtle glyph shadow for depth
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,0.18)";
+  ctx.shadowBlur = tw*0.05; ctx.shadowOffsetY = tw*0.03;
+  // Many fonts render mahjong glyphs with their own colors; we draw glyph then
+  // overlay a tint for consistency on monochrome fonts.
+  ctx.fillText(t.glyph, tw/2, th*0.52);
+  ctx.restore();
+
+  // --- selection / hint / hover glow ---
+  if(glow){
+    ctx.save();
+    roundRectPath(ctx, -2, -2, tw+4, th+4, r+2);
+    ctx.lineWidth = Math.max(2, tw*0.08);
+    ctx.strokeStyle = glow.color;
+    ctx.shadowColor = glow.color;
+    ctx.shadowBlur = tw*0.5*glow.intensity;
+    ctx.globalAlpha = alpha*glow.intensity;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  ctx.restore();
+}
+
+function draw(){
+  const g = G.geo;
+  if(!g.tileW) return;
+  bctx.setTransform(DPR,0,0,DPR,0,0);
+  bctx.clearRect(0,0,board.width,board.height);
+
+  const list = sortedForDraw();
+  const tnow = now();
+  for(const t of list){
+    if(t.removed && t.popT<=0) continue;
+    let scale=1, alpha=1, glow=null;
+
+    if(t.removed){
+      // pop-out animation
+      const p = t.popT; // 1->0
+      scale = 1 + (1-p)*0.5;
+      alpha = p;
+    } else {
+      const free = isFree(t, G.tiles);
+      // selection
+      if(t===G.selected){
+        const pulse = 0.7+0.3*Math.sin(tnow/180);
+        glow = {color:"#ffce54", intensity:pulse};
+        scale = 1.06;
+      } else if(G.hintPair && (t===G.hintPair[0]||t===G.hintPair[1]) && G.hintT>0){
+        const pulse = 0.5+0.5*Math.sin(tnow/120);
+        glow = {color:"#34e0ff", intensity:0.6+0.6*pulse};
+      } else if(t===G.hover && free){
+        glow = {color:"#34d3b6", intensity:0.7};
+        scale = 1.03;
+      }
+      // dim non-free slightly to make free tiles pop
+      if(!free && t!==G.selected){ alpha = 0.88; }
+      // subtle shimmer on free tiles
+      if(free && t!==G.selected && t!==G.hover){
+        const sh = 0.96 + 0.04*Math.sin(tnow/600 + (t.x+t.y)*0.3);
+        alpha *= sh;
+      }
+    }
+    drawTile(bctx, t, scale, alpha, glow);
+  }
+}
+
+/* ====================================================================== */
+/*  Hit testing (top-most tile under point)                               */
+/* ====================================================================== */
+function tileAt(px, py){
+  const g = G.geo;
+  // iterate from top layer / front to back -> reverse of draw order
+  const list = sortedForDraw().reverse();
+  for(const t of list){
+    if(t.removed) continue;
+    if(px>=t.sx && px<=t.sx+g.tileW && py>=t.sy && py<=t.sy+g.tileH){
+      return t;
+    }
+  }
+  return null;
+}
+
+/* ====================================================================== */
+/*  WebAudio synth                                                         */
+/* ====================================================================== */
+const Audio2 = (function(){
+  let ctx=null;
+  function ensure(){
+    if(!ctx){
+      try{ ctx = new (window.AudioContext||window.webkitAudioContext)(); }
+      catch(e){ ctx=null; }
+    }
+    if(ctx && ctx.state==="suspended"){ ctx.resume().catch(()=>{}); }
+    return ctx;
+  }
+  function tone(freq, dur, type, vol, when, slideTo){
+    if(G.muted) return;
+    const c = ensure(); if(!c) return;
+    const t0 = c.currentTime + (when||0);
+    const o = c.createOscillator();
+    const gn = c.createGain();
+    o.type = type||"sine";
+    o.frequency.setValueAtTime(freq, t0);
+    if(slideTo) o.frequency.exponentialRampToValueAtTime(Math.max(1,slideTo), t0+dur);
+    gn.gain.setValueAtTime(0.0001, t0);
+    gn.gain.exponentialRampToValueAtTime(vol||0.2, t0+0.008);
+    gn.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+    o.connect(gn).connect(c.destination);
+    o.start(t0); o.stop(t0+dur+0.02);
+  }
+  function noise(dur, vol, when){
+    if(G.muted) return;
+    const c = ensure(); if(!c) return;
+    const t0 = c.currentTime + (when||0);
+    const n = Math.floor(c.sampleRate*dur);
+    const buf = c.createBuffer(1, n, c.sampleRate);
+    const d = buf.getChannelData(0);
+    for(let i=0;i<n;i++){ d[i] = (Math.random()*2-1)*Math.pow(1-i/n,2); }
+    const src = c.createBufferSource(); src.buffer = buf;
+    const gn = c.createGain(); gn.gain.value = vol||0.15;
+    const bp = c.createBiquadFilter(); bp.type="bandpass"; bp.frequency.value=2600; bp.Q.value=0.8;
+    src.connect(bp).connect(gn).connect(c.destination);
+    src.start(t0);
+  }
+  return {
+    ensure,
+    select(){ tone(660, 0.07, "triangle", 0.16); tone(990,0.05,"sine",0.06,0.01); },
+    deselect(){ tone(420, 0.06, "sine", 0.1); },
+    match(combo){
+      // clack + pleasant ding rising with combo
+      noise(0.07, 0.13);
+      const base = 523.25 * Math.pow(1.0595, Math.min(combo*2,18));
+      tone(base, 0.12, "triangle", 0.18);
+      tone(base*1.5, 0.14, "sine", 0.12, 0.02);
+      tone(base*2, 0.10, "sine", 0.07, 0.03);
+    },
+    bad(){ tone(180,0.12,"sawtooth",0.12,0,120); },
+    hint(){ tone(880,0.08,"sine",0.1); tone(1175,0.08,"sine",0.08,0.06); },
+    shuffle(){ for(let i=0;i<5;i++) tone(300+i*120,0.06,"triangle",0.08,i*0.04); },
+    undo(){ tone(500,0.08,"sine",0.1,0,360); },
+    win(){
+      const notes=[523.25,659.25,783.99,1046.5,1318.5];
+      notes.forEach((f,i)=>{ tone(f,0.5,"triangle",0.16,i*0.12); tone(f*2,0.5,"sine",0.07,i*0.12); });
+      noise(0.4,0.1,0.0);
+    },
+    lose(){ tone(440,0.18,"sine",0.14,0,220); tone(330,0.22,"sine",0.12,0.12,160); },
+  };
+})();
+
+/* ====================================================================== */
+/*  Particles & FX                                                        */
+/* ====================================================================== */
+let particles = [];
+let confetti = [];
+function spawnSparkle(cx, cy, color){
+  const n = 14;
+  for(let i=0;i<n;i++){
+    const a = (i/n)*Math.PI*2 + Math.random()*0.5;
+    const sp = 1.5 + Math.random()*3.5;
+    particles.push({
+      x:cx, y:cy, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp - 1,
+      life:1, decay:0.02+Math.random()*0.02,
+      size: 2+Math.random()*3,
+      color: color || (Math.random()<0.5?"#ffce54":"#34e0ff"),
+      g:0.06
+    });
+  }
+}
+function spawnConfetti(){
+  const W = board.clientWidth;
+  const cols = ["#ffce54","#34e0ff","#b388ff","#34d3b6","#ff6b9d","#ffffff"];
+  for(let i=0;i<160;i++){
+    confetti.push({
+      x: Math.random()*W, y: -20-Math.random()*200,
+      vx:(Math.random()-0.5)*2, vy:2+Math.random()*3,
+      size:4+Math.random()*6, rot:Math.random()*6.28, vr:(Math.random()-0.5)*0.3,
+      color: cols[rand(cols.length)], life:1, decay:0.004+Math.random()*0.004,
+      shape: Math.random()<0.5?0:1
+    });
+  }
+}
+
+function stepFX(){
+  fctx.setTransform(DPR,0,0,DPR,0,0);
+  fctx.clearRect(0,0,fx.width,fx.height);
+  // sparkles
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.x+=p.vx; p.y+=p.vy; p.vy+=p.g; p.life-=p.decay;
+    if(p.life<=0){ particles.splice(i,1); continue; }
+    fctx.save();
+    fctx.globalAlpha = clamp(p.life,0,1);
+    fctx.fillStyle = p.color;
+    fctx.shadowColor = p.color; fctx.shadowBlur = 8;
+    fctx.beginPath(); fctx.arc(p.x,p.y,p.size*p.life,0,6.28); fctx.fill();
+    fctx.restore();
+  }
+  // confetti
+  for(let i=confetti.length-1;i>=0;i--){
+    const c=confetti[i];
+    c.x+=c.vx; c.y+=c.vy; c.vy+=0.04; c.rot+=c.vr; c.life-=c.decay;
+    if(c.life<=0 || c.y>fx.clientHeight+30){ confetti.splice(i,1); continue; }
+    fctx.save();
+    fctx.globalAlpha = clamp(c.life,0,1);
+    fctx.translate(c.x,c.y); fctx.rotate(c.rot);
+    fctx.fillStyle = c.color;
+    if(c.shape===0) fctx.fillRect(-c.size/2,-c.size/2,c.size,c.size*0.6);
+    else { fctx.beginPath(); fctx.arc(0,0,c.size*0.5,0,6.28); fctx.fill(); }
+    fctx.restore();
+  }
+}
+
+/* floating combo text via DOM */
+function floatText(cx, cy, text, color, big){
+  const el = document.createElement("div");
+  el.className = "floatTxt";
+  el.textContent = text;
+  el.style.left = cx+"px"; el.style.top = cy+"px";
+  el.style.color = color;
+  el.style.fontSize = (big? "clamp(20px,4vw,34px)":"clamp(14px,2.6vw,20px)");
+  comboLayer.appendChild(el);
+  const start = now();
+  const dur = 900;
+  function anim(){
+    const t = (now()-start)/dur;
+    if(t>=1){ el.remove(); return; }
+    el.style.transform = `translate(-50%,-50%) translateY(${-40*t}px) scale(${1+0.3*(1-Math.abs(0.5-t)*2)})`;
+    el.style.opacity = String(1-t);
+    requestAnimationFrame(anim);
+  }
+  requestAnimationFrame(anim);
+}
+
+/* ====================================================================== */
+/*  Animation loop                                                        */
+/* ====================================================================== */
+let pendingPops = []; // tiles animating removal
+function loop(){
+  // advance pop animations
+  if(pendingPops.length){
+    for(let i=pendingPops.length-1;i>=0;i--){
+      const t = pendingPops[i];
+      t.popT -= 0.06;
+      if(t.popT<=0){ t.popT=0; pendingPops.splice(i,1); }
+    }
+  }
+  if(G.hintT>0){ G.hintT -= 16; if(G.hintT<0) G.hintT=0; }
+
+  draw();
+  stepFX();
+
+  if(G.running && !G.pauseStart){
+    G.elapsed = elapsedNow();
+    updateTime();
+  }
+  requestAnimationFrame(loop);
+}
+
+/* ====================================================================== */
+/*  Game flow                                                             */
+/* ====================================================================== */
+function newGame(layoutKey, opts){
+  opts = opts || {};
+  G.layoutKey = layoutKey || G.layoutKey;
+  G.mode = opts.mode || menuMode || G.mode || "classic";
+  G.isDaily = !!opts.daily;
+  G.dailyKey = G.isDaily ? dateKey() : 0;
+
+  // Seed the RNG for daily so all players share the same board/sequence.
+  if(G.isDaily) setSeed(seedFromDateKey(G.dailyKey));
+  else clearSeed();
+
+  const def = LAYOUTS[G.layoutKey];
+  let positions = def.build();
+  if(positions.length%2!==0) positions.pop();
+
+  // deal solvable, retry if dealer fails
+  let placed=null, tries=0;
+  while(!placed && tries<40){ placed = dealSolvable(positions); tries++; }
+  if(!placed){
+    placed = positions.map((p,i)=>({l:p.l,x:p.x,y:p.y,kind:(i>>1)%34,glyph:SUITS[(i>>1)%34],removed:false}));
+  }
+  clearSeed(); // restore Math.random for any non-board randomness afterwards
+
+  G.tiles = placed.map((p,i)=>({
+    id:i, l:p.l, x:p.x, y:p.y, kind:p.kind, glyph:p.glyph,
+    removed:false, popT:0, sx:0, sy:0
+  }));
+  G.bounds = computeBounds(G.tiles);
+  G.selected=null; G.hover=null; G.hintPair=null; G.hintT=0;
+  G.remaining = G.tiles.length;
+  G.pairs=0; G.score=0; G.combo=0; G.maxCombo=0; G.lastMatchT=0;
+  G.hintsUsed=0; G.shufflesUsed=0; G.newBestFired=false; G._lastForSpeed=0;
+  const md = MODES[G.mode] || MODES.classic;
+  G.hintsLeft = md.hints; G.shufflesLeft = md.shuffles;
+  G.history=[];
+  G.startT = now(); G.elapsed=0; G.pausedT=0; G.pauseStart=0; G.running=true;
+  particles=[]; confetti=[];
+  comboLayer.innerHTML="";
+  document.getElementById("comboMeter").classList.remove("show");
+  hideOverlay("win"); hideOverlay("lose"); hideOverlay("menu");
+  hideOverlay("settings"); hideOverlay("stats");
+
+  // count a game played (once per fresh deal)
+  const st = loadStats(); st.played++; saveStats(st);
+
+  updateAllStats();
+  layout();
+  saveGame();
+  announce(t("btnStart")+" — "+layoutName(G.layoutKey));
+}
+
+/* Restore an in-progress game from localStorage */
+function resumeGame(){
+  const s = loadSave();
+  if(!s) return;
+  G.layoutKey = s.layoutKey || "turtle";
+  G.mode = s.mode || "classic";
+  G.isDaily = !!s.isDaily; G.dailyKey = s.dailyKey||0;
+  clearSeed();
+  G.tiles = s.tiles.map((p,i)=>({ id:i, l:p.l, x:p.x, y:p.y, kind:p.kind, glyph:p.glyph, removed:!!p.removed, popT:0, sx:0, sy:0 }));
+  G.bounds = computeBounds(G.tiles.length? G.tiles : [{l:0,x:0,y:0}]);
+  G.selected=null; G.hover=null; G.hintPair=null; G.hintT=0;
+  G.remaining = (s.remaining!=null)? s.remaining : G.tiles.filter(tt=>!tt.removed).length;
+  G.pairs = s.pairs||0; G.score = s.score||0; G.combo = s.combo||0; G.maxCombo = s.maxCombo||0;
+  G.hintsUsed = s.hintsUsed||0; G.shufflesUsed = s.shufflesUsed||0;
+  G.hintsLeft = (s.hintsLeft===null)?Infinity:(s.hintsLeft!=null?s.hintsLeft:(MODES[G.mode]||MODES.classic).hints);
+  G.shufflesLeft = (s.shufflesLeft===null)?Infinity:(s.shufflesLeft!=null?s.shufflesLeft:(MODES[G.mode]||MODES.classic).shuffles);
+  G._lastForSpeed = s.lastForSpeed||0; G.lastMatchT=0; G.newBestFired=false;
+  G.history = Array.isArray(s.history)? s.history.slice() : [];
+  // resume the clock from saved elapsed
+  G.startT = now(); G.pausedT=0; G.pauseStart=0; G.elapsed = s.elapsed||0;
+  G.startT = now() - (G.elapsed*1000);
+  G.running = true;
+  particles=[]; confetti=[];
+  comboLayer.innerHTML="";
+  hideOverlay("win"); hideOverlay("lose"); hideOverlay("menu");
+  hideOverlay("settings"); hideOverlay("stats");
+  updateAllStats();
+  layout();
+}
+
+function selectTile(t){
+  if(!t || t.removed) return;
+  if(!isFree(t, G.tiles)){
+    Audio2.bad();
+    shakeWrap();
+    return;
+  }
+  if(G.selected===t){
+    G.selected=null; Audio2.deselect(); return;
+  }
+  if(!G.selected){
+    G.selected=t; Audio2.select(); return;
+  }
+  // attempt match
+  if(kindsMatch(G.selected.kind, t.kind)){
+    matchPair(G.selected, t);
+  } else {
+    // switch selection
+    Audio2.select();
+    G.selected=t;
+  }
+}
+
+function matchPair(a, b){
+  const tnow = now();
+  // capture prior combo timing for accurate undo restoration
+  const prevCombo = G.combo;
+  const prevLastMatchT = G.lastMatchT;
+  const prevLastForSpeed = G._lastForSpeed||0;
+  // combo: within 2.6s of last match
+  if(tnow - G.lastMatchT < 2600 && G.pairs>0) G.combo++;
+  else G.combo = 1;
+  G.lastMatchT = tnow;
+  G.maxCombo = Math.max(G.maxCombo, G.combo);
+
+  // score: base + speed + combo
+  const base = 100;
+  const comboBonus = (G.combo-1)*40;
+  const speedBonus = Math.max(0, 60 - Math.floor((tnow - (G._lastForSpeed||tnow))/100));
+  G._lastForSpeed = tnow;
+  const gain = base + comboBonus + Math.max(0,speedBonus);
+  G.score += gain;
+
+  // history for undo (store enough to fully restore combo + timing)
+  G.history.push({ a:a.id, b:b.id, gain, combo:G.combo,
+    prevCombo, prevLastMatchT, prevLastForSpeed });
+
+  // remove
+  a.removed=true; b.removed=true; a.popT=1; b.popT=1;
+  pendingPops.push(a,b);
+  G.selected=null;
+  G.remaining-=2; G.pairs++;
+  // lifetime pairs stat
+  const lst = loadStats(); lst.pairs++; saveStats(lst);
+  if(G.hintPair && (G.hintPair[0]===a||G.hintPair[0]===b||G.hintPair[1]===a||G.hintPair[1]===b)){ G.hintPair=null; G.hintT=0; }
+
+  Audio2.match(G.combo);
+  const g=G.geo;
+  if(!rmActive()){
+    for(const tl of [a,b]){
+      const cx=tl.sx+g.tileW/2, cy=tl.sy+g.tileH/2;
+      spawnSparkle(cx,cy, suitColor(tl.kind));
+    }
+  }
+  // combo popups + escalating juice
+  if(G.combo>=2){
+    const cx=(a.sx+b.sx)/2+g.tileW/2, cy=(a.sy+b.sy)/2+g.tileH/2;
+    const col = G.combo>=8 ? "#ff6b9d" : (G.combo>=5 ? "#ffce54" : "#34e0ff");
+    floatText(cx, cy-10, "COMBO ×"+G.combo, col, true);
+    floatText(cx, cy+18, "+"+gain, "#ffce54", false);
+    showComboMeter();
+    if(!rmActive() && G.combo>=5){
+      // extra celebratory burst at high combos
+      spawnSparkle(cx, cy, col);
+      if(G.combo>=8) pulseWrap();
+    }
+  } else {
+    const cx=b.sx+g.tileW/2, cy=b.sy+g.tileH/2;
+    floatText(cx, cy, "+"+gain, "#ffce54", false);
+  }
+
+  announce("+"+gain + (G.combo>=2 ? (" · COMBO ×"+G.combo) : "") + " · " + t("stRemain")+" "+G.remaining);
+
+  // live NEW BEST! mid-run moment (beat the stored best score for this layout)
+  checkLiveBest();
+
+  updateAllStats();
+  saveGame();
+
+  if(G.remaining<=0){
+    setTimeout(winGame, 360);
+    return;
+  }
+  // check no-moves after a short delay (let pops play)
+  setTimeout(()=>{
+    if(G.running && !hasFreeMatch()){
+      offerReshuffle();
+    }
+  }, 420);
+}
+
+/* live NEW BEST! once per run when current score passes the layout best */
+function checkLiveBest(){
+  if(G.newBestFired) return;
+  const best = loadBest();
+  const rec = best[G.layoutKey];
+  const target = rec && rec.bestScore!=null ? rec.bestScore : null;
+  if(target!=null && G.score > target){
+    G.newBestFired = true;
+    toast(t("toastNewBest"));
+    announce(t("toastNewBest"));
+    const g=G.geo;
+    if(!rmActive() && g.tileW){
+      floatText(board.clientWidth/2, 40, t("toastNewBest"), "#ffce54", true);
+      pulseWrap();
+    }
+  }
+}
+
+/* combo meter UI (top of board) */
+let comboMeterT=null;
+function showComboMeter(){
+  const m=document.getElementById("comboMeter");
+  document.getElementById("comboMeterTxt").textContent = "COMBO ×"+G.combo;
+  const frac = clamp(G.combo/12, 0.1, 1);
+  document.getElementById("comboMeterBar").style.transform = "scaleX("+frac+")";
+  m.classList.add("show");
+  clearTimeout(comboMeterT);
+  comboMeterT=setTimeout(()=> m.classList.remove("show"), 2600);
+}
+function pulseWrap(){
+  if(rmActive()) return;
+  boardWrap.animate(
+    [{transform:"scale(1)"},{transform:"scale(1.012)"},{transform:"scale(1)"}],
+    {duration:260, easing:"ease-out"}
+  );
+}
+
+function activeTiles(){ return G.tiles.filter(t=>!t.removed); }
+
+function freeTiles(){
+  return G.tiles.filter(t=>!t.removed && isFree(t,G.tiles));
+}
+
+function findFreeMatch(){
+  const free = freeTiles();
+  for(let i=0;i<free.length;i++){
+    for(let j=i+1;j<free.length;j++){
+      if(kindsMatch(free[i].kind, free[j].kind)) return [free[i], free[j]];
+    }
+  }
+  return null;
+}
+function hasFreeMatch(){ return !!findFreeMatch(); }
+
+/* ---- Hint ---- */
+function doHint(){
+  if(!G.running) return;
+  if(G.hintsLeft!=null && G.hintsLeft<=0){ toast(t("toastNoHintsLeft")); Audio2.bad(); return; }
+  const pair = findFreeMatch();
+  if(!pair){ toast(t("toastNoPairHint")); Audio2.bad(); offerReshuffle(); return; }
+  G.hintPair = pair; G.hintT = 2000;
+  if(G.hintsLeft!=null && G.hintsLeft!==Infinity) G.hintsLeft--;
+  G.hintsUsed++;
+  const st=loadStats(); st.hints++; saveStats(st);
+  Audio2.hint();
+  // small score cost
+  G.score = Math.max(0, G.score-20);
+  updateAllStats();
+  saveGame();
+}
+
+/* ---- Undo ---- */
+function doUndo(){
+  if(!G.running) return;
+  if(!G.history.length){ toast(t("toastNothingUndo")); return; }
+  const h = G.history.pop();
+  const a = G.tiles[h.a], b = G.tiles[h.b];
+  if(a){ a.removed=false; a.popT=0; }
+  if(b){ b.removed=false; b.popT=0; }
+  // remove from pendingPops if present
+  pendingPops = pendingPops.filter(t=>t!==a && t!==b);
+  G.remaining+=2; G.pairs--;
+  G.score = Math.max(0, G.score - h.gain);
+  // restore combo + timing exactly as before the matched pair
+  G.combo = (h.prevCombo!=null) ? h.prevCombo : 0;
+  if(h.prevLastMatchT!=null) G.lastMatchT = h.prevLastMatchT;
+  if(h.prevLastForSpeed!=null) G._lastForSpeed = h.prevLastForSpeed;
+  G.selected=null; G.hintPair=null; G.hintT=0;
+  Audio2.undo();
+  updateAllStats();
+  saveGame();
+  hideOverlay("lose");
+}
+
+/* ---- Shuffle (keep solvable) ---- */
+function doShuffle(announceFlag){
+  if(!G.running) return;
+  if(G.shufflesLeft!=null && G.shufflesLeft<=0){ toast(t("toastNoShufflesLeft")); Audio2.bad(); return; }
+  const active = activeTiles();
+  if(active.length<2){ return; }
+  // Re-deal solvable onto the CURRENT occupied positions.
+  const positions = active.map(t=>({l:t.l,x:t.x,y:t.y}));
+  let placed=null, tries=0;
+  // dealer needs even count; active is always even (pairs removed)
+  while(!placed && tries<60){ placed = dealSolvableSubset(positions); tries++; }
+  if(!placed){
+    // fallback random shuffle of kinds among active (may be unsolvable -> rare)
+    const kinds = active.map(t=>({kind:t.kind,glyph:t.glyph}));
+    for(let i=kinds.length-1;i>0;i--){ const j=rand(i+1); const tmp=kinds[i]; kinds[i]=kinds[j]; kinds[j]=tmp; }
+    active.forEach((t,i)=>{ t.kind=kinds[i].kind; t.glyph=kinds[i].glyph; });
+  } else {
+    // map placed back onto active by matching coords
+    const byKey = new Map();
+    for(const p of placed) byKey.set(p.l+","+p.x+","+p.y, p);
+    for(const t of active){
+      const p = byKey.get(t.l+","+t.x+","+t.y);
+      if(p){ t.kind=p.kind; t.glyph=p.glyph; }
+    }
+  }
+  G.selected=null; G.hintPair=null; G.hintT=0;
+  if(G.shufflesLeft!=null && G.shufflesLeft!==Infinity) G.shufflesLeft--;
+  G.shufflesUsed++;
+  const sst=loadStats(); sst.shuffles++; saveStats(sst);
+  Audio2.shuffle();
+  if(announceFlag!==false){ toast(t("toastShuffled")); announce(t("toastShuffled")); }
+  hideOverlay("lose");
+  // little shimmer burst
+  const g=G.geo;
+  if(!rmActive()) for(const t of active.slice(0,12)) spawnSparkle(t.sx+g.tileW/2, t.sy+g.tileH/2, "#b388ff");
+  updateAllStats();
+  saveGame();
+}
+
+/* Deal solvable using EXACT current kind multiset (so shuffle preserves the
+   set of tiles already present, just rearranges them solvably). Uses the same
+   forward-removal-recording guarantee. */
+function dealSolvableSubset(positions){
+  const N = positions.length;
+  if(N%2!==0) return null;
+  // current multiset of kinds among active tiles -> matching pairs
+  const active = activeTiles();
+  const byKind = new Map();
+  for(const t of active){
+    if(!byKind.has(t.kind)) byKind.set(t.kind, []);
+    byKind.get(t.kind).push({kind:t.kind, glyph:t.glyph});
+  }
+  const pairs=[];
+  let used=0;
+  for(const list of byKind.values()){
+    used += list.length;
+    for(let i=0;i+1<list.length;i+=2) pairs.push([list[i],list[i+1]]);
+  }
+  // every kind must have an even count (true for any valid mahjong board)
+  if(used!==N || pairs.length!==N/2) return null;
+  for(let i=pairs.length-1;i>0;i--){ const j=rand(i+1); const tmp=pairs[i]; pairs[i]=pairs[j]; pairs[j]=tmp; }
+
+  const order = recordRemovalOrder(positions);
+  if(!order || order.length!==pairs.length) return null;
+  const placed=[];
+  for(let i=0;i<order.length;i++){
+    const [a,b]=order[i]; const pr=pairs[i];
+    a.kind=pr[0].kind; a.glyph=pr[0].glyph;
+    b.kind=pr[1].kind; b.glyph=pr[1].glyph;
+    placed.push(a,b);
+  }
+  return placed;
+}
+
+function offerReshuffle(){
+  if(!G.running) return;
+  if(G.remaining<=0) return;
+  // NEUTRAL "no moves" prompt — the board is always solvable, this is NOT a loss.
+  // No defeat sound; a gentle hint chime instead.
+  document.getElementById("loseRemain").textContent = G.remaining;
+  document.getElementById("loseScore").textContent = fmtNum(G.score);
+  pauseClock();
+  showOverlay("lose");
+  announce(t("loseTitle")+" — "+t("loseLead"));
+  Audio2.hint();
+}
+
+/* ====================================================================== */
+/*  Win / score persistence                                               */
+/* ====================================================================== */
+function loadBest(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return {};
+    const o = JSON.parse(raw);
+    return (o && typeof o==="object") ? o : {};
+  }catch(e){ return {}; }
+}
+function saveBest(obj){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(obj)); }catch(e){}
+}
+
+/* ---- Settings (persisted in the same blob under ._settings) ---- */
+const DEFAULT_SETTINGS = { vol:70, sfx:true, music:false, reduceMotion:null, theme:"midnight" };
+const THEMES = [
+  { key:"midnight", nameKey:"themeMidnight", attr:null,       sw:"#16264f" },
+  { key:"sakura",   nameKey:"themeSakura",   attr:"sakura",   sw:"#ff6b9d" },
+  { key:"jade",     nameKey:"themeJade",     attr:"jade",     sw:"#34d3b6" },
+  { key:"sumi",     nameKey:"themeSumi",     attr:"sumi",     sw:"#6a6a7a" },
+  { key:"light",    nameKey:"themeLight",    attr:"light",    sw:"#dbe3f2" },
+];
+let SETTINGS = Object.assign({}, DEFAULT_SETTINGS);
+function loadSettings(){
+  const b = loadBest();
+  SETTINGS = Object.assign({}, DEFAULT_SETTINGS, b._settings||{});
+  // legacy mute flag -> sfx off
+  if(b._muted) SETTINGS.sfx=false;
+  return SETTINGS;
+}
+function saveSettings(){
+  const b = loadBest(); b._settings = SETTINGS; b._muted = !SETTINGS.sfx; saveBest(b);
+}
+function prefersReducedMotion(){
+  try{ return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){ return false; }
+}
+/* reduced motion is ON when explicitly set, or (unset) when OS prefers it */
+function rmActive(){
+  if(SETTINGS.reduceMotion===true) return true;
+  if(SETTINGS.reduceMotion===false) return false;
+  return prefersReducedMotion();
+}
+function applyTheme(){
+  const th = THEMES.find(t=>t.key===SETTINGS.theme) || THEMES[0];
+  if(th.attr) document.documentElement.setAttribute("data-theme", th.attr);
+  else document.documentElement.removeAttribute("data-theme");
+}
+function applyMotion(){
+  // data-rm: "1" force on, "0" force off, absent = follow OS
+  if(SETTINGS.reduceMotion===true) document.documentElement.setAttribute("data-rm","1");
+  else if(SETTINGS.reduceMotion===false) document.documentElement.setAttribute("data-rm","0");
+  else document.documentElement.removeAttribute("data-rm");
+}
+function applySettings(){
+  G.muted = !SETTINGS.sfx;
+  document.getElementById("muteIco").textContent = G.muted ? "🔇" : "🔊";
+  applyTheme();
+  applyMotion();
+}
+
+/* ---- Lifetime stats ---- */
+const DEFAULT_STATS = { played:0, won:0, bestScore:0, bestTime:null, bestCombo:0, hints:0, shuffles:0, pairs:0 };
+function loadStats(){ const b=loadBest(); return Object.assign({}, DEFAULT_STATS, b._stats||{}); }
+function saveStats(s){ const b=loadBest(); b._stats=s; saveBest(b); }
+
+/* ---- Achievements ---- */
+const ACHS = [
+  { id:"firstWin",   ico:"🎉", nm:"achFirstWinNm",   ds:"achFirstWinDs" },
+  { id:"combo5",     ico:"⚡", nm:"achCombo5Nm",     ds:"achCombo5Ds" },
+  { id:"combo10",    ico:"🌀", nm:"achCombo10Nm",    ds:"achCombo10Ds" },
+  { id:"speed",      ico:"🏃", nm:"achSpeedNm",      ds:"achSpeedDs" },
+  { id:"noHint",     ico:"🧠", nm:"achNoHintNm",     ds:"achNoHintDs" },
+  { id:"threeStar",  ico:"⭐", nm:"achThreeStarNm",  ds:"achThreeStarDs" },
+  { id:"streak3",    ico:"🔥", nm:"achStreak3Nm",    ds:"achStreak3Ds" },
+  { id:"allLayouts", ico:"🗺", nm:"achAllLayoutsNm", ds:"achAllLayoutsDs" },
+];
+function loadAch(){ const b=loadBest(); return b._ach||{}; }
+function unlockAch(id){
+  const b=loadBest(); const a=b._ach||{};
+  if(a[id]) return false;
+  a[id]=Date.now(); b._ach=a; saveBest(b);
+  const def = ACHS.find(x=>x.id===id);
+  if(def) toast(t("toastAchUnlock")+" "+def.ico+" "+t(def.nm));
+  return true;
+}
+
+/* ---- Daily challenge tracking ---- */
+function loadDaily(){ const b=loadBest(); return b._daily||{ lastKey:0, streak:0, bestScore:0, bestTime:null, doneKey:0 }; }
+function saveDaily(d){ const b=loadBest(); b._daily=d; saveBest(b); }
+
+/* ---- Star rating: 3 stars = no hints + good time; based on mode ---- */
+function computeStars(){
+  let s=1;
+  // a 2nd star for not exhausting all hints; a 3rd for none + decent pace
+  if(G.hintsUsed===0) s=3;
+  else if(G.hintsUsed<=2) s=2;
+  // time gate: very slow drops a star (unless relaxed)
+  if(G.mode!=="relaxed" && G.elapsed>720 && s>1) s--;
+  return clamp(s,1,3);
+}
+
+/* ---- Save & resume in-progress game ---- */
+const SAVE_KEY = "mahjong1000_save_v1";
+function serializeGame(){
+  if(!G.running) return null;
+  return {
+    layoutKey:G.layoutKey, mode:G.mode, isDaily:G.isDaily, dailyKey:G.dailyKey,
+    score:G.score, combo:G.combo, maxCombo:G.maxCombo, pairs:G.pairs, remaining:G.remaining,
+    hintsUsed:G.hintsUsed, shufflesUsed:G.shufflesUsed, hintsLeft:G.hintsLeft, shufflesLeft:G.shufflesLeft,
+    elapsed:G.elapsedSaved(), lastForSpeed:G._lastForSpeed||0,
+    tiles:G.tiles.map(tt=>({l:tt.l,x:tt.x,y:tt.y,kind:tt.kind,glyph:tt.glyph,removed:tt.removed})),
+    history:G.history.slice(),
+    ts:Date.now(),
+  };
+}
+function saveGame(){
+  const s=serializeGame();
+  try{ if(s) localStorage.setItem(SAVE_KEY, JSON.stringify(s)); }catch(e){}
+}
+function clearSave(){ try{ localStorage.removeItem(SAVE_KEY); }catch(e){} }
+function loadSave(){
+  try{ const r=localStorage.getItem(SAVE_KEY); if(!r) return null; const o=JSON.parse(r);
+    return (o && o.tiles && o.tiles.length) ? o : null; }catch(e){ return null; }
+}
+function hasSave(){ return !!loadSave(); }
+
+function winGame(){
+  G.running=false;
+  clearSave();
+  const best = loadBest();
+  const key = G.layoutKey;
+  const rec = best[key] || {};
+  let improved=false;
+  const tm = G.elapsed;
+  if(rec.bestTime==null || tm < rec.bestTime){ rec.bestTime=tm; improved=true; }
+  if(rec.bestScore==null || G.score > rec.bestScore){ rec.bestScore=G.score; improved=true; }
+  if(rec.layoutWon==null) rec.layoutWon=true;
+  best[key]=rec;
+  saveBest(best);
+
+  // lifetime stats
+  const st = loadStats();
+  st.won++;
+  if(G.score>st.bestScore) st.bestScore=G.score;
+  if(st.bestTime==null || tm<st.bestTime) st.bestTime=tm;
+  if(G.maxCombo>st.bestCombo) st.bestCombo=G.maxCombo;
+  saveStats(st);
+
+  // stars
+  const stars = computeStars();
+
+  // daily tracking
+  if(G.isDaily){
+    const d = loadDaily();
+    const todayK = G.dailyKey;
+    if(d.doneKey !== todayK){
+      // streak: increment if yesterday completed, else reset to 1
+      const yk = dateKey(new Date(Date.now()-86400000));
+      d.streak = (d.lastKey===yk) ? (d.streak+1) : 1;
+      d.doneKey = todayK; d.lastKey = todayK;
+      d.bestScore = 0; d.bestTime = null;
+    }
+    if(G.score > (d.bestScore||0)) d.bestScore = G.score;
+    if(d.bestTime==null || tm < d.bestTime) d.bestTime = tm;
+    saveDaily(d);
+    if(d.streak>=3) unlockAch("streak3");
+  }
+
+  // achievements
+  unlockAch("firstWin");
+  if(G.maxCombo>=5) unlockAch("combo5");
+  if(G.maxCombo>=10) unlockAch("combo10");
+  if(tm<240) unlockAch("speed");
+  if(G.hintsUsed===0) unlockAch("noHint");
+  if(stars>=3) unlockAch("threeStar");
+  // all layouts won
+  const allWon = Object.keys(LAYOUTS).every(k=> best[k] && best[k].layoutWon);
+  if(allWon) unlockAch("allLayouts");
+
+  document.getElementById("winTime").textContent = fmtTime(tm);
+  document.getElementById("winScore").textContent = fmtNum(G.score);
+  document.getElementById("winCombo").textContent = "×"+G.maxCombo;
+  // stars display
+  const starEl = document.getElementById("winStars");
+  let sh="";
+  for(let i=0;i<3;i++) sh += i<stars ? '<span class="on">★</span>' : '<span class="off">★</span>';
+  starEl.innerHTML = sh;
+  G._lastWinStars = stars;
+  const wb = document.getElementById("winBest");
+  wb.innerHTML = improved
+    ? '🏆 <b style="color:var(--gold)">'+t("newRecord")+'</b>'
+    : t("recordLabel")+' <b style="color:var(--gold)">'+(rec.bestTime!=null?fmtTime(rec.bestTime):"—")+'</b> · <b style="color:var(--gold)">'+(rec.bestScore!=null?fmtNum(rec.bestScore):"—")+'</b> '+t("ptsUnit");
+
+  announce(t("winTitle"));
+  showOverlay("win");
+  Audio2.win();
+  if(!rmActive()){
+    spawnConfetti();
+    let n=0; const iv=setInterval(()=>{ spawnConfetti(); if(++n>=3) clearInterval(iv); }, 500);
+  }
+}
+
+/* ====================================================================== */
+/*  UI updates                                                            */
+/* ====================================================================== */
+function fmtTime(s){
+  s = Math.max(0, Math.floor(s));
+  const m = Math.floor(s/60), ss = s%60;
+  return m+":"+(ss<10?"0":"")+ss;
+}
+function updateTime(){ document.getElementById("stTime").textContent = fmtTime(G.elapsed); }
+function updateAllStats(){
+  document.getElementById("stRemain").textContent = G.remaining;
+  document.getElementById("stPairs").textContent = G.pairs;
+  document.getElementById("stScore").textContent = fmtNum(G.score);
+  updateTime();
+  document.getElementById("btnUndo").disabled = G.history.length===0;
+  document.getElementById("btnHint").disabled = (G.hintsLeft!=null && G.hintsLeft<=0) || !G.running;
+  document.getElementById("btnShuffle").disabled = (G.shufflesLeft!=null && G.shufflesLeft<=0) || !G.running;
+}
+
+/* aria-live announcer for screen readers */
+let _annT=null;
+function announce(msg){
+  const el=document.getElementById("ariaLive"); if(!el) return;
+  el.textContent=""; clearTimeout(_annT);
+  _annT=setTimeout(()=>{ el.textContent=msg; }, 40);
+}
+
+/* ---- elapsed time bookkeeping (pause-aware) ----
+   elapsed = (now - startT - pausedT)/1000.  When paused we accrue pause time
+   so the visible clock + best-times never inflate while menus are open. */
+function elapsedNow(){
+  if(!G.startT) return G.elapsed||0;
+  let paused = G.pausedT;
+  if(G.pauseStart) paused += (now()-G.pauseStart);
+  return Math.max(0, (now()-G.startT-paused)/1000);
+}
+G.elapsedSaved = ()=> elapsedNow();
+function pauseClock(){ if(G.running && !G.pauseStart) G.pauseStart=now(); }
+function resumeClock(){ if(G.pauseStart){ G.pausedT += (now()-G.pauseStart); G.pauseStart=0; } }
+
+/* toast */
+let toastT=null;
+function toast(msg){
+  const el = document.getElementById("toast");
+  el.textContent = msg; el.classList.add("show");
+  clearTimeout(toastT);
+  toastT = setTimeout(()=> el.classList.remove("show"), 1900);
+}
+
+function shakeWrap(){
+  if(rmActive()) return;
+  boardWrap.animate(
+    [{transform:"translateX(0)"},{transform:"translateX(-5px)"},{transform:"translateX(5px)"},{transform:"translateX(-3px)"},{transform:"translateX(0)"}],
+    {duration:240, easing:"ease-out"}
+  );
+}
+
+/* overlays */
+function showOverlay(id){ document.getElementById(id).classList.remove("hidden"); }
+function hideOverlay(id){ document.getElementById(id).classList.add("hidden"); }
+
+/* ====================================================================== */
+/*  Menu setup                                                            */
+/* ====================================================================== */
+let menuLayout = "turtle";
+let menuMode = "classic";
+function buildMenu(){
+  const grid = document.getElementById("layoutGrid");
+  grid.innerHTML="";
+  Object.keys(LAYOUTS).forEach(key=>{
+    const d = LAYOUTS[key];
+    const el = document.createElement("button");
+    el.type="button";
+    el.className = "lay b"+(key===menuLayout?" sel":"");
+    el.setAttribute("aria-pressed", key===menuLayout ? "true":"false");
+    el.style.cssText="text-align:center;"; // override button default
+    el.innerHTML = '<div class="ico">'+d.ico+'</div><div class="nm">'+layoutName(key)+'<small>'+d.jp+'</small></div>';
+    el.addEventListener("click", ()=>{
+      menuLayout=key;
+      grid.querySelectorAll(".lay").forEach(n=>{ n.classList.remove("sel"); n.setAttribute("aria-pressed","false"); });
+      el.classList.add("sel"); el.setAttribute("aria-pressed","true");
+      Audio2.select();
+    });
+    grid.appendChild(el);
+  });
+  // mode segment
+  document.querySelectorAll("#modeSeg button").forEach(b=>{
+    b.classList.toggle("on", b.dataset.mode===menuMode);
+    b.setAttribute("aria-pressed", b.dataset.mode===menuMode ? "true":"false");
+  });
+  // resume button visibility
+  const rw=document.getElementById("resumeWrap");
+  rw.style.display = hasSave() ? "block" : "none";
+  // daily badge on the daily button
+  const dk = dateKey();
+  const dly = loadDaily();
+  const btnDaily = document.getElementById("btnDaily");
+  if(dly.doneKey===dk){
+    btnDaily.title = t("dailyDone");
+  } else { btnDaily.title=""; }
+  // best chips
+  const best = loadBest();
+  const wrap = document.getElementById("bestWrap");
+  wrap.innerHTML="";
+  let any=false;
+  // daily streak chip first
+  if(dly.streak>0){
+    any=true;
+    const c=document.createElement("div"); c.className="chip";
+    c.innerHTML="🔥 "+t("dailyStreak")+": <b>"+dly.streak+"</b>";
+    wrap.appendChild(c);
+  }
+  Object.keys(LAYOUTS).forEach(key=>{
+    const r = best[key];
+    if(r && (r.bestTime!=null || r.bestScore!=null)){
+      any=true;
+      const chip=document.createElement("div");
+      chip.className="chip";
+      chip.innerHTML = LAYOUTS[key].ico+" "+layoutName(key)+": <b>"+(r.bestTime!=null?fmtTime(r.bestTime):"—")+"</b> · <b>"+(r.bestScore!=null?fmtNum(r.bestScore):"—")+"</b>"+t("ptsShort");
+      wrap.appendChild(chip);
+    }
+  });
+  if(!any){
+    const chip=document.createElement("div");
+    chip.className="chip"; chip.style.opacity=".8";
+    chip.innerHTML=t("noRecord");
+    wrap.appendChild(chip);
+  }
+}
+
+/* ---- Settings panel build/wire ---- */
+function buildSettings(){
+  document.getElementById("setVol").value = SETTINGS.vol;
+  document.querySelectorAll("#setSfxSeg button").forEach(b=> b.classList.toggle("on", (b.dataset.v==="1")===!!SETTINGS.sfx));
+  document.querySelectorAll("#setMusicSeg button").forEach(b=> b.classList.toggle("on", (b.dataset.v==="1")===!!SETTINGS.music));
+  // reduce motion seg: explicit true/false; if null follow OS -> show effective
+  const rmOn = rmActive();
+  document.querySelectorAll("#setRmSeg button").forEach(b=> b.classList.toggle("on", (b.dataset.v==="1")===rmOn));
+  // themes
+  const tr=document.getElementById("themeRow"); tr.innerHTML="";
+  THEMES.forEach(th=>{
+    const b=document.createElement("button");
+    b.type="button"; b.className="swatch"+(SETTINGS.theme===th.key?" sel":"");
+    b.style.setProperty("--sw", th.sw);
+    b.title = t(th.nameKey); b.setAttribute("aria-label", t(th.nameKey));
+    b.setAttribute("aria-pressed", SETTINGS.theme===th.key?"true":"false");
+    b.addEventListener("click", ()=>{
+      SETTINGS.theme=th.key; saveSettings(); applyTheme();
+      tr.querySelectorAll(".swatch").forEach(s=>{ s.classList.remove("sel"); s.setAttribute("aria-pressed","false"); });
+      b.classList.add("sel"); b.setAttribute("aria-pressed","true"); Audio2.select();
+    });
+    tr.appendChild(b);
+  });
+}
+
+/* ---- Stats / achievements panel build ---- */
+function buildStatsPanel(){
+  const st = loadStats();
+  const dly = loadDaily();
+  const grid = document.getElementById("statsGrid");
+  const rows = [
+    ["stGamesPlayed", st.played],
+    ["stGamesWon", st.won],
+    ["stBestScore", fmtNum(st.bestScore||0)],
+    ["stBestTime", st.bestTime!=null?fmtTime(st.bestTime):"—"],
+    ["stBestCombo", "×"+(st.bestCombo||0)],
+    ["stDayStreak", dly.streak||0],
+    ["stHintsUsed", st.hints||0],
+    ["stShufflesUsed", st.shuffles||0],
+    ["stTotalPairs", fmtNum(st.pairs||0)],
+  ];
+  grid.innerHTML = rows.map(r=>'<div class="box"><div class="k">'+t(r[0])+'</div><div class="v">'+r[1]+'</div></div>').join("");
+  // achievements
+  const got = loadAch();
+  const ag = document.getElementById("achGrid");
+  ag.innerHTML = ACHS.map(a=>{
+    const on = !!got[a.id];
+    return '<div class="ach'+(on?" got":"")+'" role="img" aria-label="'+t(a.nm)+' — '+t(a.ds)+(on?"":" 🔒")+'">'+
+      '<div class="ico">'+(on?a.ico:"🔒")+'</div><div class="nm">'+t(a.nm)+'</div><div class="ds">'+t(a.ds)+'</div></div>';
+  }).join("");
+}
+
+/* ====================================================================== */
+/*  Input handling                                                        */
+/* ====================================================================== */
+function canvasPoint(e){
+  const r = board.getBoundingClientRect();
+  let cx, cy;
+  if(e.touches && e.touches.length){ cx=e.touches[0].clientX; cy=e.touches[0].clientY; }
+  else if(e.changedTouches && e.changedTouches.length){ cx=e.changedTouches[0].clientX; cy=e.changedTouches[0].clientY; }
+  else { cx=e.clientX; cy=e.clientY; }
+  return { x:(cx-r.left), y:(cy-r.top) };
+}
+
+let downTile=null, downPt=null, moved=false;
+function onDown(e){
+  Audio2.ensure();
+  if(!G.running) return;
+  const p = canvasPoint(e);
+  downPt=p; moved=false;
+  downTile = tileAt(p.x,p.y);
+}
+function onMove(e){
+  if(!G.running) return;
+  const p = canvasPoint(e);
+  if(downPt){
+    if(Math.abs(p.x-downPt.x)>8 || Math.abs(p.y-downPt.y)>8) moved=true;
+  }
+  // hover (mouse only)
+  if(!e.touches){
+    const t = tileAt(p.x,p.y);
+    G.hover = (t && isFree(t,G.tiles)) ? t : null;
+    board.style.cursor = G.hover ? "pointer" : "default";
+  }
+}
+function onUp(e){
+  if(!G.running){ downTile=null; downPt=null; return; }
+  const p = canvasPoint(e);
+  const t = tileAt(p.x,p.y);
+  if(t && t===downTile && !moved){
+    selectTile(t);
+  } else if(t===null && !moved){
+    // tap empty -> deselect
+    if(G.selected){ G.selected=null; Audio2.deselect(); }
+  }
+  downTile=null; downPt=null;
+}
+
+board.addEventListener("mousedown", onDown);
+board.addEventListener("mousemove", onMove);
+window.addEventListener("mouseup", onUp);
+board.addEventListener("mouseleave", ()=>{ G.hover=null; });
+
+board.addEventListener("touchstart", (e)=>{ onDown(e); }, {passive:true});
+board.addEventListener("touchmove", (e)=>{ onMove(e); }, {passive:true});
+board.addEventListener("touchend", (e)=>{ onUp(e); }, {passive:false});
+
+/* keyboard */
+window.addEventListener("keydown", (e)=>{
+  const k = e.key.toLowerCase();
+  if(k==="h"){ doHint(); }
+  else if(k==="u"){ doUndo(); }
+  else if(k==="s"){ doShuffle(); }
+  else if(k==="m"){ toggleMute(); }
+  else if(k==="n"){ openMenu(); }
+  else if(k==="escape"){
+    if(!document.getElementById("menu").classList.contains("hidden")) {}
+    else openMenu();
+  }
+});
+
+/* ====================================================================== */
+/*  Mute                                                                  */
+/* ====================================================================== */
+function loadMute(){
+  try{ const b=loadBest(); G.muted = !!b._muted; }catch(e){ G.muted=false; }
+  document.getElementById("muteIco").textContent = G.muted ? "🔇" : "🔊";
+}
+function toggleMute(){
+  G.muted = !G.muted;
+  document.getElementById("muteIco").textContent = G.muted ? "🔇" : "🔊";
+  const b = loadBest(); b._muted = G.muted; saveBest(b);
+  if(!G.muted){ Audio2.ensure(); Audio2.select(); }
+}
+
+/* ====================================================================== */
+/*  Buttons wiring                                                        */
+/* ====================================================================== */
+function openMenu(){ buildMenu(); showOverlay("menu"); }
+
+document.getElementById("btnStart").addEventListener("click", ()=>{ Audio2.ensure(); newGame(menuLayout); });
+document.getElementById("btnHint").addEventListener("click", doHint);
+document.getElementById("btnUndo").addEventListener("click", doUndo);
+document.getElementById("btnShuffle").addEventListener("click", ()=>doShuffle(true));
+document.getElementById("btnNew").addEventListener("click", openMenu);
+document.getElementById("btnMute").addEventListener("click", toggleMute);
+
+document.getElementById("btnWinReplay").addEventListener("click", ()=>{ newGame(G.layoutKey); });
+document.getElementById("btnWinMenu").addEventListener("click", openMenu);
+
+document.getElementById("btnLoseShuffle").addEventListener("click", ()=>{ hideOverlay("lose"); doShuffle(true); });
+document.getElementById("btnLoseNew").addEventListener("click", openMenu);
+
+/* ====================================================================== */
+/*  Resize                                                                */
+/* ====================================================================== */
+let rT=null;
+window.addEventListener("resize", ()=>{ clearTimeout(rT); rT=setTimeout(layout, 120); });
+window.addEventListener("orientationchange", ()=>{ setTimeout(layout, 250); });
+
+/* ====================================================================== */
+/*  Boot                                                                  */
+/* ====================================================================== */
+document.querySelectorAll(".langbtn").forEach(b=>{
+  b.addEventListener("click", ()=>{ setLang(b.dataset.lang); Audio2.ensure(); Audio2.select(); });
+});
+loadMute();
+applyLang();
+buildMenu();
+requestAnimationFrame(loop);
+// resume audio on first gesture anywhere
+["pointerdown","touchstart","keydown"].forEach(ev=>{
+  window.addEventListener(ev, ()=>Audio2.ensure(), {once:true, passive:true});
+});
+
+})();
+</script>
+</body>
+</html>

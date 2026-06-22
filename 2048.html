@@ -1,0 +1,2103 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<meta name="description" content="2048 - game xếp số kinh điển. Trượt mượt, hợp số, đạt 2048! Chơi miễn phí.">
+<title>2048 ✦ 1000×</title>
+<style>
+  :root{
+    --bg0:#0b1020; --bg1:#0e1428;
+    --gold:#ffce54; --cyan:#34e0ff; --violet:#b388ff; --teal:#34d3b6; --rose:#ff6b9d;
+    --ink:#eaf0ff; --ink-dim:#9fb0d4;
+    --glass:rgba(255,255,255,.06); --glass-brd:rgba(255,255,255,.12);
+    --board-bg:rgba(10,16,34,.55); --cell-bg:rgba(255,255,255,.045);
+    --shadow:0 18px 50px rgba(0,0,0,.5);
+    --gap:2.6vmin; --radius:14px;
+    --anim-move:115ms; --anim-pop:150ms;
+    --glow1:rgba(52,224,255,.10); --glow2:rgba(179,136,255,.12); --glow3:rgba(255,206,84,.07);
+  }
+  /* ---------- THEMES ---------- */
+  html[data-theme="aurora"]{
+    --bg0:#0b1020; --bg1:#0e1428;
+    --gold:#ffce54; --cyan:#34e0ff; --violet:#b388ff; --teal:#34d3b6; --rose:#ff6b9d;
+    --ink:#eaf0ff; --ink-dim:#9fb0d4;
+    --glow1:rgba(52,224,255,.10); --glow2:rgba(179,136,255,.12); --glow3:rgba(255,206,84,.07);
+  }
+  html[data-theme="sunset"]{
+    --bg0:#1a0d18; --bg1:#2a0f1e;
+    --gold:#ffd36b; --cyan:#ff9e64; --violet:#ff6b9d; --teal:#ffb86b; --rose:#ff5c8a;
+    --ink:#fff0ea; --ink-dim:#e0b3b8;
+    --glow1:rgba(255,158,100,.14); --glow2:rgba(255,107,157,.14); --glow3:rgba(255,211,107,.10);
+  }
+  html[data-theme="forest"]{
+    --bg0:#07140f; --bg1:#0a1d15;
+    --gold:#c8e66b; --cyan:#5fe0a8; --violet:#8be0c0; --teal:#34d3b6; --rose:#a8e063;
+    --ink:#eafff4; --ink-dim:#9fd4bb;
+    --glow1:rgba(52,211,182,.12); --glow2:rgba(139,224,192,.12); --glow3:rgba(200,230,107,.08);
+  }
+  html[data-theme="mono"]{
+    --bg0:#0c0c10; --bg1:#15151c;
+    --gold:#dcdce6; --cyan:#9ea0b5; --violet:#b8bad0; --teal:#c8cad8; --rose:#e6e6f0;
+    --ink:#f2f2f8; --ink-dim:#9a9cae;
+    --glow1:rgba(180,180,200,.08); --glow2:rgba(160,160,185,.08); --glow3:rgba(200,200,220,.05);
+  }
+  html[data-theme="light"]{
+    --bg0:#eef2fb; --bg1:#dde4f3;
+    --gold:#d99a1f; --cyan:#1c95c0; --violet:#7a5cd6; --teal:#1aa890; --rose:#d6477f;
+    --ink:#1a2236; --ink-dim:#55617d;
+    --glass:rgba(20,30,60,.05); --glass-brd:rgba(20,30,60,.14);
+    --board-bg:rgba(255,255,255,.55); --cell-bg:rgba(20,30,60,.05);
+    --shadow:0 18px 50px rgba(60,80,140,.25);
+    --glow1:rgba(28,149,192,.14); --glow2:rgba(122,92,214,.12); --glow3:rgba(217,154,31,.10);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0; font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 700px at 12% -10%, var(--glow1), transparent 55%),
+      radial-gradient(1000px 680px at 110% 0%, var(--glow2), transparent 52%),
+      radial-gradient(900px 700px at 50% 120%, var(--glow3), transparent 55%),
+      linear-gradient(160deg,var(--bg0),var(--bg1));
+    background-attachment:fixed;
+    min-height:100dvh;
+    display:flex; flex-direction:column; align-items:center;
+    padding:max(12px,env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));
+    overflow-x:hidden;
+    -webkit-user-select:none; user-select:none;
+    touch-action:manipulation;
+  }
+  .wrap{ width:100%; max-width:520px; display:flex; flex-direction:column; gap:14px; flex:1 0 auto; }
+
+  /* ---------- Header ---------- */
+  header{
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+    background:var(--glass); border:1px solid var(--glass-brd);
+    border-radius:18px; padding:12px 14px;
+    backdrop-filter:blur(12px) saturate(140%); -webkit-backdrop-filter:blur(12px) saturate(140%);
+    box-shadow:var(--shadow);
+  }
+  .brand{ display:flex; align-items:baseline; gap:8px; margin-right:auto; min-width:0; }
+  .brand h1{
+    font-size:clamp(26px,7vw,40px); margin:0; letter-spacing:.5px; font-weight:800; line-height:1;
+    background:linear-gradient(135deg,var(--gold),var(--rose) 55%,var(--violet));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 2px 18px rgba(255,206,84,.15);
+  }
+  .brand .spark{ font-size:clamp(15px,3.4vw,20px); color:var(--cyan); filter:drop-shadow(0 0 8px rgba(52,224,255,.6)); }
+  .brand small{ font-size:11px; color:var(--ink-dim); letter-spacing:2px; font-weight:700; }
+
+  .scores{ display:flex; gap:10px; }
+  .score-box{
+    position:relative; min-width:84px; text-align:center;
+    background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03));
+    border:1px solid var(--glass-brd); border-radius:12px; padding:7px 12px 8px;
+    overflow:hidden;
+  }
+  .score-box .lbl{ font-size:10px; letter-spacing:1.5px; color:var(--ink-dim); font-weight:800; text-transform:uppercase; }
+  .score-box .val{ font-size:clamp(18px,4.6vw,24px); font-weight:800; line-height:1.1; font-variant-numeric:tabular-nums; }
+  #score-box .val{ color:var(--gold); }
+  #best-box .val{ color:var(--cyan); }
+  .score-box.bump{ animation:bump .28s ease; }
+  @keyframes bump{ 0%{transform:scale(1)} 40%{transform:scale(1.13)} 100%{transform:scale(1)} }
+  .score-box.newbest{ box-shadow:0 0 0 2px var(--gold), 0 8px 22px rgba(255,206,84,.4); }
+  .gain{
+    position:absolute; left:0; right:0; top:6px; font-weight:800; font-size:15px; color:var(--gold);
+    opacity:0; pointer-events:none; text-shadow:0 2px 8px rgba(0,0,0,.5);
+  }
+  .gain.go{ animation:gain 720ms ease-out forwards; }
+  @keyframes gain{ 0%{opacity:0; transform:translateY(6px)} 18%{opacity:1} 100%{opacity:0; transform:translateY(-22px)} }
+
+  /* ---------- Controls ---------- */
+  .controls{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .hint{ color:var(--ink-dim); font-size:12.5px; margin-right:auto; line-height:1.4; }
+  .hint b{ color:var(--ink); font-weight:700; }
+  .mode-badge{
+    font-size:11px; font-weight:800; letter-spacing:.5px; padding:5px 10px; border-radius:999px;
+    border:1px solid var(--glass-brd); color:var(--ink); background:var(--glass); white-space:nowrap;
+  }
+  .mode-badge .dot{ display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; vertical-align:middle; background:var(--cyan); }
+  .btn{
+    appearance:none; cursor:pointer; font-family:inherit; font-weight:700; font-size:14px;
+    color:var(--ink); padding:9px 14px; border-radius:12px;
+    border:1px solid var(--glass-brd);
+    background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.04));
+    transition:transform .08s ease, box-shadow .18s ease, border-color .18s, background .18s, opacity .18s;
+    display:inline-flex; align-items:center; gap:7px; white-space:nowrap;
+  }
+  .btn:hover{ border-color:rgba(255,255,255,.28); box-shadow:0 6px 18px rgba(0,0,0,.32); }
+  .btn:active{ transform:translateY(1px) scale(.98); }
+  .btn:focus-visible{ outline:2px solid var(--cyan); outline-offset:2px; }
+  .btn:disabled{ opacity:.4; cursor:not-allowed; box-shadow:none; transform:none; }
+  .btn .ic{ font-size:16px; line-height:1; }
+  .btn.primary{
+    color:#1a1205; border-color:transparent;
+    background:linear-gradient(135deg,var(--gold),#ffd778);
+    box-shadow:0 8px 22px rgba(255,206,84,.30);
+  }
+  .btn.primary:hover{ box-shadow:0 10px 26px rgba(255,206,84,.42); }
+  .icon-btn{ padding:9px 11px; }
+  select.btn{ padding-right:10px; }
+  select.btn option{ color:#101627; background:#101627; }
+  html[data-theme="light"] select.btn option{ color:#101627; background:#fff; }
+
+  /* ---------- Language toggle ---------- */
+  .langrow{ display:flex; gap:8px; align-items:center; }
+  .langbtn{
+    appearance:none; cursor:pointer; font-family:inherit; font-weight:800; font-size:12.5px;
+    color:var(--ink); padding:7px 12px; border-radius:999px;
+    border:1px solid var(--glass-brd);
+    background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.04));
+    transition:transform .08s ease, box-shadow .18s ease, border-color .18s, background .18s;
+    display:inline-flex; align-items:center; gap:6px; white-space:nowrap;
+  }
+  .langbtn:hover{ border-color:var(--cyan); }
+  .langbtn:active{ transform:translateY(1px) scale(.98); }
+  .langbtn:focus-visible{ outline:2px solid var(--cyan); outline-offset:2px; }
+  .langbtn.active{ color:#1a1205; border-color:transparent; background:linear-gradient(135deg,var(--gold),#ffd778); box-shadow:0 6px 16px rgba(255,206,84,.30); }
+
+  /* ---------- Board ---------- */
+  .board-wrap{ display:flex; justify-content:center; }
+  .board{
+    position:relative;
+    width:min(92vw, 96vmin, 480px);
+    aspect-ratio:1/1;
+    background:var(--board-bg);
+    border:1px solid var(--glass-brd);
+    border-radius:20px;
+    padding:var(--gap);
+    box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.06);
+    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+    touch-action:none;
+  }
+  .grid-bg{ position:absolute; inset:var(--gap); display:grid; gap:var(--gap); }
+  .cell{ background:var(--cell-bg); border-radius:var(--radius); box-shadow:inset 0 0 0 1px rgba(255,255,255,.02); }
+
+  .tiles{ position:absolute; inset:var(--gap); }
+  .tile{
+    position:absolute; width:var(--ts); height:var(--ts);
+    display:flex; align-items:center; justify-content:center;
+    border-radius:var(--radius);
+    font-weight:800; line-height:1; font-variant-numeric:tabular-nums;
+    color:#2a1c00;
+    transform:translate(var(--x),var(--y));
+    transition:transform var(--anim-move) cubic-bezier(.22,.66,.3,1);
+    will-change:transform; z-index:2;
+    box-shadow:0 8px 18px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.35), inset 0 -3px 6px rgba(0,0,0,.10);
+    overflow:hidden;
+  }
+  .tile .num{ position:relative; z-index:1; padding:0 4px; }
+  .tile.spawn{ animation:spawn var(--anim-pop) cubic-bezier(.2,.9,.3,1.3) both; }
+  @keyframes spawn{ 0%{transform:translate(var(--x),var(--y)) scale(0)} 60%{transform:translate(var(--x),var(--y)) scale(1.06)} 100%{transform:translate(var(--x),var(--y)) scale(1)} }
+  .tile.merge{ animation:merge 200ms cubic-bezier(.2,.7,.3,1.4); z-index:3; }
+  @keyframes merge{ 0%{transform:translate(var(--x),var(--y)) scale(1)} 45%{transform:translate(var(--x),var(--y)) scale(1.22)} 100%{transform:translate(var(--x),var(--y)) scale(1)} }
+
+  /* Tile color ramp */
+  .t2   {background:linear-gradient(160deg,#f2ead8,#e8dcc0); color:#5a4a2a;}
+  .t4   {background:linear-gradient(160deg,#f3e3b6,#ecd79a); color:#5a4622;}
+  .t8   {background:linear-gradient(160deg,#ffce54,#ffb43d); color:#5a3a00; box-shadow:0 8px 20px rgba(255,180,61,.30), inset 0 1px 0 rgba(255,255,255,.4);}
+  .t16  {background:linear-gradient(160deg,#ff9f45,#ff7a3d); color:#fff;}
+  .t32  {background:linear-gradient(160deg,#ff7a5c,#ff5c6e); color:#fff;}
+  .t64  {background:linear-gradient(160deg,#ff6b9d,#ff4f86); color:#fff; box-shadow:0 8px 22px rgba(255,107,157,.40), inset 0 1px 0 rgba(255,255,255,.35);}
+  .t128 {background:linear-gradient(160deg,#c08bff,#a266ff); color:#fff; box-shadow:0 8px 22px rgba(179,136,255,.42), inset 0 1px 0 rgba(255,255,255,.3);}
+  .t256 {background:linear-gradient(160deg,#9d7bff,#7a5cff); color:#fff; box-shadow:0 8px 24px rgba(150,120,255,.45), inset 0 1px 0 rgba(255,255,255,.3);}
+  .t512 {background:linear-gradient(160deg,#5cc8ff,#34a8ff); color:#fff; box-shadow:0 8px 26px rgba(52,168,255,.5), inset 0 1px 0 rgba(255,255,255,.3);}
+  .t1024{background:linear-gradient(160deg,#34e0ff,#22c0e8); color:#04222b; box-shadow:0 8px 28px rgba(52,224,255,.55), inset 0 1px 0 rgba(255,255,255,.45);}
+  .t2048{background:linear-gradient(160deg,#34d3b6,#ffce54); color:#04261f; box-shadow:0 0 0 2px rgba(255,255,255,.18), 0 10px 34px rgba(52,211,182,.6), inset 0 1px 0 rgba(255,255,255,.5); animation:glow 1.8s ease-in-out infinite;}
+  .t4096{background:linear-gradient(160deg,#ffce54,#ff6b9d,#b388ff); color:#2a0a1f; box-shadow:0 0 0 2px rgba(255,255,255,.22), 0 10px 36px rgba(255,107,157,.6); animation:glow 1.8s ease-in-out infinite;}
+  .thi  {background:linear-gradient(160deg,#fff,#ffce54,#34e0ff); color:#101627; box-shadow:0 0 0 2px rgba(255,255,255,.3), 0 12px 40px rgba(52,224,255,.6); animation:glow 1.4s ease-in-out infinite;}
+  @keyframes glow{ 0%,100%{filter:brightness(1)} 50%{filter:brightness(1.18)} }
+
+  /* Color-blind-safe value glyph (corner mark) shown when enabled */
+  .tile .cbmark{
+    position:absolute; top:3px; left:5px; font-size:calc(var(--ts) * .16); font-weight:900;
+    opacity:0; line-height:1; z-index:2; color:inherit; mix-blend-mode:normal; pointer-events:none;
+  }
+  html[data-cb="1"] .tile .cbmark{ opacity:.85; }
+
+  /* font sizing by digit count */
+  .tile{ font-size:calc(var(--ts) * .44); }
+  .tile.d3{ font-size:calc(var(--ts) * .36); }
+  .tile.d4{ font-size:calc(var(--ts) * .28); }
+  .tile.d5{ font-size:calc(var(--ts) * .23); }
+
+  /* merge spark particles */
+  .spark-fx{ position:absolute; width:var(--ts); height:var(--ts); transform:translate(var(--x),var(--y)); pointer-events:none; z-index:5; }
+  .pf{ position:absolute; left:50%; top:50%; width:7px; height:7px; border-radius:50%; opacity:0; }
+  .pf.run{ animation:pf 560ms ease-out forwards; }
+  @keyframes pf{ 0%{opacity:1; transform:translate(-50%,-50%) scale(1)} 100%{opacity:0; transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.3)} }
+
+  /* ---------- Overlay ---------- */
+  .overlay{
+    position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:16px; text-align:center; padding:22px; border-radius:20px; z-index:10;
+    background:radial-gradient(120% 120% at 50% 30%, rgba(11,16,32,.78), rgba(11,16,32,.92));
+    backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+    opacity:0; pointer-events:none; transition:opacity .28s ease;
+  }
+  html[data-theme="light"] .overlay{ background:radial-gradient(120% 120% at 50% 30%, rgba(238,242,251,.82), rgba(221,228,243,.94)); }
+  .overlay.show{ opacity:1; pointer-events:auto; animation:ovin .35s ease; }
+  @keyframes ovin{ from{transform:scale(.97)} to{transform:scale(1)} }
+  .overlay .big{ font-size:clamp(28px,8.4vw,50px); font-weight:900; margin:0; line-height:1.05;
+    background:linear-gradient(135deg,var(--gold),var(--rose),var(--violet));
+    -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .overlay.over .big{ background:linear-gradient(135deg,#ff6b9d,#b388ff); -webkit-background-clip:text; background-clip:text; }
+  .overlay .sub{ color:var(--ink-dim); font-size:15px; margin:0; max-width:320px; }
+  .overlay .sub b{ color:var(--gold); }
+  .overlay .ov-actions{ display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+  .overlay .ov-stats{ display:flex; gap:18px; flex-wrap:wrap; justify-content:center; font-size:13px; color:var(--ink-dim); }
+  .overlay .ov-stats b{ color:var(--ink); display:block; font-size:18px; font-variant-numeric:tabular-nums; }
+
+  /* toast for "no move" */
+  .toast{
+    position:absolute; left:50%; bottom:14px; transform:translateX(-50%) translateY(12px);
+    background:rgba(20,26,46,.92); border:1px solid var(--glass-brd); color:var(--ink);
+    padding:9px 16px; border-radius:999px; font-size:13px; font-weight:700; z-index:11;
+    opacity:0; pointer-events:none; box-shadow:0 10px 28px rgba(0,0,0,.5); white-space:nowrap; max-width:90%;
+  }
+  html[data-theme="light"] .toast{ background:rgba(255,255,255,.95); }
+  .toast.show{ animation:toast 1.25s ease forwards; }
+  @keyframes toast{ 0%{opacity:0; transform:translateX(-50%) translateY(12px)} 15%,75%{opacity:1; transform:translateX(-50%) translateY(0)} 100%{opacity:0; transform:translateX(-50%) translateY(-8px)} }
+
+  /* achievement toast (top) */
+  .achv-toast{
+    position:fixed; left:50%; top:14px; transform:translateX(-50%) translateY(-16px);
+    background:linear-gradient(135deg,var(--gold),#ffd778); color:#1a1205;
+    padding:11px 18px; border-radius:14px; font-size:13.5px; font-weight:800; z-index:60;
+    box-shadow:0 14px 34px rgba(0,0,0,.45); opacity:0; pointer-events:none; max-width:92vw;
+    display:flex; align-items:center; gap:10px; text-align:left;
+  }
+  .achv-toast .ai{ font-size:22px; line-height:1; }
+  .achv-toast .at{ font-size:11px; opacity:.8; font-weight:800; letter-spacing:.5px; }
+  .achv-toast.show{ animation:achv 3s ease forwards; }
+  @keyframes achv{ 0%{opacity:0; transform:translateX(-50%) translateY(-16px)} 10%,80%{opacity:1; transform:translateX(-50%) translateY(0)} 100%{opacity:0; transform:translateX(-50%) translateY(-16px)} }
+
+  .board.shake{ animation:shake .34s cubic-bezier(.36,.07,.19,.97); }
+  @keyframes shake{ 10%,90%{transform:translateX(-2px)} 20%,80%{transform:translateX(4px)} 30%,50%,70%{transform:translateX(-7px)} 40%,60%{transform:translateX(7px)} }
+
+  /* ---------- Modal (settings / stats / daily / new-game confirm) ---------- */
+  .modal-back{
+    position:fixed; inset:0; z-index:50; display:flex; align-items:center; justify-content:center;
+    padding:16px; background:rgba(5,8,18,.62); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);
+    opacity:0; pointer-events:none; transition:opacity .2s ease;
+  }
+  .modal-back.show{ opacity:1; pointer-events:auto; }
+  .modal{
+    width:100%; max-width:440px; max-height:88dvh; overflow-y:auto;
+    background:linear-gradient(180deg,var(--bg1),var(--bg0));
+    border:1px solid var(--glass-brd); border-radius:20px; box-shadow:var(--shadow);
+    padding:18px 18px 20px;
+    transform:translateY(8px) scale(.98); transition:transform .2s ease;
+  }
+  .modal-back.show .modal{ transform:none; }
+  .modal h2{ margin:0 0 14px; font-size:21px; font-weight:900; display:flex; align-items:center; gap:9px; }
+  .modal h2 .ic{ font-size:22px; }
+  .modal-x{
+    margin-left:auto; appearance:none; cursor:pointer; font-size:18px; font-weight:800;
+    width:34px; height:34px; border-radius:10px; color:var(--ink);
+    border:1px solid var(--glass-brd); background:var(--glass);
+  }
+  .modal-x:focus-visible{ outline:2px solid var(--cyan); outline-offset:2px; }
+  .setrow{ display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--glass-brd); }
+  .setrow:last-child{ border-bottom:none; }
+  .setrow .slabel{ font-weight:700; font-size:14px; margin-right:auto; }
+  .setrow .sdesc{ font-size:11.5px; color:var(--ink-dim); font-weight:500; margin-top:2px; }
+  input[type="range"]{ -webkit-appearance:none; appearance:none; height:6px; border-radius:999px; background:var(--glass-brd); width:120px; cursor:pointer; }
+  input[type="range"]::-webkit-slider-thumb{ -webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:var(--gold); border:2px solid #fff3; cursor:pointer; }
+  input[type="range"]::-moz-range-thumb{ width:18px; height:18px; border-radius:50%; background:var(--gold); border:2px solid #fff3; cursor:pointer; }
+  /* toggle switch */
+  .switch{ position:relative; width:46px; height:26px; flex:0 0 auto; }
+  .switch input{ position:absolute; opacity:0; width:100%; height:100%; margin:0; cursor:pointer; }
+  .switch .track{ position:absolute; inset:0; border-radius:999px; background:var(--glass-brd); transition:background .18s; }
+  .switch .thumb{ position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; transition:transform .18s; box-shadow:0 2px 5px rgba(0,0,0,.35); }
+  .switch input:checked ~ .track{ background:linear-gradient(135deg,var(--gold),#ffd778); }
+  .switch input:checked ~ .thumb{ transform:translateX(20px); }
+  .switch input:focus-visible ~ .track{ outline:2px solid var(--cyan); outline-offset:2px; }
+  .theme-grid{ display:flex; gap:9px; flex-wrap:wrap; }
+  .theme-chip{
+    appearance:none; cursor:pointer; width:40px; height:40px; border-radius:12px;
+    border:2px solid var(--glass-brd); position:relative; overflow:hidden; padding:0;
+  }
+  .theme-chip:focus-visible{ outline:2px solid var(--cyan); outline-offset:2px; }
+  .theme-chip.sel{ border-color:var(--gold); box-shadow:0 0 0 3px rgba(255,206,84,.3); }
+  .theme-chip span{ position:absolute; inset:0; }
+
+  .modal-seg{ display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 4px; }
+  .seg-btn{
+    appearance:none; cursor:pointer; font-family:inherit; font-weight:700; font-size:13px; color:var(--ink);
+    padding:8px 13px; border-radius:10px; border:1px solid var(--glass-brd); background:var(--glass);
+    flex:1 1 auto; min-width:84px; text-align:center;
+  }
+  .seg-btn:focus-visible{ outline:2px solid var(--cyan); outline-offset:2px; }
+  .seg-btn.sel{ color:#1a1205; border-color:transparent; background:linear-gradient(135deg,var(--gold),#ffd778); }
+  .seg-btn .sgd{ display:block; font-size:10.5px; font-weight:600; opacity:.75; margin-top:2px; }
+  .seg-btn.sel .sgd{ opacity:.8; }
+
+  .stat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:4px 0 6px; }
+  .stat-card{ background:var(--glass); border:1px solid var(--glass-brd); border-radius:12px; padding:11px 12px; }
+  .stat-card .sk{ font-size:11px; color:var(--ink-dim); font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
+  .stat-card .sv{ font-size:20px; font-weight:900; font-variant-numeric:tabular-nums; margin-top:2px; }
+  .section-h{ font-size:12.5px; font-weight:800; color:var(--ink-dim); text-transform:uppercase; letter-spacing:1px; margin:16px 0 8px; }
+
+  .achv-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:9px; }
+  .achv-card{
+    background:var(--glass); border:1px solid var(--glass-brd); border-radius:12px; padding:10px;
+    display:flex; flex-direction:column; gap:3px; opacity:.45; filter:grayscale(.6);
+  }
+  .achv-card.unlocked{ opacity:1; filter:none; border-color:var(--gold); box-shadow:0 4px 14px rgba(255,206,84,.16); }
+  .achv-card .aci{ font-size:24px; line-height:1; }
+  .achv-card .acn{ font-size:12.5px; font-weight:800; }
+  .achv-card .acd{ font-size:10.5px; color:var(--ink-dim); line-height:1.3; }
+
+  .daily-info{ display:flex; gap:14px; flex-wrap:wrap; margin:6px 0 14px; }
+  .daily-info .di{ background:var(--glass); border:1px solid var(--glass-brd); border-radius:12px; padding:10px 14px; flex:1 1 auto; text-align:center; }
+  .daily-info .dik{ font-size:11px; color:var(--ink-dim); font-weight:700; text-transform:uppercase; }
+  .daily-info .div{ font-size:22px; font-weight:900; font-variant-numeric:tabular-nums; }
+  .modal .full{ width:100%; justify-content:center; margin-top:6px; }
+
+  footer{ color:var(--ink-dim); font-size:12px; text-align:center; padding:4px 0 2px; opacity:.8; }
+  footer b{ color:var(--ink); }
+
+  /* visually-hidden but screen-reader-available */
+  .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+  @media (max-width:380px){
+    header{ padding:10px; gap:8px; }
+    .score-box{ min-width:72px; padding:6px 9px; }
+    .hint{ display:none; }
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{ animation-duration:.001ms !important; transition-duration:.001ms !important; }
+  }
+  html[data-rm="1"] *{ animation-duration:.001ms !important; transition-duration:.001ms !important; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <h1>2048</h1><span class="spark">✦</span><small>1000×</small>
+      </div>
+      <div class="scores">
+        <div class="score-box" id="score-box">
+          <div class="lbl" data-i18n="score">Điểm</div>
+          <div class="val" id="score">0</div>
+          <div class="gain" id="gain"></div>
+        </div>
+        <div class="score-box" id="best-box">
+          <div class="lbl" data-i18n="best">Kỷ lục</div>
+          <div class="val" id="best">0</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="controls">
+      <p class="hint" data-i18n="hint">Dùng <b>phím mũi tên</b> / <b>WASD</b> hoặc <b>vuốt</b> để gộp các ô. Đạt <b>2048</b>!</p>
+      <span class="mode-badge" id="mode-badge"><span class="dot"></span><span id="mode-badge-txt">Cổ điển</span></span>
+      <div class="langrow">
+        <button class="langbtn" data-lang="vi">🇻🇳 Tiếng Việt</button>
+        <button class="langbtn" data-lang="ja">🇯🇵 日本語</button>
+      </div>
+      <select class="btn" id="size-sel" data-i18n-title="sizeTitle" data-i18n-aria="sizeTitle" title="Kích thước bảng" aria-label="Kích thước bảng">
+        <option value="4">4 × 4</option>
+        <option value="5">5 × 5</option>
+        <option value="6">6 × 6</option>
+      </select>
+      <button class="btn icon-btn" id="undo-btn" data-i18n-title="undoTitle" data-i18n-aria="undoAria" title="Hoàn tác (Z)" aria-label="Hoàn tác"><span class="ic">↶</span></button>
+      <button class="btn icon-btn" id="mute-btn" data-i18n-title="muteTitle" data-i18n-aria="muteAria" title="Bật/tắt âm thanh (M)" aria-label="Âm thanh"><span class="ic" id="mute-ic">🔊</span></button>
+      <button class="btn icon-btn" id="daily-btn" data-i18n-title="dailyTitle" data-i18n-aria="dailyTitle" title="Thử thách hằng ngày" aria-label="Thử thách hằng ngày"><span class="ic">📅</span></button>
+      <button class="btn icon-btn" id="stats-btn" data-i18n-title="statsTitle" data-i18n-aria="statsTitle" title="Thống kê & thành tích" aria-label="Thống kê"><span class="ic">📊</span></button>
+      <button class="btn icon-btn" id="settings-btn" data-i18n-title="settingsTitle" data-i18n-aria="settingsTitle" title="Cài đặt" aria-label="Cài đặt"><span class="ic">⚙️</span></button>
+      <button class="btn primary" id="new-btn" data-i18n-title="newGame"><span class="ic">✦</span> <span data-i18n="newGame">Ván mới</span></button>
+    </div>
+
+    <div class="board-wrap">
+      <div class="board" id="board" tabindex="0" data-i18n-aria="boardAria" aria-label="Bảng 2048" role="application">
+        <div class="grid-bg" id="grid-bg"></div>
+        <div class="tiles" id="tiles"></div>
+        <div class="overlay" id="overlay">
+          <h2 class="big" id="ov-title"></h2>
+          <p class="sub" id="ov-sub"></p>
+          <div class="ov-stats" id="ov-stats"></div>
+          <div class="ov-actions" id="ov-actions"></div>
+        </div>
+        <div class="toast" id="toast"></div>
+      </div>
+    </div>
+
+    <footer data-i18n="footer">Mẹo: nhấn <b>Z</b> để hoàn tác • <b>M</b> để tắt tiếng • Số cao hơn = màu rực rỡ hơn ✦</footer>
+  </div>
+
+  <!-- aria-live region for score & results -->
+  <div class="sr-only" aria-live="polite" id="live"></div>
+  <!-- achievement toast -->
+  <div class="achv-toast" id="achv-toast" role="status" aria-live="polite">
+    <span class="ai" id="achv-ic">🏆</span>
+    <span><span class="at" data-i18n="achUnlocked">Mở khoá thành tích</span><br><b id="achv-name"></b></span>
+  </div>
+
+  <!-- ===== Settings modal ===== -->
+  <div class="modal-back" id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-h">
+    <div class="modal">
+      <h2 id="settings-h"><span class="ic">⚙️</span><span data-i18n="settingsTitle">Cài đặt</span>
+        <button class="modal-x" data-close="settings-modal" aria-label="Đóng">✕</button></h2>
+
+      <div class="setrow">
+        <div><div class="slabel" data-i18n="setVolume">Âm lượng</div></div>
+        <input type="range" id="set-volume" min="0" max="100" step="1" value="80" data-i18n-aria="setVolume" aria-label="Âm lượng">
+      </div>
+      <div class="setrow">
+        <div><div class="slabel" data-i18n="setSfx">Hiệu ứng âm thanh</div></div>
+        <label class="switch"><input type="checkbox" id="set-sfx" data-i18n-aria="setSfx" aria-label="Hiệu ứng âm thanh"><span class="track"></span><span class="thumb"></span></label>
+      </div>
+      <div class="setrow">
+        <div><div class="slabel" data-i18n="setMusic">Nhạc nền</div><div class="sdesc" data-i18n="setMusicDesc">Giai điệu nhẹ khi chơi</div></div>
+        <label class="switch"><input type="checkbox" id="set-music" data-i18n-aria="setMusic" aria-label="Nhạc nền"><span class="track"></span><span class="thumb"></span></label>
+      </div>
+      <div class="setrow">
+        <div><div class="slabel" data-i18n="setMotion">Giảm chuyển động</div><div class="sdesc" data-i18n="setMotionDesc">Tắt rung, chớp, pháo giấy</div></div>
+        <label class="switch"><input type="checkbox" id="set-motion" data-i18n-aria="setMotion" aria-label="Giảm chuyển động"><span class="track"></span><span class="thumb"></span></label>
+      </div>
+      <div class="setrow">
+        <div><div class="slabel" data-i18n="setCb">Dấu hỗ trợ mù màu</div><div class="sdesc" data-i18n="setCbDesc">Ký hiệu góc theo giá trị</div></div>
+        <label class="switch"><input type="checkbox" id="set-cb" data-i18n-aria="setCb" aria-label="Dấu hỗ trợ mù màu"><span class="track"></span><span class="thumb"></span></label>
+      </div>
+      <div class="setrow" style="flex-direction:column; align-items:flex-start; gap:9px;">
+        <div class="slabel" data-i18n="setTheme">Giao diện màu</div>
+        <div class="theme-grid" id="theme-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Stats & achievements modal ===== -->
+  <div class="modal-back" id="stats-modal" role="dialog" aria-modal="true" aria-labelledby="stats-h">
+    <div class="modal">
+      <h2 id="stats-h"><span class="ic">📊</span><span data-i18n="statsTitle">Thống kê</span>
+        <button class="modal-x" data-close="stats-modal" aria-label="Đóng">✕</button></h2>
+      <div class="modal-seg" id="stats-size-seg" role="tablist" aria-label="Kích thước"></div>
+      <div class="stat-grid" id="stat-grid"></div>
+      <div class="section-h" data-i18n="achTitle">Thành tích</div>
+      <div class="achv-grid" id="achv-grid"></div>
+    </div>
+  </div>
+
+  <!-- ===== Daily challenge modal ===== -->
+  <div class="modal-back" id="daily-modal" role="dialog" aria-modal="true" aria-labelledby="daily-h">
+    <div class="modal">
+      <h2 id="daily-h"><span class="ic">📅</span><span data-i18n="dailyTitle">Thử thách hằng ngày</span>
+        <button class="modal-x" data-close="daily-modal" aria-label="Đóng">✕</button></h2>
+      <p class="sdesc" id="daily-date" style="margin:0 0 12px; font-size:13px;"></p>
+      <div class="daily-info">
+        <div class="di"><div class="dik" data-i18n="dailyToday">Hôm nay</div><div class="div" id="daily-today">0</div></div>
+        <div class="di"><div class="dik" data-i18n="dailyStreak">Chuỗi ngày</div><div class="div" id="daily-streak">0</div></div>
+      </div>
+      <p class="sdesc" data-i18n="dailyDesc" style="margin:0 0 12px; font-size:12.5px; line-height:1.5;">Mọi người chơi cùng một dãy ô trong ngày. Cố đạt điểm cao nhất!</p>
+      <button class="btn primary full" id="daily-play"><span class="ic">▶</span> <span data-i18n="dailyPlay">Chơi hôm nay</span></button>
+    </div>
+  </div>
+
+  <!-- ===== Confirm modal (wipe in-progress board) ===== -->
+  <div class="modal-back" id="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-h">
+    <div class="modal" style="max-width:360px; text-align:center;">
+      <h2 id="confirm-h" style="justify-content:center;"><span class="ic">⚠️</span><span id="confirm-title">…</span></h2>
+      <p class="sdesc" id="confirm-msg" style="font-size:13.5px; line-height:1.5; margin:0 0 16px;"></p>
+      <div class="ov-actions" style="display:flex; gap:10px; justify-content:center;">
+        <button class="btn" id="confirm-cancel" data-i18n="cancel">Huỷ</button>
+        <button class="btn primary" id="confirm-ok" data-i18n="confirmYes">Đồng ý</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+"use strict";
+(function(){
+  /* ============================ i18n ============================ */
+  var I18N = {
+    vi: {
+      docTitle: "2048 ✦ 1000×",
+      score: "Điểm",
+      best: "Kỷ lục",
+      hint: 'Dùng <b>phím mũi tên</b> / <b>WASD</b> hoặc <b>vuốt</b> để gộp các ô. Đạt <b>2048</b>!',
+      newGame: "Ván mới",
+      sizeTitle: "Kích thước bảng",
+      undoTitle: "Hoàn tác (Z)",
+      undoAria: "Hoàn tác",
+      muteTitle: "Bật/tắt âm thanh (M)",
+      muteAria: "Âm thanh",
+      boardAria: "Bảng 2048",
+      footer: 'Mẹo: nhấn <b>Z</b> để hoàn tác • <b>M</b> để tắt tiếng • Số cao hơn = màu rực rỡ hơn ✦',
+      noMove: "Không thể đi hướng này",
+      winTitle: "Bạn đạt 2048!",
+      winSub: 'Tuyệt vời! Tiếp tục để phá kỷ lục — bạn có thể vượt xa <b>2048</b>.',
+      keepGoing: "Tiếp tục",
+      overTitle: "Hết nước đi",
+      overSubScore: "Điểm của bạn: ",
+      newBest: " — Kỷ lục mới! ✦",
+      tryAgain: "Chơi lại",
+      // settings
+      settingsTitle: "Cài đặt",
+      setVolume: "Âm lượng",
+      setSfx: "Hiệu ứng âm thanh",
+      setMusic: "Nhạc nền",
+      setMusicDesc: "Giai điệu nhẹ khi chơi",
+      setMotion: "Giảm chuyển động",
+      setMotionDesc: "Tắt rung, chớp, pháo giấy",
+      setCb: "Dấu hỗ trợ mù màu",
+      setCbDesc: "Ký hiệu góc theo giá trị",
+      setTheme: "Giao diện màu",
+      themeAurora: "Cực quang",
+      themeSunset: "Hoàng hôn",
+      themeForest: "Rừng xanh",
+      themeMono: "Đơn sắc",
+      themeLight: "Sáng",
+      // stats / achievements
+      statsTitle: "Thống kê",
+      statGames: "Số ván",
+      statBestScore: "Điểm cao nhất",
+      statBestTile: "Ô lớn nhất",
+      statBestCombo: "Combo tốt nhất",
+      statTotalMerges: "Tổng số gộp",
+      statBestTime: "Đạt 2048 nhanh nhất",
+      achTitle: "Thành tích",
+      achUnlocked: "Mở khoá thành tích",
+      // achievement names/descs
+      ach_first2048_n: "Tân binh 2048",
+      ach_first2048_d: "Lần đầu đạt ô 2048",
+      ach_reach4096_n: "Bậc thầy",
+      ach_reach4096_d: "Đạt ô 4096",
+      ach_reach8192_n: "Huyền thoại",
+      ach_reach8192_d: "Đạt ô 8192",
+      ach_combo5_n: "Dây chuyền",
+      ach_combo5_d: "Gộp 5+ ô trong một nước",
+      ach_score10k_n: "Mười nghìn",
+      ach_score10k_d: "Đạt 10.000 điểm",
+      ach_score20k_n: "Hai mươi nghìn",
+      ach_score20k_d: "Đạt 20.000 điểm",
+      ach_daily7_n: "Kiên trì",
+      ach_daily7_d: "Chuỗi 7 ngày thử thách",
+      ach_zen_n: "Thiền định",
+      ach_zen_d: "Chơi chế độ Zen",
+      // share
+      share: "Chia sẻ",
+      shareCopied: "Đã sao chép kết quả!",
+      shareFail: "Không sao chép được",
+      // daily
+      dailyTitle: "Thử thách hằng ngày",
+      dailyToday: "Hôm nay",
+      dailyStreak: "Chuỗi ngày",
+      dailyDesc: "Mọi người chơi cùng một dãy ô trong ngày. Cố đạt điểm cao nhất!",
+      dailyPlay: "Chơi hôm nay",
+      dailyBadge: "Hằng ngày",
+      // modes
+      modeClassic: "Cổ điển",
+      modeClassicD: "Chơi tự do",
+      modeTime: "Đua giờ",
+      modeTimeD: "3 phút",
+      modeTarget: "Mục tiêu",
+      modeTargetD: "Đạt 1 ô",
+      modeZen: "Zen",
+      modeZenD: "Không thua",
+      setMode: "Chế độ chơi",
+      targetPick: "Mục tiêu",
+      timeLeft: "Thời gian",
+      timeUpTitle: "Hết giờ!",
+      targetWinTitle: "Hoàn thành mục tiêu!",
+      // confirm
+      cancel: "Huỷ",
+      confirmYes: "Đồng ý",
+      confirmNewTitle: "Bắt đầu ván mới?",
+      confirmNewMsg: "Ván đang chơi sẽ mất. Bạn có chắc không?",
+      confirmSizeMsg: "Đổi kích thước sẽ xoá ván hiện tại. Tiếp tục?",
+      confirmModeMsg: "Đổi chế độ sẽ xoá ván hiện tại. Tiếp tục?",
+      // misc
+      comboLabel: "Combo",
+      best4: "4×4", best5: "5×5", best6: "6×6"
+    },
+    ja: {
+      docTitle: "2048 ✦ 1000×",
+      score: "スコア",
+      best: "ベスト",
+      hint: '<b>矢印キー</b> / <b>WASD</b> または <b>スワイプ</b> でタイルを合体。<b>2048</b> を目指そう！',
+      newGame: "あたらしいゲーム",
+      sizeTitle: "ボードサイズ",
+      undoTitle: "もとにもどす (Z)",
+      undoAria: "もとにもどす",
+      muteTitle: "サウンドの切替 (M)",
+      muteAria: "サウンド",
+      boardAria: "2048 ボード",
+      footer: 'ヒント: <b>Z</b> でもとにもどす • <b>M</b> でミュート • 数が大きいほど色が鮮やか ✦',
+      noMove: "その方向には動かせません",
+      winTitle: "2048 達成！",
+      winSub: 'すばらしい！続けて記録を更新しよう — <b>2048</b> のさらに先へ。',
+      keepGoing: "続ける",
+      overTitle: "もう手がありません",
+      overSubScore: "あなたのスコア: ",
+      newBest: " — 新記録！ ✦",
+      tryAgain: "やりなおす",
+      // settings
+      settingsTitle: "設定",
+      setVolume: "音量",
+      setSfx: "効果音",
+      setMusic: "BGM",
+      setMusicDesc: "プレイ中の軽いメロディ",
+      setMotion: "モーションを減らす",
+      setMotionDesc: "振動・点滅・紙吹雪をオフ",
+      setCb: "色覚サポート記号",
+      setCbDesc: "数値に応じた角マーク",
+      setTheme: "カラーテーマ",
+      themeAurora: "オーロラ",
+      themeSunset: "サンセット",
+      themeForest: "フォレスト",
+      themeMono: "モノクロ",
+      themeLight: "ライト",
+      // stats / achievements
+      statsTitle: "統計",
+      statGames: "プレイ数",
+      statBestScore: "最高スコア",
+      statBestTile: "最大タイル",
+      statBestCombo: "最高コンボ",
+      statTotalMerges: "合体の合計",
+      statBestTime: "2048 最速達成",
+      achTitle: "実績",
+      achUnlocked: "実績を解除",
+      ach_first2048_n: "2048 ルーキー",
+      ach_first2048_d: "初めて 2048 を作成",
+      ach_reach4096_n: "マスター",
+      ach_reach4096_d: "4096 タイルを達成",
+      ach_reach8192_n: "レジェンド",
+      ach_reach8192_d: "8192 タイルを達成",
+      ach_combo5_n: "チェーン",
+      ach_combo5_d: "1手で5個以上合体",
+      ach_score10k_n: "1万点",
+      ach_score10k_d: "10,000 点を達成",
+      ach_score20k_n: "2万点",
+      ach_score20k_d: "20,000 点を達成",
+      ach_daily7_n: "皆勤",
+      ach_daily7_d: "デイリー7日連続",
+      ach_zen_n: "禅",
+      ach_zen_d: "Zen モードをプレイ",
+      // share
+      share: "シェア",
+      shareCopied: "結果をコピーしました！",
+      shareFail: "コピーできませんでした",
+      // daily
+      dailyTitle: "デイリーチャレンジ",
+      dailyToday: "今日",
+      dailyStreak: "連続日数",
+      dailyDesc: "全員が同じ並びのタイルで挑戦。最高得点を目指そう！",
+      dailyPlay: "今日プレイ",
+      dailyBadge: "デイリー",
+      // modes
+      modeClassic: "クラシック",
+      modeClassicD: "自由プレイ",
+      modeTime: "タイムアタック",
+      modeTimeD: "3分",
+      modeTarget: "ターゲット",
+      modeTargetD: "目標タイル",
+      modeZen: "Zen",
+      modeZenD: "負けなし",
+      setMode: "ゲームモード",
+      targetPick: "目標",
+      timeLeft: "のこり時間",
+      timeUpTitle: "時間切れ！",
+      targetWinTitle: "目標達成！",
+      // confirm
+      cancel: "キャンセル",
+      confirmYes: "OK",
+      confirmNewTitle: "新しいゲームを始める？",
+      confirmNewMsg: "進行中のゲームは失われます。よろしいですか？",
+      confirmSizeMsg: "サイズ変更で現在のゲームが消えます。続けますか？",
+      confirmModeMsg: "モード変更で現在のゲームが消えます。続けますか？",
+      // misc
+      comboLabel: "コンボ",
+      best4: "4×4", best5: "5×5", best6: "6×6"
+    }
+  };
+  var LANG_KEY = "g2048_lang";
+  var uiLang = localStorage.getItem(LANG_KEY) || "vi";
+  if(uiLang !== "vi" && uiLang !== "ja") uiLang = "vi";
+  function t(k){ return (I18N[uiLang] && I18N[uiLang][k]) || I18N.vi[k] || k; }
+
+  /* ============================ Config & State ============================ */
+  var STORAGE_KEY = "g2048_v1";
+  var PREFS_KEY = "g2048_prefs_v1";
+  var STATS_KEY = "g2048_stats_v1";
+  var ACH_KEY = "g2048_ach_v1";
+  var DAILY_KEY = "g2048_daily_v1";
+  var SPAWN_DELAY = 95; // ms after slide before new tile pops
+
+  var size = 4;
+  var grid = [];           // size*size array of tile objects or null
+  var tiles = {};          // id -> {id,val,r,c, el, merged}
+  var nextId = 1;
+  var score = 0;
+  var best = 0;            // per-size best (reflects current size)
+  var muted = false;
+  var won = false;         // reached 2048 this game
+  var keepPlaying = false; // user chose "Tiếp tục"
+  var over = false;
+  var busy = false;        // input lock during animation
+  var undoStack = [];      // multi-step undo snapshots
+  var UNDO_MAX = 20;
+  var queuedDir = null;    // one buffered direction during animation lock
+
+  // mode/run state
+  var mode = "classic";    // classic | time | target | zen | daily
+  var targetTile = 2048;   // for target mode
+  var runStart = 0;        // ms timestamp of first move (for time)
+  var moves = 0;
+  var totalMergesRun = 0;
+  var bestComboRun = 0;
+  var milestonesHit = {};  // values already celebrated this run
+  var timeLimit = 180;     // seconds for time attack
+  var timeTimer = null;
+  var dailySeq = null;     // seeded spawn sequence for daily
+  var dailySeqIdx = 0;
+  var newBestFiredRun = false;
+
+  // DOM refs
+  var $board = document.getElementById("board");
+  var $gridBg = document.getElementById("grid-bg");
+  var $tiles = document.getElementById("tiles");
+  var $score = document.getElementById("score");
+  var $best = document.getElementById("best");
+  var $scoreBox = document.getElementById("score-box");
+  var $bestBox = document.getElementById("best-box");
+  var $gain = document.getElementById("gain");
+  var $overlay = document.getElementById("overlay");
+  var $ovTitle = document.getElementById("ov-title");
+  var $ovSub = document.getElementById("ov-sub");
+  var $ovStats = document.getElementById("ov-stats");
+  var $ovActions = document.getElementById("ov-actions");
+  var $toast = document.getElementById("toast");
+  var $undo = document.getElementById("undo-btn");
+  var $muteIc = document.getElementById("mute-ic");
+  var $sizeSel = document.getElementById("size-sel");
+  var $live = document.getElementById("live");
+  var $modeBadge = document.getElementById("mode-badge");
+  var $modeBadgeTxt = document.getElementById("mode-badge-txt");
+
+  /* ============================ Preferences ============================ */
+  var prefs = {
+    volume: 0.8, sfx: true, music: false, reducedMotion: null, colorBlind: false, theme: "aurora", mode: "classic", targetTile: 2048
+  };
+  function loadPrefs(){
+    try{
+      var raw = localStorage.getItem(PREFS_KEY);
+      if(raw){
+        var p = JSON.parse(raw);
+        if(p && typeof p === "object"){
+          if(typeof p.volume === "number") prefs.volume = Math.min(1, Math.max(0, p.volume));
+          if(typeof p.sfx === "boolean") prefs.sfx = p.sfx;
+          if(typeof p.music === "boolean") prefs.music = p.music;
+          if(typeof p.reducedMotion === "boolean") prefs.reducedMotion = p.reducedMotion;
+          if(typeof p.colorBlind === "boolean") prefs.colorBlind = p.colorBlind;
+          if(typeof p.theme === "string") prefs.theme = p.theme;
+          if(typeof p.mode === "string") prefs.mode = p.mode;
+          if(typeof p.targetTile === "number") prefs.targetTile = p.targetTile;
+        }
+      }
+    }catch(e){}
+  }
+  function savePrefs(){ try{ localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); }catch(e){} }
+  var THEMES = ["aurora","sunset","forest","mono","light"];
+  function systemReducedMotion(){
+    return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+  function motionReduced(){
+    // explicit pref overrides; otherwise honor system default
+    if(prefs.reducedMotion === true) return true;
+    if(prefs.reducedMotion === false) return false;
+    return systemReducedMotion();
+  }
+  function applyPrefs(){
+    document.documentElement.setAttribute("data-theme", THEMES.indexOf(prefs.theme)>=0 ? prefs.theme : "aurora");
+    document.documentElement.setAttribute("data-cb", prefs.colorBlind ? "1" : "0");
+    document.documentElement.setAttribute("data-rm", motionReduced() ? "1" : "0");
+    // theme-color meta
+    var tc = getComputedStyle(document.documentElement).getPropertyValue("--bg0").trim();
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if(meta && tc) meta.setAttribute("content", tc);
+  }
+
+  /* ============================ Stats ============================ */
+  function blankSizeStats(){ return { games:0, bestScore:0, bestTile:0, bestCombo:0, totalMerges:0, bestTime:0 }; }
+  var stats = { s4:blankSizeStats(), s5:blankSizeStats(), s6:blankSizeStats() };
+  function statKey(sz){ return "s"+sz; }
+  function loadStats(){
+    try{
+      var raw = localStorage.getItem(STATS_KEY);
+      if(raw){
+        var s = JSON.parse(raw);
+        if(s && typeof s === "object"){
+          [4,5,6].forEach(function(sz){
+            var k = statKey(sz);
+            if(s[k] && typeof s[k]==="object"){
+              var b = blankSizeStats();
+              for(var f in b){ if(typeof s[k][f]==="number" && isFinite(s[k][f])) b[f]=s[k][f]; }
+              stats[k]=b;
+            }
+          });
+        }
+      }
+    }catch(e){}
+  }
+  function saveStats(){ try{ localStorage.setItem(STATS_KEY, JSON.stringify(stats)); }catch(e){} }
+  function curStats(){ return stats[statKey(size)]; }
+
+  /* ============================ Achievements ============================ */
+  var ACHS = [
+    { id:"first2048", icon:"🎯", req:function(c){ return c.tile>=2048; } },
+    { id:"reach4096", icon:"💎", req:function(c){ return c.tile>=4096; } },
+    { id:"reach8192", icon:"👑", req:function(c){ return c.tile>=8192; } },
+    { id:"combo5",    icon:"⛓️", req:function(c){ return c.combo>=5; } },
+    { id:"score10k",  icon:"🔥", req:function(c){ return c.score>=10000; } },
+    { id:"score20k",  icon:"⚡", req:function(c){ return c.score>=20000; } },
+    { id:"daily7",    icon:"📆", req:function(c){ return c.streak>=7; } },
+    { id:"zen",       icon:"🧘", req:function(c){ return c.zen===true; } }
+  ];
+  var achUnlocked = {};
+  function loadAch(){
+    try{
+      var raw = localStorage.getItem(ACH_KEY);
+      if(raw){ var a = JSON.parse(raw); if(a && typeof a==="object") achUnlocked = a; }
+    }catch(e){}
+  }
+  function saveAch(){ try{ localStorage.setItem(ACH_KEY, JSON.stringify(achUnlocked)); }catch(e){} }
+  var achQueue = [], achShowing = false;
+  function checkAchievements(ctx){
+    for(var i=0;i<ACHS.length;i++){
+      var a = ACHS[i];
+      if(!achUnlocked[a.id]){
+        var ok=false; try{ ok = a.req(ctx); }catch(e){ ok=false; }
+        if(ok){ achUnlocked[a.id] = Date.now(); achQueue.push(a); }
+      }
+    }
+    if(achQueue.length){ saveAch(); pumpAchToast(); }
+  }
+  function achCtx(extra){
+    var d = loadDaily();
+    var c = { tile:0, combo:bestComboRun, score:score, streak:d.streak||0, zen:(mode==="zen") };
+    for(var id in tiles){ if(tiles.hasOwnProperty(id) && tiles[id].val>c.tile) c.tile=tiles[id].val; }
+    if(extra){ for(var k in extra){ if(extra.hasOwnProperty(k)) c[k]=extra[k]; } }
+    return c;
+  }
+  function pumpAchToast(){
+    if(achShowing || !achQueue.length) return;
+    var a = achQueue.shift();
+    achShowing = true;
+    var $at = document.getElementById("achv-toast");
+    document.getElementById("achv-ic").textContent = a.icon;
+    document.getElementById("achv-name").textContent = t("ach_"+a.id+"_n");
+    $at.classList.remove("show"); void $at.offsetWidth; $at.classList.add("show");
+    if(prefs.sfx && !muted) sAch();
+    setTimeout(function(){ achShowing=false; pumpAchToast(); }, motionReduced()?900:3100);
+  }
+
+  /* ============================ Daily ============================ */
+  function todayKey(){
+    var d = new Date();
+    return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
+  }
+  function todayStr(){
+    var d = new Date();
+    function p(n){ return (n<10?"0":"")+n; }
+    return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate());
+  }
+  function loadDaily(){
+    var def = { day:0, today:0, streak:0, lastDay:0 };
+    try{
+      var raw = localStorage.getItem(DAILY_KEY);
+      if(raw){ var d = JSON.parse(raw); if(d && typeof d==="object"){ for(var k in def){ if(typeof d[k]==="number") def[k]=d[k]; } } }
+    }catch(e){}
+    return def;
+  }
+  function saveDaily(d){ try{ localStorage.setItem(DAILY_KEY, JSON.stringify(d)); }catch(e){} }
+  // mulberry32 seeded PRNG
+  function mulberry32(a){
+    return function(){
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  // Build a deterministic spawn sequence (positions chosen among empties + values)
+  // We store rand() draws; spawnTile() consumes them when in daily mode.
+  function buildDailySeq(){
+    var rng = mulberry32(todayKey() >>> 0);
+    dailySeq = rng;       // we just keep the rng function; spawnTile pulls from it
+    dailySeqIdx = 0;
+  }
+
+  /* ============================ Persistence (current board) ============================ */
+  function save(){
+    try{
+      var board = grid.map(function(t){ return t ? t.val : 0; });
+      var data = {
+        v:1, size:size, muted:muted,
+        score:score, board:board, won:won, keepPlaying:keepPlaying, over:over,
+        mode:mode, targetTile:targetTile,
+        runStart:runStart, moves:moves, totalMergesRun:totalMergesRun, bestComboRun:bestComboRun,
+        milestonesHit:milestonesHit, newBestFiredRun:newBestFiredRun
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }catch(e){ /* ignore quota / privacy mode */ }
+  }
+  function load(){
+    var data = null;
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(raw) data = JSON.parse(raw);
+    }catch(e){ data = null; }
+    if(data && typeof data === "object"){
+      if(typeof data.muted === "boolean") muted = data.muted;
+      if(typeof data.size === "number" && [4,5,6].indexOf(data.size) >= 0) size = data.size;
+    }
+    return data;
+  }
+
+  /* ============================ Audio (WebAudio synth) ============================ */
+  var AC = null;
+  function audioCtx(){
+    if(AC) return AC;
+    try{
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if(Ctx) AC = new Ctx();
+    }catch(e){ AC = null; }
+    return AC;
+  }
+  function resumeAudio(){
+    var ac = audioCtx();
+    if(ac && ac.state === "suspended"){ try{ ac.resume(); }catch(e){} }
+  }
+  function sfxOff(){ return muted || !prefs.sfx; }
+  function tone(freq, dur, type, gainV, when, glideTo){
+    if(sfxOff()) return;
+    var ac = audioCtx();
+    if(!ac) return;
+    var t0 = ac.currentTime + (when||0);
+    var o = ac.createOscillator();
+    var g = ac.createGain();
+    o.type = type || "sine";
+    o.frequency.setValueAtTime(freq, t0);
+    if(glideTo){ o.frequency.exponentialRampToValueAtTime(Math.max(40,glideTo), t0 + dur); }
+    var peak = (gainV==null?0.12:gainV) * prefs.volume;
+    if(peak < 0.0002) return;
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(peak, t0 + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g); g.connect(ac.destination);
+    o.start(t0); o.stop(t0 + dur + 0.02);
+  }
+  function sMove(){ tone(180, 0.07, "sine", 0.045, 0, 150); }
+  function sMerge(val){
+    var p = Math.min(7, Math.log2(val));
+    var base = 300 + p * 70;
+    tone(base, 0.13, "triangle", 0.10, 0, base*1.5);
+    tone(base*2, 0.09, "sine", 0.05, 0.01);
+  }
+  function sWin(){
+    if(sfxOff()) return;
+    var notes = [523.25, 659.25, 783.99, 1046.5, 1318.5];
+    for(var i=0;i<notes.length;i++){ tone(notes[i], 0.32, "triangle", 0.11, i*0.085, notes[i]*1.01); }
+    tone(1046.5, 0.5, "sine", 0.06, 0.42);
+  }
+  function sOver(){
+    if(sfxOff()) return;
+    tone(220, 0.5, "sawtooth", 0.10, 0, 90);
+    tone(160, 0.6, "sine", 0.08, 0.06, 70);
+  }
+  function sAch(){
+    if(sfxOff()) return;
+    tone(660, 0.12, "triangle", 0.09, 0, 700);
+    tone(880, 0.16, "sine", 0.07, 0.09, 920);
+    tone(1180, 0.2, "triangle", 0.06, 0.18);
+  }
+  function sBest(){
+    if(sfxOff()) return;
+    tone(784, 0.12, "triangle", 0.09, 0, 880);
+    tone(1046, 0.16, "sine", 0.07, 0.08);
+  }
+
+  /* ---- Music: gentle WebAudio arpeggio loop ---- */
+  var musicTimer = null, musicStep = 0;
+  var MUSIC_NOTES = [261.63, 329.63, 392.0, 523.25, 392.0, 329.63];
+  function musicTick(){
+    if(!prefs.music || muted || prefs.volume <= 0){ return; }
+    var ac = audioCtx(); if(!ac) return;
+    var f = MUSIC_NOTES[musicStep % MUSIC_NOTES.length];
+    musicStep++;
+    var t0 = ac.currentTime;
+    var o = ac.createOscillator(), g = ac.createGain();
+    o.type = "sine"; o.frequency.setValueAtTime(f, t0);
+    var peak = 0.03 * prefs.volume;
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(peak, t0+0.08);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0+0.5);
+    o.connect(g); g.connect(ac.destination);
+    o.start(t0); o.stop(t0+0.55);
+  }
+  function startMusic(){
+    stopMusic();
+    if(!prefs.music || muted) return;
+    resumeAudio();
+    musicTimer = setInterval(musicTick, 480);
+  }
+  function stopMusic(){ if(musicTimer){ clearInterval(musicTimer); musicTimer=null; } }
+  function refreshMusic(){ if(prefs.music && !muted) startMusic(); else stopMusic(); }
+
+  /* ============================ Grid helpers ============================ */
+  function idx(r,c){ return r*size + c; }
+  function inBounds(r,c){ return r>=0 && r<size && c>=0 && c<size; }
+  function emptyCells(){
+    var out = [];
+    for(var i=0;i<grid.length;i++){ if(!grid[i]) out.push(i); }
+    return out;
+  }
+  function setCSSVars(){ $board.style.setProperty("--n", size); }
+  function rnd(){
+    // use daily seeded RNG when in daily mode, otherwise Math.random
+    if(mode === "daily" && dailySeq){ return dailySeq(); }
+    return Math.random();
+  }
+
+  /* ============================ Rendering ============================ */
+  function buildGridBackground(){
+    $gridBg.style.gridTemplateColumns = "repeat("+size+",1fr)";
+    $gridBg.style.gridTemplateRows = "repeat("+size+",1fr)";
+    $gridBg.innerHTML = "";
+    for(var i=0;i<size*size;i++){
+      var d = document.createElement("div");
+      d.className = "cell";
+      $gridBg.appendChild(d);
+    }
+  }
+
+  function geom(){
+    var rect = $tiles.getBoundingClientRect();
+    var W = rect.width;
+    var cs = getComputedStyle($gridBg);
+    var g = parseFloat(cs.columnGap || cs.gap) || 0;
+    var ts = (W - g*(size-1)) / size;
+    return { ts: ts, gap: g };
+  }
+
+  function applyTileSizeVar(){
+    var gm = geom();
+    $tiles.style.setProperty("--ts", gm.ts + "px");
+    $tiles.style.setProperty("--gap-px", gm.gap + "px");
+    for(var id in tiles){
+      if(tiles.hasOwnProperty(id)) positionTile(tiles[id]);
+    }
+  }
+
+  function tileXY(r,c){
+    var gm = geom();
+    return { x: c*(gm.ts+gm.gap), y: r*(gm.ts+gm.gap) };
+  }
+
+  function positionTile(t){
+    var p = tileXY(t.r, t.c);
+    t.el.style.setProperty("--x", p.x + "px");
+    t.el.style.setProperty("--y", p.y + "px");
+  }
+
+  function tileClass(val){
+    var base = "t" + val;
+    if(val > 4096) base = "thi";
+    var digits = String(val).length;
+    var dcls = digits>=5 ? " d5" : digits===4 ? " d4" : digits===3 ? " d3" : "";
+    return base + dcls;
+  }
+  // color-blind glyph: distinct symbol per power-of-two so color isn't the only signal
+  var CB_GLYPHS = { 2:"·", 4:"··", 8:"▴", 16:"▾", 32:"◆", 64:"●", 128:"■", 256:"▲", 512:"★", 1024:"✦", 2048:"✸", 4096:"❖", 8192:"⬢" };
+  function cbGlyph(val){ return CB_GLYPHS[val] || "✺"; }
+
+  function makeTileEl(t, spawn){
+    var el = document.createElement("div");
+    el.className = "tile " + tileClass(t.val) + (spawn ? " spawn" : "");
+    var span = document.createElement("span");
+    span.className = "num";
+    span.textContent = t.val;
+    el.appendChild(span);
+    var mark = document.createElement("span");
+    mark.className = "cbmark";
+    mark.textContent = cbGlyph(t.val);
+    mark.setAttribute("aria-hidden", "true");
+    el.appendChild(mark);
+    t.el = el;
+    $tiles.appendChild(el);
+    positionTile(t);
+    return el;
+  }
+
+  function updateTileEl(t){
+    t.el.className = "tile " + tileClass(t.val);
+    t.el.firstChild.textContent = t.val;
+    var mark = t.el.querySelector(".cbmark");
+    if(mark) mark.textContent = cbGlyph(t.val);
+  }
+
+  /* ============================ Spawn ============================ */
+  function spawnTile(animate){
+    var cells = emptyCells();
+    if(!cells.length) return null;
+    var pos = cells[(rnd()*cells.length)|0];
+    var val = rnd() < 0.9 ? 2 : 4;
+    var r = (pos/size)|0, c = pos%size;
+    var t = { id: nextId++, val: val, r:r, c:c, merged:false, el:null };
+    grid[pos] = t;
+    tiles[t.id] = t;
+    makeTileEl(t, !!animate);
+    return t;
+  }
+
+  /* ============================ Move logic ============================ */
+  function getLines(dir){
+    var lines = [];
+    var r,c;
+    if(dir === 3){
+      for(r=0;r<size;r++){ var L=[]; for(c=0;c<size;c++) L.push(idx(r,c)); lines.push(L); }
+    } else if(dir === 1){
+      for(r=0;r<size;r++){ var L2=[]; for(c=size-1;c>=0;c--) L2.push(idx(r,c)); lines.push(L2); }
+    } else if(dir === 0){
+      for(c=0;c<size;c++){ var L3=[]; for(r=0;r<size;r++) L3.push(idx(r,c)); lines.push(L3); }
+    } else {
+      for(c=0;c<size;c++){ var L4=[]; for(r=size-1;r>=0;r--) L4.push(idx(r,c)); lines.push(L4); }
+    }
+    return lines;
+  }
+
+  function computeMove(dir){
+    var lines = getLines(dir);
+    var moved = false, gained = 0;
+    var merges = [];
+    var removed = [];
+
+    for(var li=0; li<lines.length; li++){
+      var line = lines[li];
+      var seq = [];
+      for(var k=0;k<line.length;k++){ var t = grid[line[k]]; if(t) seq.push(t); }
+      var targetPtr = 0;
+      var lastMergedTile = null;
+
+      for(var s=0;s<seq.length;s++){
+        var cur = seq[s];
+        if(lastMergedTile && lastMergedTile.val === cur.val){
+          lastMergedTile.val *= 2;
+          lastMergedTile.justMerged = true;
+          gained += lastMergedTile.val;
+          var destCellM = line[targetPtr - 1];
+          var rm = (destCellM/size)|0, cm = destCellM%size;
+          cur.r = rm; cur.c = cm;
+          cur.removeAfter = true;
+          removed.push(cur.id);
+          merges.push({ tile:lastMergedTile });
+          moved = true;
+          lastMergedTile = null;
+        } else {
+          var destCell = line[targetPtr];
+          var nr = (destCell/size)|0, nc = destCell%size;
+          if(cur.r !== nr || cur.c !== nc) moved = true;
+          cur.r = nr; cur.c = nc;
+          lastMergedTile = cur;
+          targetPtr++;
+        }
+      }
+    }
+    return { moved:moved, gained:gained, merges:merges, removed:removed };
+  }
+
+  function snapshot(){
+    var board = grid.map(function(t){ return t ? t.val : 0; });
+    return {
+      board: board, score: score, best: best, won: won, keepPlaying: keepPlaying,
+      over: over, size: size,
+      moves: moves, totalMergesRun: totalMergesRun, bestComboRun: bestComboRun,
+      milestonesHit: JSON.parse(JSON.stringify(milestonesHit)),
+      newBestFiredRun: newBestFiredRun, runStart: runStart
+    };
+  }
+
+  function rebuildFromBoard(board){
+    $tiles.innerHTML = "";
+    tiles = {};
+    grid = new Array(size*size).fill(null);
+    for(var i=0;i<board.length;i++){
+      if(board[i]){
+        var r=(i/size)|0, c=i%size;
+        var t = { id: nextId++, val: board[i], r:r, c:c, merged:false, el:null };
+        grid[i] = t; tiles[t.id] = t;
+        makeTileEl(t, false);
+      }
+    }
+  }
+
+  /* ============================ Game flow ============================ */
+  function move(dir){
+    if(over) return;
+    if(busy){ queuedDir = dir; return; }   // buffer one queued direction during animation lock
+    var snap = snapshot();
+
+    var res = computeMove(dir);
+    if(!res.moved){
+      noMoveFeedback();
+      return;
+    }
+    // push undo snapshot (multi-step)
+    undoStack.push(snap);
+    if(undoStack.length > UNDO_MAX) undoStack.shift();
+    $undo.disabled = false;
+    busy = true;
+    moves++;
+    if(!runStart) runStart = Date.now();
+
+    grid = new Array(size*size).fill(null);
+    for(var id in tiles){
+      if(!tiles.hasOwnProperty(id)) continue;
+      var t = tiles[id];
+      if(t.removeAfter) continue;
+      grid[idx(t.r,t.c)] = t;
+    }
+
+    for(var id2 in tiles){
+      if(tiles.hasOwnProperty(id2)) positionTile(tiles[id2]);
+    }
+
+    sMove();
+
+    if(res.gained > 0){
+      addScore(res.gained);
+      showGain(res.gained);
+    }
+
+    // combo = number of merges in this single move
+    var comboCount = res.merges.length;
+    totalMergesRun += comboCount;
+    if(comboCount > bestComboRun) bestComboRun = comboCount;
+
+    var maxMerge = 0;
+    setTimeout(function(){
+      for(var i=0;i<res.removed.length;i++){
+        var rid = res.removed[i];
+        var rt = tiles[rid];
+        if(rt && rt.el && rt.el.parentNode){ rt.el.parentNode.removeChild(rt.el); }
+        delete tiles[rid];
+      }
+      for(var m=0;m<res.merges.length;m++){
+        var mt = res.merges[m].tile;
+        updateTileEl(mt);
+        mt.el.classList.remove("merge");
+        void mt.el.offsetWidth;
+        mt.el.classList.add("merge");
+        spawnSparks(mt);
+        sMerge(mt.val);
+        mt.justMerged = false;
+        if(mt.val > maxMerge) maxMerge = mt.val;
+      }
+
+      // celebration gated to FIRST-TIME milestones (not every >=512 merge) + reduced-motion
+      if(maxMerge >= 512 && !milestonesHit[maxMerge]){
+        milestonesHit[maxMerge] = true;
+        bigCelebrate(maxMerge);
+      }
+
+      // win check (classic/daily/zen reaching 2048)
+      if(!won && maxMerge >= 2048 && mode !== "target"){
+        won = true;
+        finalizeWinStats(maxMerge);
+        setTimeout(function(){ showWin(); }, 260);
+      }
+      // target mode win
+      if(mode === "target" && maxMerge >= targetTile && !over){
+        over = true;
+        finalizeWinStats(maxMerge);
+        recordGameEnd();
+        setTimeout(showTargetWin, 260);
+      }
+
+      // achievements that depend on this move
+      checkAchievements(achCtx({ tile:maxMerge, combo:comboCount }));
+
+      setTimeout(function(){
+        spawnTile(true);
+        save();
+        busy = false;
+        // play buffered direction if any
+        if(queuedDir !== null && !over){
+          var qd = queuedDir; queuedDir = null;
+          move(qd);
+          return;
+        }
+        queuedDir = null;
+        if(mode !== "zen" && !hasMoves()){
+          over = true;
+          recordGameEnd();
+          setTimeout(showOver, 260);
+        }
+      }, SPAWN_DELAY);
+
+    }, motionReduced() ? 1 : (parseInt(getComputedStyle(document.documentElement).getPropertyValue("--anim-move")) || 115));
+  }
+
+  function hasMoves(){
+    if(emptyCells().length) return true;
+    for(var r=0;r<size;r++){
+      for(var c=0;c<size;c++){
+        var t = grid[idx(r,c)];
+        if(!t) return true;
+        var v = t.val;
+        if(c+1<size){ var rt = grid[idx(r,c+1)]; if(rt && rt.val===v) return true; }
+        if(r+1<size){ var dt = grid[idx(r+1,c)]; if(dt && dt.val===v) return true; }
+      }
+    }
+    return false;
+  }
+
+  function addScore(n){
+    score += n;
+    animateNumber($score, score);
+    $scoreBox.classList.remove("bump"); void $scoreBox.offsetWidth; $scoreBox.classList.add("bump");
+    if(score > best){
+      var wasUnder = !newBestFiredRun;
+      best = score;
+      animateNumber($best, best);
+      $bestBox.classList.remove("bump"); void $bestBox.offsetWidth; $bestBox.classList.add("bump");
+      // live "NEW BEST!" moment once per run (only when truly beating the stored personal best)
+      if(wasUnder && best > 0 && best > (curStats().bestScore||0)){
+        newBestFiredRun = true;
+        $bestBox.classList.add("newbest");
+        sBest();
+        liveSay(t("newBest").replace(/[—✦\s]+/g,"").trim() + " " + best);
+        setTimeout(function(){ $bestBox.classList.remove("newbest"); }, 1400);
+      }
+      // NOTE: persistent personal best (curStats().bestScore) is committed only at
+      // game end (recordGameEnd) so that an undo of a record-setting move genuinely
+      // un-inflates the saved best — see doUndo() which restores `best` from snapshot.
+    }
+    liveSay(t("score") + ": " + score);
+  }
+
+  var scoreAnim = {};
+  function animateNumber(el, target){
+    var key = el.id;
+    if(scoreAnim[key]){ cancelAnimationFrame(scoreAnim[key].raf); if(scoreAnim[key].to) clearTimeout(scoreAnim[key].to); }
+    var start = parseInt(el.textContent.replace(/\D/g,""),10) || 0;
+    if(start === target || motionReduced()){ el.textContent = target; scoreAnim[key]=null; return; }
+    var t0 = performance.now(), dur = 320;
+    // safety net: guarantee final value even if rAF is throttled (e.g. background tab)
+    var to = setTimeout(function(){ el.textContent = target; }, dur + 80);
+    function step(now){
+      var p = Math.min(1, (now - t0)/dur);
+      var eased = 1 - Math.pow(1-p, 3);
+      var v = Math.round(start + (target-start)*eased);
+      el.textContent = v;
+      if(p < 1){ scoreAnim[key] = { raf: requestAnimationFrame(step), to: to }; }
+      else { el.textContent = target; clearTimeout(to); scoreAnim[key]=null; }
+    }
+    scoreAnim[key] = { raf: requestAnimationFrame(step), to: to };
+  }
+
+  function showGain(n){
+    $gain.textContent = "+" + n;
+    $gain.classList.remove("go"); void $gain.offsetWidth; $gain.classList.add("go");
+  }
+
+  function spawnSparks(t){
+    if(motionReduced()) return;
+    var fx = document.createElement("div");
+    fx.className = "spark-fx";
+    var p = tileXY(t.r, t.c);
+    fx.style.setProperty("--x", p.x + "px");
+    fx.style.setProperty("--y", p.y + "px");
+    var colors = ["#ffce54","#34e0ff","#ff6b9d","#b388ff","#34d3b6"];
+    var count = t.val >= 256 ? 12 : 7;
+    for(var i=0;i<count;i++){
+      var pf = document.createElement("div");
+      pf.className = "pf";
+      var ang = (Math.PI*2) * (i/count) + Math.random()*0.5;
+      var dist = 26 + Math.random()*30 + (t.val>=256?16:0);
+      pf.style.setProperty("--dx", Math.cos(ang)*dist + "px");
+      pf.style.setProperty("--dy", Math.sin(ang)*dist + "px");
+      pf.style.background = colors[i % colors.length];
+      fx.appendChild(pf);
+      (function(p){ requestAnimationFrame(function(){ p.classList.add("run"); }); })(pf);
+    }
+    $tiles.appendChild(fx);
+    setTimeout(function(){ if(fx.parentNode) fx.parentNode.removeChild(fx); }, 640);
+  }
+
+  function bigCelebrate(val){
+    if(motionReduced()) return;  // guard JS confetti behind reduced motion
+    var n = val >= 2048 ? 70 : val >= 1024 ? 46 : 30;
+    var colors = ["#ffce54","#34e0ff","#ff6b9d","#b388ff","#34d3b6"];
+    var holder = document.createElement("div");
+    holder.style.cssText = "position:absolute;inset:0;pointer-events:none;z-index:9;overflow:hidden;border-radius:20px;";
+    for(var i=0;i<n;i++){
+      var c = document.createElement("div");
+      var sz = 6 + Math.random()*8;
+      c.style.cssText = "position:absolute;left:50%;top:46%;width:"+sz+"px;height:"+(sz*1.4)+"px;border-radius:2px;background:"+colors[i%colors.length]+";opacity:1;";
+      holder.appendChild(c);
+      (function(el){
+        var ang = Math.random()*Math.PI*2;
+        var spd = 80 + Math.random()*180;
+        var dx = Math.cos(ang)*spd, dy = Math.sin(ang)*spd - 60;
+        var rot = (Math.random()*720-360);
+        el.animate([
+          { transform:"translate(-50%,-50%) rotate(0deg)", opacity:1 },
+          { transform:"translate(calc(-50% + "+dx+"px),calc(-50% + "+(dy+220)+"px)) rotate("+rot+"deg)", opacity:0 }
+        ], { duration: 900 + Math.random()*600, easing:"cubic-bezier(.2,.7,.3,1)" });
+      })(c);
+    }
+    $board.appendChild(holder);
+    setTimeout(function(){ if(holder.parentNode) holder.parentNode.removeChild(holder); }, 1700);
+  }
+
+  function noMoveFeedback(){
+    if(!motionReduced()){ $board.classList.remove("shake"); void $board.offsetWidth; $board.classList.add("shake"); }
+    toast(t("noMove"));
+  }
+
+  var toastTimer = null;
+  function toast(msg){
+    $toast.textContent = msg;
+    $toast.classList.remove("show"); void $toast.offsetWidth; $toast.classList.add("show");
+    if(toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ $toast.classList.remove("show"); }, 1300);
+  }
+  function liveSay(msg){ if($live) $live.textContent = msg; }
+
+  /* ============================ Stats / end of game ============================ */
+  function maxTileOnBoard(){
+    var mx = 0;
+    for(var id in tiles){ if(tiles.hasOwnProperty(id) && tiles[id].val>mx) mx=tiles[id].val; }
+    return mx;
+  }
+  function finalizeWinStats(tile){
+    var s = curStats();
+    var secs = runStart ? Math.round((Date.now()-runStart)/1000) : 0;
+    if(tile >= 2048 && secs>0){
+      if(!s.bestTime || secs < s.bestTime) s.bestTime = secs;
+    }
+    saveStats();
+  }
+  var gameRecorded = false;
+  function recordGameEnd(){
+    if(gameRecorded) return;
+    gameRecorded = true;
+    var s = curStats();
+    s.games++;
+    s.bestScore = Math.max(s.bestScore, score);
+    s.bestTile = Math.max(s.bestTile, maxTileOnBoard());
+    s.bestCombo = Math.max(s.bestCombo, bestComboRun);
+    s.totalMerges += totalMergesRun;
+    saveStats();
+    // daily result
+    if(mode === "daily"){ recordDailyResult(); }
+    // final achievement sweep
+    checkAchievements(achCtx({ tile:maxTileOnBoard() }));
+  }
+  function recordDailyResult(){
+    var d = loadDaily();
+    var tk = todayKey();
+    if(d.day !== tk){
+      // new day for daily challenge
+      // streak: consecutive calendar days
+      var prevWasYesterday = isYesterday(d.lastDay, tk);
+      d.streak = prevWasYesterday ? (d.streak+1) : 1;
+      d.day = tk; d.today = 0; d.lastDay = tk;
+    }
+    if(score > d.today) d.today = score;
+    saveDaily(d);
+    checkAchievements(achCtx({ tile:maxTileOnBoard(), streak:d.streak }));
+  }
+  function isYesterday(prevKey, todayK){
+    if(!prevKey) return false;
+    var py = Math.floor(prevKey/10000), pm = Math.floor((prevKey%10000)/100), pd = prevKey%100;
+    var prev = new Date(py, pm-1, pd);
+    var ty = Math.floor(todayK/10000), tm = Math.floor((todayK%10000)/100), td = todayK%100;
+    var tod = new Date(ty, tm-1, td);
+    var diff = Math.round((tod - prev)/86400000);
+    return diff === 1;
+  }
+
+  /* ============================ Share ============================ */
+  function modeLabel(){
+    if(mode==="daily") return t("dailyBadge");
+    if(mode==="time") return t("modeTime");
+    if(mode==="target") return t("modeTarget")+" "+targetTile;
+    if(mode==="zen") return t("modeZen");
+    return t("modeClassic");
+  }
+  function buildShareText(){
+    var mt = maxTileOnBoard();
+    var line1 = "2048 ✦ " + size + "×" + size + " · " + modeLabel();
+    var line2 = "🏆 " + score + (best<=score ? " ("+t("best")+"!)" : "");
+    var line3 = "🔢 " + mt + "   ⛓️ " + bestComboRun;
+    if(mode==="daily"){ line1 += " " + todayStr(); }
+    return line1 + "\n" + line2 + "\n" + line3;
+  }
+  function shareResult(){
+    var txt = buildShareText();
+    function ok(){ toast(t("shareCopied")); }
+    function fail(){
+      // offline fallback
+      try{
+        var ta = document.createElement("textarea");
+        ta.value = txt; ta.style.position="fixed"; ta.style.opacity="0";
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        var done = document.execCommand("copy");
+        document.body.removeChild(ta);
+        if(done) ok(); else toast(t("shareFail"));
+      }catch(e){ toast(t("shareFail")); }
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(ok, fail);
+    } else { fail(); }
+  }
+
+  /* ============================ Overlays ============================ */
+  function clearOverlay(){
+    $overlay.className = "overlay";
+    $ovActions.innerHTML = "";
+    $ovStats.innerHTML = "";
+    $ovSub.innerHTML = "";
+  }
+  function ovStatsHtml(){
+    var mt = maxTileOnBoard();
+    return '<div><b>'+score+'</b>'+t("score")+'</div>'+
+           '<div><b>'+mt+'</b>'+t("statBestTile")+'</div>'+
+           '<div><b>'+bestComboRun+'</b>'+t("comboLabel")+'</div>';
+  }
+  function showWin(silent){
+    if(!silent) sWin();
+    $overlay.className = "overlay show win";
+    $ovTitle.textContent = t("winTitle");
+    $ovSub.innerHTML = t("winSub");
+    $ovStats.innerHTML = "";
+    $ovActions.innerHTML = "";
+    var cont = mkBtn(t("keepGoing"), "primary", function(){
+      keepPlaying = true; clearOverlay(); save(); $board.focus();
+    });
+    var sh = mkBtn(t("share"), "", function(){ shareResult(); });
+    var ng = mkBtn(t("newGame"), "", function(){ requestNewGame(); });
+    $ovActions.appendChild(cont); $ovActions.appendChild(sh); $ovActions.appendChild(ng);
+    liveSay(t("winTitle"));
+  }
+  function showOver(silent){
+    if(!silent) sOver();
+    $overlay.className = "overlay show over";
+    $ovTitle.textContent = (mode==="time") ? t("timeUpTitle") : t("overTitle");
+    $ovSub.innerHTML = t("overSubScore") + "<b>" + score + "</b>" + (score>=best && score>0 ? t("newBest") : "");
+    $ovStats.innerHTML = ovStatsHtml();
+    $ovActions.innerHTML = "";
+    var sh = mkBtn(t("share"), "", function(){ shareResult(); });
+    var rp = mkBtn(t("tryAgain"), "primary", function(){ newGame(); });
+    $ovActions.appendChild(sh); $ovActions.appendChild(rp);
+    liveSay(($ovTitle.textContent) + " " + t("score") + " " + score);
+  }
+  function showTargetWin(silent){
+    if(!silent) sWin();
+    $overlay.className = "overlay show win";
+    $ovTitle.textContent = t("targetWinTitle");
+    $ovSub.innerHTML = t("targetPick") + ": <b>" + targetTile + "</b>";
+    $ovStats.innerHTML = ovStatsHtml();
+    $ovActions.innerHTML = "";
+    var sh = mkBtn(t("share"), "", function(){ shareResult(); });
+    var rp = mkBtn(t("newGame"), "primary", function(){ newGame(); });
+    $ovActions.appendChild(sh); $ovActions.appendChild(rp);
+    liveSay(t("targetWinTitle"));
+  }
+  function mkBtn(label, cls, fn){
+    var b = document.createElement("button");
+    b.className = "btn " + (cls||"");
+    b.textContent = label;
+    b.addEventListener("click", function(){ resumeAudio(); fn(); });
+    return b;
+  }
+
+  /* ============================ Time attack ============================ */
+  function startTimer(){
+    stopTimer();
+    timeTimer = setInterval(function(){
+      if(over || busy && false){ }
+      var left = timeLimit - Math.floor((Date.now() - (runStart||Date.now()))/1000);
+      if(!runStart){ // not started yet, show full
+        updateTimeBadge(timeLimit);
+        return;
+      }
+      if(left <= 0){
+        updateTimeBadge(0);
+        if(!over){
+          over = true;
+          recordGameEnd();
+          stopTimer();
+          setTimeout(function(){ showOver(); }, 100);
+        }
+        return;
+      }
+      updateTimeBadge(left);
+    }, 250);
+  }
+  function stopTimer(){ if(timeTimer){ clearInterval(timeTimer); timeTimer=null; } }
+  function updateTimeBadge(sec){
+    if(mode !== "time") return;
+    var m = Math.floor(sec/60), s = sec%60;
+    $modeBadgeTxt.textContent = t("timeLeft")+" "+m+":"+(s<10?"0":"")+s;
+  }
+
+  /* ============================ Mode badge ============================ */
+  function updateModeBadge(){
+    if(mode==="time"){ updateTimeBadge(runStart ? Math.max(0, timeLimit-Math.floor((Date.now()-runStart)/1000)) : timeLimit); return; }
+    var txt = mode==="daily" ? t("dailyBadge") :
+              mode==="target" ? (t("modeTarget")+" "+targetTile) :
+              mode==="zen" ? t("modeZen") : t("modeClassic");
+    $modeBadgeTxt.textContent = txt;
+  }
+
+  /* ============================ Setup / New game ============================ */
+  function startGame(){
+    clearOverlay();
+    stopTimer();
+    grid = new Array(size*size).fill(null);
+    tiles = {};
+    $tiles.innerHTML = "";
+    score = 0; won = false; keepPlaying = false; over = false; busy = false;
+    undoStack = []; queuedDir = null;
+    moves = 0; totalMergesRun = 0; bestComboRun = 0; milestonesHit = {};
+    runStart = 0; newBestFiredRun = false; gameRecorded = false;
+    $undo.disabled = true;
+    $score.textContent = "0";
+    best = curStats().bestScore || 0;
+    $best.textContent = best;
+    if(mode === "daily"){ buildDailySeq(); }
+    buildGridBackground();
+    applyTileSizeVar();
+    spawnTile(true);
+    spawnTile(true);
+    updateModeBadge();
+    if(mode === "time"){ runStart = 0; startTimer(); }
+    save();
+    $board.focus();
+  }
+  function newGame(){ mode = (mode==="daily") ? "classic" : mode; startGameKeepMode(); }
+  function startGameKeepMode(){ startGame(); }
+
+  function restoreOrNew(data){
+    buildGridBackground();
+    applyTileSizeVar();
+    // restore mode for in-progress resume (but not daily — daily is launched explicitly)
+    if(data && data.board && Array.isArray(data.board) && data.board.length === size*size && !data.over && data.mode !== "daily" && data.mode !== "time"){
+      mode = (typeof data.mode==="string") ? data.mode : "classic";
+      if(typeof data.targetTile === "number") targetTile = data.targetTile;
+      score = (typeof data.score === "number" && isFinite(data.score)) ? data.score : 0;
+      won = !!data.won; keepPlaying = !!data.keepPlaying; over = false;
+      moves = data.moves||0; totalMergesRun = data.totalMergesRun||0; bestComboRun = data.bestComboRun||0;
+      milestonesHit = (data.milestonesHit && typeof data.milestonesHit==="object") ? data.milestonesHit : {};
+      newBestFiredRun = !!data.newBestFiredRun;
+      gameRecorded = false;
+      best = curStats().bestScore || 0;
+      if(score > best){ best = score; } // display only; persisted to stats at game end
+      rebuildFromBoard(data.board);
+      $score.textContent = score;
+      $best.textContent = best;
+      $undo.disabled = true;
+      undoStack = [];
+      if(emptyCells().length === size*size){ spawnTile(true); spawnTile(true); }
+      updateModeBadge();
+      if(mode !== "zen" && !hasMoves()){ over = true; recordGameEnd(); setTimeout(showOver, 300); }
+    } else {
+      mode = (prefs.mode && ["classic","time","target","zen"].indexOf(prefs.mode)>=0) ? prefs.mode : "classic";
+      targetTile = prefs.targetTile || 2048;
+      startGame();
+    }
+  }
+
+  function doUndo(){
+    if(!undoStack.length || busy) return;
+    resumeAudio();
+    var prev = undoStack.pop();
+    size = prev.size;
+    score = prev.score;
+    // BUG FIX: restore best from snapshot so undoing a record un-inflates the saved best.
+    // Never drop below the genuine all-time personal record for this size.
+    var snapBest = (typeof prev.best === "number") ? prev.best : best;
+    best = Math.max(snapBest, curStats().bestScore||0);
+    won = prev.won;
+    keepPlaying = prev.keepPlaying;
+    over = false;
+    moves = prev.moves||0; totalMergesRun = prev.totalMergesRun||0; bestComboRun = prev.bestComboRun||0;
+    milestonesHit = (prev.milestonesHit && typeof prev.milestonesHit==="object") ? prev.milestonesHit : {};
+    newBestFiredRun = !!prev.newBestFiredRun;
+    runStart = prev.runStart || runStart;
+    clearOverlay();
+    buildGridBackground();
+    applyTileSizeVar();
+    rebuildFromBoard(prev.board);
+    $score.textContent = score;
+    $best.textContent = best;
+    $undo.disabled = undoStack.length === 0;
+    save();
+    $board.focus();
+  }
+
+  function setMuteUI(){ $muteIc.textContent = muted ? "🔇" : "🔊"; }
+  function toggleMute(){ muted = !muted; setMuteUI(); save(); refreshMusic(); if(!muted){ resumeAudio(); tone(440,0.08,"sine",0.06); } }
+
+  /* ============================ board-in-progress check & confirm ============================ */
+  function boardInProgress(){
+    if(over) return false;
+    var filled = grid.filter(function(x){ return x; }).length;
+    return filled > 2 || score > 0;
+  }
+  var confirmCb = null;
+  function openConfirm(titleKey, msgKey, cb){
+    document.getElementById("confirm-title").textContent = t(titleKey);
+    document.getElementById("confirm-msg").textContent = t(msgKey);
+    confirmCb = cb;
+    openModal("confirm-modal");
+  }
+  function requestNewGame(){
+    if(boardInProgress()){
+      openConfirm("confirmNewTitle", "confirmNewMsg", function(){ mode = (mode==="daily")?"classic":mode; startGame(); });
+    } else { mode = (mode==="daily")?"classic":mode; startGame(); }
+  }
+  function requestSizeChange(newSize){
+    var apply = function(){ size = newSize; $sizeSel.value = String(size); startGame(); };
+    if(boardInProgress()){
+      openConfirm("confirmNewTitle", "confirmSizeMsg", apply);
+    } else { apply(); }
+  }
+  function requestModeChange(newMode, newTarget){
+    var apply = function(){
+      mode = newMode; if(newTarget) targetTile = newTarget;
+      prefs.mode = (newMode==="daily")?prefs.mode:newMode;
+      if(newTarget){ prefs.targetTile = newTarget; }
+      savePrefs(); startGame();
+    };
+    if(boardInProgress() && newMode !== mode){
+      openConfirm("confirmNewTitle", "confirmModeMsg", apply);
+    } else { apply(); }
+  }
+
+  /* ============================ Language ============================ */
+  function applyLang(){
+    document.documentElement.lang = uiLang;
+    document.title = t("docTitle");
+    document.querySelectorAll("[data-i18n]").forEach(function(e){
+      e.innerHTML = t(e.getAttribute("data-i18n"));
+    });
+    document.querySelectorAll("[data-i18n-title]").forEach(function(e){
+      e.title = t(e.getAttribute("data-i18n-title"));
+    });
+    document.querySelectorAll("[data-i18n-aria]").forEach(function(e){
+      e.setAttribute("aria-label", t(e.getAttribute("data-i18n-aria")));
+    });
+    document.querySelectorAll(".langbtn").forEach(function(b){
+      b.classList.toggle("active", b.getAttribute("data-lang") === uiLang);
+    });
+    updateModeBadge();
+    // refresh dynamic modal contents if open
+    renderThemeGrid();
+    if(document.getElementById("stats-modal").classList.contains("show")) renderStats();
+    if(document.getElementById("daily-modal").classList.contains("show")) renderDaily();
+    if($overlay.classList.contains("show")){
+      if($overlay.classList.contains("win")) {
+        if(mode==="target") showTargetWin(true); else showWin(true);
+      }
+      else if($overlay.classList.contains("over")) showOver(true);
+    }
+  }
+  function setLang(lang){
+    if(lang !== "vi" && lang !== "ja") return;
+    uiLang = lang;
+    try{ localStorage.setItem(LANG_KEY, uiLang); }catch(e){}
+    applyLang();
+  }
+  document.querySelectorAll(".langbtn").forEach(function(b){
+    b.addEventListener("click", function(){ setLang(b.getAttribute("data-lang")); });
+  });
+
+  /* ============================ Modals ============================ */
+  var lastFocus = null;
+  function openModal(id){
+    var m = document.getElementById(id);
+    lastFocus = document.activeElement;
+    m.classList.add("show");
+    var focusable = m.querySelector("input,button,select,[tabindex]");
+    if(focusable) setTimeout(function(){ focusable.focus(); }, 30);
+  }
+  function closeModal(id){
+    var m = document.getElementById(id);
+    m.classList.remove("show");
+    if(lastFocus && lastFocus.focus){ try{ lastFocus.focus(); }catch(e){} }
+  }
+  function anyModalOpen(){ return !!document.querySelector(".modal-back.show"); }
+  document.querySelectorAll("[data-close]").forEach(function(b){
+    b.addEventListener("click", function(){ closeModal(b.getAttribute("data-close")); });
+  });
+  document.querySelectorAll(".modal-back").forEach(function(mb){
+    mb.addEventListener("click", function(e){ if(e.target === mb) closeModal(mb.id); });
+  });
+
+  /* ---- Settings modal ---- */
+  var $vol = document.getElementById("set-volume");
+  var $sfx = document.getElementById("set-sfx");
+  var $music = document.getElementById("set-music");
+  var $motion = document.getElementById("set-motion");
+  var $cb = document.getElementById("set-cb");
+  function syncSettingsUI(){
+    $vol.value = Math.round(prefs.volume*100);
+    $sfx.checked = prefs.sfx;
+    $music.checked = prefs.music;
+    $motion.checked = motionReduced();
+    $cb.checked = prefs.colorBlind;
+    renderThemeGrid();
+  }
+  function renderThemeGrid(){
+    var grid = document.getElementById("theme-grid");
+    if(!grid) return;
+    grid.innerHTML = "";
+    var swatch = {
+      aurora:["#0e1428","#34e0ff","#b388ff"],
+      sunset:["#2a0f1e","#ff9e64","#ff6b9d"],
+      forest:["#0a1d15","#34d3b6","#c8e66b"],
+      mono:["#15151c","#9ea0b5","#dcdce6"],
+      light:["#dde4f3","#1c95c0","#d99a1f"]
+    };
+    THEMES.forEach(function(th){
+      var b = document.createElement("button");
+      b.className = "theme-chip" + (prefs.theme===th ? " sel":"");
+      b.setAttribute("type","button");
+      b.setAttribute("aria-label", t("theme"+th.charAt(0).toUpperCase()+th.slice(1)));
+      b.title = t("theme"+th.charAt(0).toUpperCase()+th.slice(1));
+      var sw = swatch[th]||["#222","#666","#aaa"];
+      var s = document.createElement("span");
+      s.style.background = "linear-gradient(135deg,"+sw[0]+" 38%,"+sw[1]+" 70%,"+sw[2]+")";
+      b.appendChild(s);
+      b.addEventListener("click", function(){
+        prefs.theme = th; savePrefs(); applyPrefs(); renderThemeGrid();
+      });
+      grid.appendChild(b);
+    });
+  }
+  document.getElementById("settings-btn").addEventListener("click", function(){ resumeAudio(); syncSettingsUI(); openModal("settings-modal"); });
+  $vol.addEventListener("input", function(){ prefs.volume = (parseInt($vol.value,10)||0)/100; savePrefs(); });
+  $vol.addEventListener("change", function(){ if(!sfxOff()){ resumeAudio(); tone(520,0.08,"sine",0.07); } });
+  $sfx.addEventListener("change", function(){ prefs.sfx = $sfx.checked; savePrefs(); if(prefs.sfx){ resumeAudio(); tone(520,0.07,"sine",0.06); } });
+  $music.addEventListener("change", function(){ prefs.music = $music.checked; savePrefs(); refreshMusic(); });
+  $motion.addEventListener("change", function(){ prefs.reducedMotion = $motion.checked; savePrefs(); applyPrefs(); });
+  $cb.addEventListener("change", function(){ prefs.colorBlind = $cb.checked; savePrefs(); applyPrefs(); });
+
+  /* ---- Stats modal ---- */
+  var statsViewSize = 4;
+  function renderStatsSizeSeg(){
+    var seg = document.getElementById("stats-size-seg");
+    seg.innerHTML = "";
+    [4,5,6].forEach(function(sz){
+      var b = document.createElement("button");
+      b.className = "seg-btn" + (statsViewSize===sz ? " sel":"");
+      b.setAttribute("role","tab");
+      b.setAttribute("aria-selected", statsViewSize===sz ? "true":"false");
+      b.textContent = sz+"×"+sz;
+      b.addEventListener("click", function(){ statsViewSize = sz; renderStats(); });
+      seg.appendChild(b);
+    });
+  }
+  function fmtTime(sec){
+    if(!sec) return "—";
+    var m = Math.floor(sec/60), s = sec%60;
+    return m+"m "+(s<10?"0":"")+s+"s";
+  }
+  function renderStats(){
+    renderStatsSizeSeg();
+    var s = stats[statKey(statsViewSize)];
+    var g = document.getElementById("stat-grid");
+    var cards = [
+      [t("statGames"), s.games],
+      [t("statBestScore"), s.bestScore],
+      [t("statBestTile"), s.bestTile||"—"],
+      [t("statBestCombo"), s.bestCombo||"—"],
+      [t("statTotalMerges"), s.totalMerges],
+      [t("statBestTime"), fmtTime(s.bestTime)]
+    ];
+    g.innerHTML = "";
+    cards.forEach(function(c){
+      var d = document.createElement("div");
+      d.className = "stat-card";
+      var k = document.createElement("div"); k.className="sk"; k.textContent=c[0];
+      var v = document.createElement("div"); v.className="sv"; v.textContent=c[1];
+      d.appendChild(k); d.appendChild(v); g.appendChild(d);
+    });
+    renderAchievements();
+  }
+  function renderAchievements(){
+    var g = document.getElementById("achv-grid");
+    g.innerHTML = "";
+    ACHS.forEach(function(a){
+      var unlocked = !!achUnlocked[a.id];
+      var d = document.createElement("div");
+      d.className = "achv-card" + (unlocked ? " unlocked":"");
+      var i = document.createElement("div"); i.className="aci"; i.textContent = a.icon;
+      var n = document.createElement("div"); n.className="acn"; n.textContent = t("ach_"+a.id+"_n");
+      var ds = document.createElement("div"); ds.className="acd"; ds.textContent = t("ach_"+a.id+"_d");
+      d.appendChild(i); d.appendChild(n); d.appendChild(ds);
+      g.appendChild(d);
+    });
+  }
+  document.getElementById("stats-btn").addEventListener("click", function(){ statsViewSize = size; renderStats(); openModal("stats-modal"); });
+
+  /* ---- Daily modal ---- */
+  function renderDaily(){
+    var d = loadDaily();
+    document.getElementById("daily-date").textContent = todayStr();
+    var today = (d.day === todayKey()) ? d.today : 0;
+    document.getElementById("daily-today").textContent = today;
+    document.getElementById("daily-streak").textContent = d.streak||0;
+  }
+  document.getElementById("daily-btn").addEventListener("click", function(){ renderDaily(); openModal("daily-modal"); });
+  document.getElementById("daily-play").addEventListener("click", function(){
+    resumeAudio();
+    closeModal("daily-modal");
+    var launch = function(){
+      mode = "daily"; targetTile = 2048;
+      size = 4; $sizeSel.value = "4";
+      startGame();
+    };
+    if(boardInProgress() && mode !== "daily"){
+      openConfirm("confirmNewTitle", "confirmModeMsg", launch);
+    } else { launch(); }
+  });
+
+  /* ---- Confirm modal ---- */
+  document.getElementById("confirm-ok").addEventListener("click", function(){
+    closeModal("confirm-modal");
+    var cb = confirmCb; confirmCb = null;
+    if(cb) cb();
+  });
+  document.getElementById("confirm-cancel").addEventListener("click", function(){
+    closeModal("confirm-modal"); confirmCb = null;
+    // revert size selector if it was changed
+    $sizeSel.value = String(size);
+  });
+
+  /* ============================ Input ============================ */
+  var DIR = { up:0, right:1, down:2, left:3 };
+  function handleDir(dir){ if(anyModalOpen()) return; resumeAudio(); move(dir); }
+
+  window.addEventListener("keydown", function(e){
+    if(e.key === "Escape"){
+      var open = document.querySelector(".modal-back.show");
+      if(open){ closeModal(open.id); if(open.id==="confirm-modal"){ confirmCb=null; $sizeSel.value=String(size);} e.preventDefault(); return; }
+    }
+    if(anyModalOpen()) return;
+    var k = e.key;
+    var dir = null;
+    if(k==="ArrowUp"||k==="w"||k==="W") dir = DIR.up;
+    else if(k==="ArrowDown"||k==="s"||k==="S") dir = DIR.down;
+    else if(k==="ArrowLeft"||k==="a"||k==="A") dir = DIR.left;
+    else if(k==="ArrowRight"||k==="d"||k==="D") dir = DIR.right;
+    else if(k==="z"||k==="Z"){ e.preventDefault(); doUndo(); return; }
+    else if(k==="m"||k==="M"){ e.preventDefault(); toggleMute(); return; }
+    else if(k==="r"||k==="R"){ e.preventDefault(); requestNewGame(); return; }
+    if(dir !== null){ e.preventDefault(); handleDir(dir); }
+  }, { passive:false });
+
+  // Touch swipe on board
+  var tStartX=0, tStartY=0, tActive=false;
+  var THRESHOLD = 24;
+  $board.addEventListener("touchstart", function(e){
+    if(e.touches.length !== 1) return;
+    tActive = true;
+    tStartX = e.touches[0].clientX; tStartY = e.touches[0].clientY;
+  }, { passive:true });
+  $board.addEventListener("touchmove", function(e){
+    if(!tActive) return;
+    if(e.cancelable) e.preventDefault();
+  }, { passive:false });
+  $board.addEventListener("touchend", function(e){
+    if(!tActive) return;
+    tActive = false;
+    var t = (e.changedTouches && e.changedTouches[0]) || null;
+    if(!t) return;
+    var dx = t.clientX - tStartX, dy = t.clientY - tStartY;
+    var adx = Math.abs(dx), ady = Math.abs(dy);
+    if(Math.max(adx,ady) < THRESHOLD) return;
+    if(adx > ady){ handleDir(dx>0 ? DIR.right : DIR.left); }
+    else { handleDir(dy>0 ? DIR.down : DIR.up); }
+  }, { passive:true });
+
+  // Pointer swipe fallback (mouse drag on desktop)
+  var pDown=false, pX=0, pY=0;
+  $board.addEventListener("pointerdown", function(e){
+    if(e.pointerType === "touch") return;
+    pDown = true; pX = e.clientX; pY = e.clientY;
+  });
+  window.addEventListener("pointerup", function(e){
+    if(!pDown || e.pointerType === "touch") return;
+    pDown = false;
+    var dx = e.clientX - pX, dy = e.clientY - pY;
+    var adx = Math.abs(dx), ady = Math.abs(dy);
+    if(Math.max(adx,ady) < 30) return;
+    if(adx > ady){ handleDir(dx>0 ? DIR.right : DIR.left); }
+    else { handleDir(dy>0 ? DIR.down : DIR.up); }
+  });
+
+  // buttons
+  document.getElementById("new-btn").addEventListener("click", function(){ resumeAudio(); requestNewGame(); });
+  document.getElementById("mute-btn").addEventListener("click", function(){ toggleMute(); });
+  $undo.addEventListener("click", function(){ doUndo(); });
+  $sizeSel.addEventListener("change", function(){
+    var v = parseInt($sizeSel.value, 10);
+    if([4,5,6].indexOf(v) >= 0 && v !== size){ requestSizeChange(v); }
+  });
+
+  // first gesture resumes audio + starts music if enabled
+  ["pointerdown","keydown","touchstart"].forEach(function(ev){
+    window.addEventListener(ev, function once(){ resumeAudio(); refreshMusic(); window.removeEventListener(ev, once); }, { passive:true });
+  });
+
+  // resize -> recompute geometry
+  var rzTimer = null;
+  window.addEventListener("resize", function(){
+    if(rzTimer) clearTimeout(rzTimer);
+    rzTimer = setTimeout(applyTileSizeVar, 60);
+  });
+  window.addEventListener("orientationchange", function(){ setTimeout(applyTileSizeVar, 120); });
+
+  // react to system reduced-motion changes when no explicit pref set
+  if(window.matchMedia){
+    var mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    var mqh = function(){ if(prefs.reducedMotion === null) applyPrefs(); };
+    if(mq.addEventListener) mq.addEventListener("change", mqh);
+    else if(mq.addListener) mq.addListener(mqh);
+  }
+
+  /* ============================ Boot ============================ */
+  loadPrefs();
+  loadStats();
+  loadAch();
+  applyPrefs();
+  var loaded = load();
+  setMuteUI();
+  $sizeSel.value = String(size);
+  best = curStats().bestScore || 0;
+  $best.textContent = best;
+  function boot(){
+    applyLang();
+    setCSSVars();
+    restoreOrNew(loaded);
+    requestAnimationFrame(applyTileSizeVar);
+    setTimeout(applyTileSizeVar, 120);
+  }
+  if(document.readyState === "complete" || document.readyState === "interactive"){ boot(); }
+  else { window.addEventListener("DOMContentLoaded", boot); }
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>10 Ý Tưởng Game Nhật Bản — Spec & Tính Năng Chính 🎏</title>
+<style>
+  :root{
+    --bg:#0e1120; --bg2:#141831; --card:#1a1f3a; --card2:#212747;
+    --text:#e9ecf8; --muted:#9aa3c8; --border:rgba(255,255,255,.09);
+    --accent:#6c8cff; --teal:#34d3b6; --gold:#ffce54; --rose:#ff7aa8;
+    --orange:#ff9f43; --green:#56d96a; --purple:#b388ff;
+    /* Japanese accents */
+    --jp-red:#e7384f; --jp-red-soft:#ff5d72; --jp-white:#fff5f5; --sakura:#ffb7c5; --indigo:#3d52a0;
+    --shadow:0 18px 40px -22px rgba(0,0,0,.8);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    background:radial-gradient(1200px 700px at 80% -10%,#e7384f22,transparent),
+               radial-gradient(900px 600px at -10% 10%,#3d52a022,transparent),
+               radial-gradient(700px 500px at 50% 120%,#ffb7c511,transparent),
+               var(--bg);
+    color:var(--text); line-height:1.55; -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent)}
+  .wrap{max-width:1180px; margin:0 auto; padding:32px 20px 80px}
+
+  /* HERO */
+  header.hero{
+    position:relative; text-align:center; padding:46px 20px 30px;
+    background:linear-gradient(180deg,#2a1430,transparent);
+    border-bottom:1px solid var(--border); overflow:hidden;
+  }
+  /* subtle hinomaru (rising sun disc) accent */
+  header.hero::before{
+    content:""; position:absolute; top:-90px; left:50%; transform:translateX(-50%);
+    width:220px; height:220px; border-radius:50%;
+    background:radial-gradient(circle, #e7384f55, #e7384f10 60%, transparent 70%);
+    filter:blur(2px); pointer-events:none;
+  }
+  .hero .kicker{position:relative; letter-spacing:3px; text-transform:uppercase; font-size:12px; color:var(--jp-red-soft); font-weight:700}
+  .hero .kanji{font-size:13px; color:var(--sakura); letter-spacing:6px; margin-top:4px}
+  .hero h1{position:relative; font-size:clamp(28px,5vw,46px); margin:8px 0 10px; line-height:1.1}
+  .hero h1 span{background:linear-gradient(90deg,var(--jp-red-soft),var(--sakura));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{position:relative; color:var(--muted); max-width:780px; margin:0 auto; font-size:16px}
+  .hero .meta{position:relative; margin-top:18px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap}
+  .pill{font-size:12.5px; padding:6px 13px; border:1px solid var(--border); border-radius:999px; background:#ffffff0a; color:var(--muted)}
+  .pill.jp{border-color:color-mix(in srgb,var(--jp-red) 45%,transparent); color:var(--sakura); background:color-mix(in srgb,var(--jp-red) 12%,transparent)}
+
+  /* LEGEND */
+  .legend{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px;
+    margin:28px 0 8px;
+  }
+  .legend .box{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px 16px}
+  .legend h4{margin:0 0 6px; font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:1px}
+  .legend p{margin:0; font-size:13.5px; color:var(--muted)}
+  .dots{display:inline-flex; gap:4px; vertical-align:middle}
+  .dot{width:9px;height:9px;border-radius:50%;background:#ffffff20;display:inline-block}
+  .dot.on{background:var(--gold)}
+  .dot.dev.on{background:var(--teal)}
+
+  /* ROADMAP */
+  .section-title{display:flex; align-items:center; gap:12px; margin:46px 0 18px}
+  .section-title h2{font-size:22px; margin:0}
+  .section-title .line{flex:1; height:1px; background:linear-gradient(90deg,var(--jp-red),var(--border))}
+  .roadmap{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px}
+  .step{background:linear-gradient(180deg,var(--card2),var(--card)); border:1px solid var(--border); border-radius:16px; padding:18px}
+  .step .tag{font-size:11.5px; font-weight:700; color:#fff; background:var(--jp-red); padding:3px 9px; border-radius:6px}
+  .step h3{margin:12px 0 8px; font-size:16px}
+  .step ul{margin:0; padding-left:18px; color:var(--muted); font-size:14px}
+
+  /* TOOLBAR */
+  .toolbar{position:sticky; top:0; z-index:5; backdrop-filter:blur(8px);
+    background:#0e1120cc; border:1px solid var(--border); border-radius:14px;
+    padding:12px; margin:26px 0; display:flex; gap:18px; flex-wrap:wrap; align-items:center; justify-content:space-between}
+  .toolbar .grp{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+  .toolbar .lbl{font-size:12px; color:var(--muted); margin-right:2px}
+  .btn{cursor:pointer; font-size:13px; padding:7px 13px; border-radius:999px; border:1px solid var(--border);
+    background:#ffffff0a; color:var(--text); transition:.15s}
+  .btn:hover{border-color:var(--jp-red-soft)}
+  .btn.active{background:linear-gradient(90deg,var(--jp-red),var(--jp-red-soft)); color:#fff; font-weight:700; border-color:transparent}
+
+  /* CARD GRID */
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(355px,1fr)); gap:20px}
+  .card{position:relative; background:var(--card); border:1px solid var(--border); border-radius:18px;
+    padding:20px; box-shadow:var(--shadow); overflow:hidden; transition:transform .15s, border-color .15s}
+  .card:hover{transform:translateY(-3px); border-color:#ffffff22}
+  .card::before{content:""; position:absolute; inset:0 0 auto 0; height:4px; background:var(--cat,#6c8cff)}
+  /* faint kanji watermark per card */
+  .card .kbig{position:absolute; top:6px; right:14px; font-size:60px; font-weight:800; color:#ffffff08; line-height:1; pointer-events:none; user-select:none}
+  .card .num{position:absolute; top:16px; left:18px; font-size:13px; font-weight:800; color:var(--jp-red-soft); letter-spacing:1px}
+  .card .cat{display:inline-block; margin-top:18px; font-size:11.5px; font-weight:700; padding:3px 10px; border-radius:7px;
+    background:color-mix(in srgb,var(--cat) 22%, transparent); color:var(--cat); border:1px solid color-mix(in srgb,var(--cat) 40%, transparent)}
+  .card h3{margin:11px 0 2px; font-size:20px}
+  .card h3 .jpname{color:var(--sakura); font-weight:700; font-size:17px; margin-right:6px}
+  .card .en{color:var(--muted); font-size:13px; margin-bottom:8px}
+  .card .tagline{font-size:13px; font-style:italic; color:var(--sakura); margin:0 0 10px}
+  .card .desc{font-size:14px; color:#d3d8ef; margin:0 0 14px}
+
+  .ratings{display:flex; gap:18px; flex-wrap:wrap; padding:12px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); margin-bottom:14px}
+  .rating .rl{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; display:block; margin-bottom:4px}
+  .rating .rv{font-size:13px; font-weight:600}
+
+  .feat{list-style:none; margin:0 0 14px; padding:0}
+  .feat li{position:relative; padding-left:22px; font-size:13.5px; color:#d8ddf3; margin:6px 0}
+  .feat li::before{content:"▸"; position:absolute; left:4px; color:var(--cat); font-weight:700}
+
+  .foot{display:flex; gap:14px; flex-wrap:wrap; font-size:12.5px; color:var(--muted); border-top:1px dashed var(--border); padding-top:12px}
+  .foot b{color:var(--text)}
+  .chip{background:#ffffff0d; border:1px solid var(--border); border-radius:8px; padding:4px 9px}
+  .hook{background:color-mix(in srgb,var(--gold) 12%, transparent); border:1px solid color-mix(in srgb,var(--gold) 35%,transparent); color:#ffe39a; border-radius:10px; padding:9px 12px; font-size:13px; margin-bottom:6px}
+  .hook b{color:var(--gold)}
+  .jphook{background:color-mix(in srgb,var(--sakura) 13%, transparent); border:1px solid color-mix(in srgb,var(--sakura) 38%,transparent); color:#ffd0db; border-radius:10px; padding:9px 12px; font-size:13px; margin-bottom:12px}
+  .jphook b{color:var(--sakura)}
+
+  /* TABLE */
+  .tablewrap{overflow:auto; border:1px solid var(--border); border-radius:14px; margin-top:6px}
+  table{border-collapse:collapse; width:100%; min-width:760px; font-size:13.5px}
+  th,td{padding:11px 13px; text-align:left; border-bottom:1px solid var(--border)}
+  th{background:#ffffff08; color:var(--muted); font-weight:600; position:sticky; top:0}
+  tbody tr:hover{background:#ffffff05}
+  td .mini{display:inline-flex; gap:3px}
+  .mini .d{width:7px;height:7px;border-radius:50%;background:#ffffff20}
+  .mini .d.on{background:var(--gold)}
+  .mini.dev .d.on{background:var(--teal)}
+
+  /* BONUS */
+  .bonus{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:12px}
+  .bonus .b{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:13px 15px}
+  .bonus .b h4{margin:0 0 5px; font-size:15px}
+  .bonus .b h4 span{color:var(--sakura); font-weight:700}
+  .bonus .b p{margin:0; font-size:13px; color:var(--muted)}
+
+  footer{text-align:center; color:var(--muted); font-size:13px; margin-top:50px; padding-top:20px; border-top:1px solid var(--border)}
+  footer .sakura-row{font-size:15px; letter-spacing:8px; margin-bottom:10px}
+  .hide{display:none !important}
+  @media(max-width:560px){ .card .kbig{font-size:46px} }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="kicker">日本 Game Studio · Brainstorm</div>
+  <div class="kanji">⛩️ 和ゲーム · WA GAME · 🌸</div>
+  <h1>10 Ý Tưởng Game <span>Phong Vị Nhật Bản — Hay Gấp 10×</span></h1>
+  <p>Tuyển chọn 10 game đậm <b>văn hóa Nhật</b> (数独, 将棋, 花札, けん玉…), mỗi game được "thổi hồn" để <b>hay gấp 10 lần</b> bản thường: hiệu ứng đã tay (juice), thử thách mỗi ngày (daily), tiến trình &amp; sưu tầm, bảng xếp hạng. Đa số <b>thuần frontend</b> (mở file là chạy), số ít có thể tận dụng <b>WebSocket realtime</b> từ app cờ vua của bạn.</p>
+  <div class="meta">
+    <span class="pill jp">⛩️ Chủ đề Nhật Bản</span>
+    <span class="pill">🧩 6 thể loại</span>
+    <span class="pill">⚡ MVP 1–4 ngày/game</span>
+    <span class="pill">📱 Web · Responsive · Offline</span>
+    <span class="pill jp">🌸 Juice + Daily + Streak</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="box">
+      <h4>Độ khó làm <span class="dots"><i class="dot dev on"></i><i class="dot dev on"></i><i class="dot dev"></i><i class="dot dev"></i><i class="dot dev"></i></span></h4>
+      <p>Càng nhiều chấm xanh = càng tốn công. 1 = làm trong ngày, 5 = cần nhiều ngày &amp; xử lý phức tạp.</p>
+    </div>
+    <div class="box">
+      <h4>Độ thu hút <span class="dots"><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot"></i></span></h4>
+      <p>Càng nhiều chấm vàng = càng dễ kéo &amp; giữ người chơi (vui, gây nghiện, dễ chia sẻ).</p>
+    </div>
+    <div class="box">
+      <h4>🌸 Điểm hấp dẫn Nhật</h4>
+      <p>Cultural hook: thẩm mỹ wabi-sabi, âm thanh 和 (taiko, koto), chủ đề theo mùa (sakura, momiji), nhân vật dễ thương.</p>
+    </div>
+    <div class="box">
+      <h4>♻️ Hạ tầng tái dụng</h4>
+      <p>Đa số <b>static frontend</b> (localStorage). Vài game cần backend nhẹ (daily seed / leaderboard) hoặc WS realtime (PvP).</p>
+    </div>
+  </div>
+
+  <!-- ROADMAP -->
+  <div class="section-title"><h2>🗺️ Gợi ý lộ trình ra mắt</h2><div class="line"></div></div>
+  <div class="roadmap">
+    <div class="step">
+      <span class="tag">Đợt 1 · Quick win</span>
+      <h3>Thuần frontend, ra mắt nhanh</h3>
+      <ul><li>けん玉 Kendama</li><li>だるま落とし Daruma Otoshi</li><li>かるた Karuta Memory</li></ul>
+      <p style="color:var(--muted);font-size:12.5px;margin:8px 0 0">→ Vật lý/timing/memory nhẹ, không cần backend, ra mắt trong 1–2 ngày.</p>
+    </div>
+    <div class="step">
+      <span class="tag" style="background:var(--indigo)">Đợt 2 · Daily &amp; giữ chân</span>
+      <h3>Câu đố mỗi ngày + streak</h3>
+      <ul><li>数独 Sudoku</li><li>お絵かきロジック Nonogram</li><li>あみだくじ Amidakuji</li></ul>
+      <p style="color:var(--muted);font-size:12.5px;margin:8px 0 0">→ Daily seed chung + streak kéo người chơi quay lại đều đặn.</p>
+    </div>
+    <div class="step">
+      <span class="tag" style="background:var(--gold);color:#0b0e1c">Đợt 3 · Chiều sâu &amp; nội dung</span>
+      <h3>Game có "meat", giữ lâu</h3>
+      <ul><li>麻雀ソリティア Mahjong Solitaire</li><li>太鼓リズム Taiko Rhythm</li><li>花札 Koi-Koi</li></ul>
+      <p style="color:var(--muted);font-size:12.5px;margin:8px 0 0">→ Nhiều màn/bài/bản nhạc → người chơi gắn bó dài hạn.</p>
+    </div>
+    <div class="step">
+      <span class="tag" style="background:var(--jp-red)">Đợt 4 · Đối kháng &amp; viral</span>
+      <h3>Tận dụng realtime cờ vua</h3>
+      <ul><li>動物将棋 Dōbutsu Shōgi (PvP+Bot)</li><li>じゃんけん RPG (combo battle)</li></ul>
+      <p style="color:var(--muted);font-size:12.5px;margin:8px 0 0">→ Tái dụng phòng WS + Elo + bot; tạo lý do rủ bạn chơi.</p>
+    </div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="grp">
+      <span class="lbl">Lọc:</span>
+      <button class="btn active" data-filter="all">Tất cả</button>
+      <button class="btn" data-filter="puzzle">🧩 Giải đố</button>
+      <button class="btn" data-filter="board">♟️ Cờ/Bài</button>
+      <button class="btn" data-filter="arcade">🕹️ Arcade/Vật lý</button>
+      <button class="btn" data-filter="rhythm">🥁 Nhịp điệu</button>
+      <button class="btn" data-filter="memory">🃏 Trí nhớ/Học</button>
+      <button class="btn" data-filter="rpg">⚔️ Đối kháng</button>
+    </div>
+    <div class="grp">
+      <span class="lbl">Sắp xếp:</span>
+      <button class="btn" data-sort="default">Mặc định</button>
+      <button class="btn" data-sort="dev">Dễ làm nhất</button>
+      <button class="btn" data-sort="fun">Thu hút nhất</button>
+    </div>
+  </div>
+
+  <!-- CARDS -->
+  <div class="grid" id="grid">
+
+    <!-- 1 SUDOKU -->
+    <article class="card" data-cat="puzzle" data-dev="3" data-fun="5" style="--cat:#6c8cff">
+      <span class="kbig">数独</span>
+      <span class="num">01</span>
+      <span class="cat">🧩 Puzzle · Daily</span>
+      <h3><span class="jpname">数独</span>Sudoku</h3>
+      <div class="en">Romaji: Sūdoku · Việt: Điền số Sudoku</div>
+      <p class="tagline">"Câu đố số quốc dân Nhật Bản — mỗi sáng một thử thách mới."</p>
+      <p class="desc">Phần khó nhất là bộ <i>sinh đề</i> đảm bảo lời giải duy nhất &amp; phân loại độ khó. Bù lại: tệp người chơi khổng lồ, gắn bó cực lâu nhờ daily puzzle + streak. Hay gấp 10× nhờ "câu đố ngày" chung toàn server và đua thời gian.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">2–3 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Sinh đề có lời giải duy nhất; 4–5 mức (やさしい → 鬼 cực khó)</li>
+        <li>Ghi chú nháp (pencil marks), tự xóa nháp khi điền số</li>
+        <li>Gợi ý có giải thích kỹ thuật (naked/hidden single…), tô số trùng</li>
+        <li>"数独 mỗi ngày" chung + đồng hồ + streak 🔥 + lịch hoàn thành</li>
+        <li>Juice: số "tách" khi điền, pháo hoa khi xong hàng/cột/ô</li>
+        <li>Lưu &amp; tiếp tục ván; bàn phím số cảm ứng đẹp</li>
+      </ul>
+      <div class="jphook">🌸 <b>Điểm Nhật:</b> Bố cục tối giản kiểu washi, âm "pon" khi điền đúng, theme giấy &amp; mực truyền thống.</div>
+      <div class="hook">🪝 <b>Hook 10×:</b> Câu đố mỗi ngày + streak + đua thời gian + lịch hoàn thành tháng.</div>
+      <div class="foot"><span class="chip">♻️ Hạ tầng: <b>static</b> (BE nhẹ cho daily)</span><span class="chip">Offline: <b>✓</b></span></div>
+    </article>
+
+    <!-- 2 NONOGRAM -->
+    <article class="card" data-cat="puzzle" data-dev="3" data-fun="5" style="--cat:#34d3b6">
+      <span class="kbig">絵</span>
+      <span class="num">02</span>
+      <span class="cat">🧩 Puzzle · Pixel reveal</span>
+      <h3><span class="jpname">お絵かきロジック</span>Nonogram / Picross</h3>
+      <div class="en">Romaji: Oekaki Logic · Việt: Giải đố tô tranh</div>
+      <p class="tagline">"Suy luận từng ô để lộ ra một bức tranh pixel dễ thương."</p>
+      <p class="desc">Logic thuần frontend, code lõi gọn. "Phần thưởng hình ảnh" khi hoàn thành cực kỳ thỏa mãn — mỗi câu đố là một bức tranh (mèo, sushi, torii…). Hay gấp 10× nhờ bộ sưu tập tranh theo chủ đề Nhật &amp; reveal animation.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">2–3 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Lưới 5×5 → 15×15, số gợi ý hàng/cột, đánh dấu X cho ô trống</li>
+        <li>Kiểm tra lỗi tùy chọn; auto-fill khi hàng/cột đã chắc chắn</li>
+        <li>Reveal animation: tranh pixel "sáng dần" + tên tranh khi xong</li>
+        <li>Bộ sưu tập (gallery) theo chủ đề: ẩm thực, lễ hội, thiên nhiên Nhật</li>
+        <li>Daily picross + độ khó tăng dần; mở khóa "album mùa" (四季)</li>
+        <li>Juice: tô ô có âm "tick", rung nhẹ khi điền sai</li>
+      </ul>
+      <div class="jphook">🌸 <b>Điểm Nhật:</b> Tranh pixel mang motif Nhật (達磨, 鯉のぼり, 富士山), bảng màu sakura/indigo.</div>
+      <div class="hook">🪝 <b>Hook 10×:</b> Album sưu tầm + daily + mở khóa tranh theo mùa → "phải hoàn thành cho đủ bộ".</div>
+      <div class="foot"><span class="chip">♻️ Hạ tầng: <b>static</b></span><span class="chip">Offline: <b>✓</b></span></div>
+    </article>
+
+    <!-- 3 DOBUTSU SHOGI -->
+    <article class="card" data-cat="board" data-dev="4" data-fun="5" style="--cat:#ff7aa8">
+      <span class="kbig">将</span>
+      <span class="num">03</span>
+      <span class="cat">♟️ Board · PvP + Bot</span>
+      <h3><span class="jpname">動物将棋</span>Dōbutsu Shōgi</h3>
+      <div class="en">Romaji: Dōbutsu Shōgi · Việt: Cờ Tướng Thú (Shogi thu nhỏ)</div>
+      <p class="tagline">"Shogi phiên bản 3×4 với linh thú — dễ học trong 1 phút, sâu cả tháng."</p>
+      <p class="desc">Bản rút gọn của 将棋 trên bàn 3×4 với 4 con thú (Sư tử, Voi, Hươu cao cổ, Gà con). Luật cực gọn nhưng vẫn giữ "thả quân" đặc trưng của shogi. Tái dụng <b>~85%</b> hạ tầng cờ vua: phòng realtime, ghép trận, Elo, replay, bot.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">3–4 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Bàn 3×4, 4 loại quân; bắt được quân thì "thả lại" như shogi</li>
+        <li>Online PvP realtime + ghép trận; chat, xin hòa/đầu hàng</li>
+        <li>Bot 3 mức (minimax — bàn nhỏ nên giải gần như tối ưu được)</li>
+        <li>Elo, lịch sử ván, xem lại (replay), đánh lại (rematch)</li>
+        <li>Hướng dẫn tương tác từng bước cho người mới (tutorial)</li>
+        <li>Nâng cao: chế độ 5×6 "Goro Goro Dōbutsu" cho người chơi cứng</li>
+      </ul>
+      <div class="jphook">🌸 <b>Điểm Nhật:</b> Cửa ngõ đến 将棋 thực thụ; quân thú vẽ kawaii, đậm chất board game Nhật hiện đại.</div>
+      <div class="hook">🪝 <b>Hook 10×:</b> Elo + rematch nhanh + leaderboard; bot tối ưu để luyện; là bàn đạp lên Shogi đầy đủ.</div>
+      <div class="foot"><span class="chip">♻️ Hạ tầng: <b>~85%</b> (WS+Elo+bot)</span><span class="chip">Backend: <b>WS</b></span></div>
+    </article>
+
+    <!-- 4 MAHJONG SOLITAIRE -->
+    <article class="card" data-cat="board" data-dev="3" data-fun="4" style="--cat:#ff9f43">
+      <span class="kbig">麻雀</span>
+      <span class="num">04</span>
+      <span class="cat">🃏 Bài · 1 người (giải đố)</span>
+      <h3><span class="jpname">麻雀ソリティア</span>Mahjong Solitaire</h3>
+      <div class="en">Romaji: Mājan Soritia · Việt: Mạt chược xếp hình (Thượng Hải)</div>
+      <p class="tagline">"Ghép cặp quân giống nhau, dỡ tầng tháp — thư giãn mà gây nghiện."</p>
+      <p class="desc">Không phải mạt chược thi đấu mà là kiểu xếp hình "Shanghai": ghép 2 quân tự do giống nhau để dỡ. Code lõi vừa phải (phát hiện quân "free", layout 3D giả lập). Hay gấp 10× nhờ nhiều layout, daily board &amp; chế độ đua thời gian.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">2–3 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Bộ 144 quân (vạn/sách/t문g/gió/rồng/hoa-mùa), nhiều layout (rùa, kim tự tháp…)</li>
+        <li>Phát hiện quân tự do, gợi ý (hint), xáo lại (shuffle) khi bí</li>
+        <li>Undo, đồng hồ, đếm cặp còn lại; đảm bảo bàn luôn giải được</li>
+        <li>Daily board chung + bảng xếp hạng thời gian; chế độ thư giãn vô hạn hint</li>
+        <li>Juice: quân "bay" khi ghép, âm gõ mạt chược (カチャ), combo nhanh</li>
+        <li>Bộ skin quân: cổ điển ngà, gỗ, sakura, phong cách pixel</li>
+      </ul>
+      <div class="jphook">🌸 <b>Điểm Nhật:</b> Âm thanh &amp; hoa văn quân mạt chược kiểu Nhật, theme đèn lồng &amp; chiếu tatami.</div>
+      <div class="hook">🪝 <b>Hook 10×:</b> Daily board + best-time + nhiều layout mở khóa → đua &amp; sưu tầm mỗi ngày.</div>
+      <div class="foot"><span class="chip">♻️ Hạ tầng: <b>static</b> (BE nhẹ cho daily)</span><span class="chip">Offline: <b>✓</b></span></div>
+    </article>
+
+    <!-- 5 HANAFUDA KOI-KOI -->
+    <article class="card" data-cat="board" data-dev="4" data-fun="4" style="--cat:#56d96a">
+      <span class="kbig">花札</span>
+      <span class="num">05</span>
+      <span class="cat">🃏 Bài · vs Bot (+ PvP)</span>
+      <h3><span class="jpname">花札</span>Hanafuda · Koi-Koi</h3>
+      <div class="en">Romaji: Hanafuda Koi-Koi · Việt: Bài hoa Nhật (Koi-Koi)</div>
+      <p class="tagline">"48 lá bài hoa 12 tháng — ghép bộ yaku, hô 'Koi-Koi!' để nhân đôi cược."</p>
+      <p class="desc">Game bài truyền thống đẹp mê hồn. Luật ghép theo tháng + bộ điểm (yaku) hơi nhiều nhưng rất "đáng" vì gần như không ai làm bản web Việt hóa tử tế → khác biệt lớn. Chơi với bot trước, thêm PvP sau (tái dụng WS).</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">3–4 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Bộ 48 lá hoa 12 tháng (sáng/ribbon/seeds/cặn) vẽ tinh xảo</li>
+        <li>Luật Koi-Koi: ghép theo tháng, tính yaku (五光, 猪鹿蝶, 花見酒…)</li>
+        <li>Cơ chế "Koi-Koi" — liều tiếp để nhân điểm hay dừng ăn chắc</li>
+        <li>Bot có chiến thuật; bảng tra cứu yaku ngay trong ván</li>
+        <li>Giải 12 tháng (campaign) + tiền cược ảo + thành tựu</li>
+        <li>Nâng cao: PvP realtime (dùng lại phòng WS)</li>
+      </ul>
+      <div class="jphook">🌸 <b>Điểm Nhật:</b> Mỹ thuật hanafuda trứ danh (gắn với Nintendo 1889!), mỗi tháng một loài hoa &amp; biểu tượng văn hóa.</div>
+      <div class="hook">🪝 <b>Hook 10×:</b> Campaign 12 tháng + yaku để "săn", quyết định Koi-Koi gây cấn → ván nào cũng kịch tính.</div>
+      <div class="foot"><span class="chip">♻️ Hạ tầng: <b>static</b> (PvP dùng WS)</span><span class="chip">Offline: <b>✓</b> (vs bot)</span></div>
+    </article>
+
+    <!-- 6 JANKEN RPG -->
+    <article class="card" data-cat="rpg" data-dev="2" data-fun="5" style="--cat:#b388ff">
+      <span class="kbig">拳</span>
+      <span class="num">06</span>
+      <span class="cat">⚔️ Đối kháng · Roguelite</span>
+      <h3><span class="jpname">じゃんけん</span>Janken RPG Battle</h3>
+      <div class="en">Romaji: Janken · Việt: Oẳn tù tì RPG (kéo–búa–bao đấu trùm)</div>
+      <p class="tagline">"Kéo–búa–bao nhưng có combo, chiêu thức &amp; trùm — thắng để lên cấp."</p>
+      <p class="desc">Lấy luật oẳn tù tì ai cũng biết rồi "RPG hóa": mỗi vòng là một đòn, thắng gây sát thương, thua mất máu, hòa tích năng lượng tung chiêu đặc biệt. Code lõi rất nhẹ nhưng độ hút cực cao nhờ tiến trình &amp; juice. Hay gấp 10× so với janken thường.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">2 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Kéo/búa/bao gây sát thương; thanh máu &amp; thanh "気" (khí) tung chiêu</li>
+        <li>Chuỗi trùm (boss) với "tính cách" ra tay khác nhau (đoán pattern)</li>
+        <li>Vật phẩm/bùa: đổi kết quả, hồi máu, "đọc vị" đòn tiếp theo</li>
+        <li>Chế độ roguelite: chọn nhánh, nhặt buff, chết là chơi lại</li>
+        <li>Juice cực mạnh: screen shake, hit-stop, số sát thương bay, combo</li>
+        <li>Nâng cao: PvP "best-of" realtime (dùng lại WS) + Elo</li>
+      </ul>
+      <div class="jphook">🌸 <b>Điểm Nhật:</b> Janken là nghi thức quyết định trong đời sống Nhật; phong cách trùm anime, hô "最初はグー!".</div>
+      <div class="hook">🪝 <b>Hook 10×:</b> Roguelite lên đời + boss đoán pattern + juice đã tay → "chơi thêm một ván nữa".</div>
+      <div class="foot"><span class="chip">♻️ Hạ tầng: <b>static</b> (PvP dùng WS)</span><span class="chip">Offline: <b>✓</b></span></div>
+    </article>
+
+    <!-- 7 TAIKO RHYTHM -->
+    <article class="card" data-cat="rhythm" data-dev="3" data-fun="5" style="--cat:#ff6b6b">
+      <span class="kbig">太鼓</span>
+      <span class="num">07</span>
+      <span class="cat">🥁 Nhịp điệu · 1 người</span>
+      <h3><span class="jpname">太鼓リズム</span>Taiko Rhythm Tap</h3>
+      <div class="en">Romaji: Taiko Rhythm · Việt: Gõ trống Taiko theo nhịp</div>
+      <p class="tagline">"Gõ trống don/ka đúng nhịp — đỏ vào tâm, xanh vào vành. ドンドンカッ!"</p>
+      <p class="desc">Lấy cảm hứng từ Taiko no Tatsujin: nốt chạy ngang, gõ đúng lúc để combo. Phần khó là timing chuẩn &amp; làm "chart" (bản nhịp). Hay gấp 10× nhờ combo/fever, chấm điểm hạng (良/可/不可) và nhiều bài. Dùng Web Audio (không cần file ngoài: tổng hợp nhịp bằng oscillator).</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">3 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>2 loại nốt: 面 (đỏ, gõ tâm) &amp; 縁 (xanh, gõ vành); nốt giữ &amp; cuộn (連打)</li>
+        <li>Chấm điểm timing 良/可/不可 (Good/OK/Miss) + combo + thanh hồn (魂)</li>
+        <li>Chế độ Fever khi combo cao: hiệu ứng &amp; điểm nhân đôi</li>
+        <li>Vài bài có sẵn (chart tay) + độ khó かんたん→おに</li>
+        <li>Âm thanh tự tổng hợp bằng Web Audio (don/ka), không cần file nhạc</li>
+        <li>Bảng điểm cao + xếp hạng theo bài; điều khiển phím/cảm ứng</li>
+      </ul>
+      <div class="jphook">🌸 <b>Điểm Nhật:</b> Trống wadaiko &amp; không khí lễ hội (祭り); biểu tượng giải trí arcade Nhật cực kỳ nhận diện.</div>
+      <div class="hook">🪝 <b>Hook 10×:</b> Combo/Fever + xếp hạng mỗi bài + mở bài khó dần → "full combo cho bằng được".</div>
+      <div class="foot"><span class="chip">♻️ Hạ tầng: <b>static</b> (Web Audio)</span><span class="chip">Offline: <b>✓</b></span></div>
+    </article>
+
+    <!-- 8 KARUTA / KANA MEMORY -->
+    <article class="card" data-cat="memory" data-dev="2" data-fun="4" style="--cat:#ffce54">
+      <span class="kbig">かるた</span>
+      <span class="num">08</span>
+      <span class="cat">🃏 Trí nhớ/Học · 1–2 người</span>
+      <h3><span class="jpname">かるた・かな</span>Karuta · Kana Match</h3>
+      <div class="en">Romaji: Karuta / Kana · Việt: Lật thẻ かるた &amp; ghép Hiragana</div>
+      <p class="tagline">"Nghe/đọc câu — chộp đúng lá bài thật nhanh; hoặc ghép cặp かな–âm."</p>
+      <p class="desc">Hai chế độ trong một: (1) Karuta tốc độ — đọc gợi ý, người chơi chạm lá đúng nhanh nhất; (2) Memory ghép cặp Hiragana/Katakana ↔ phát âm. Vừa vui vừa học được かな. Dễ làm nhất nhóm, thân thiện mọi lứa tuổi.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">1–2 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Chế độ Karuta: hiển thị/đọc gợi ý → chạm đúng lá nhanh nhất được điểm</li>
+        <li>Chế độ Memory: lật &amp; ghép cặp かな ↔ romaji (あ–a, カ–ka…)</li>
+        <li>Bộ thẻ: Hiragana, Katakana, từ vựng N5, tục ngữ (いろは)</li>
+        <li>Tính giờ &amp; combo, lưu kỷ lục; độ khó tăng số lá trên bàn</li>
+        <li>Chế độ 2 người luân phiên (ai chộp nhiều lá hơn thắng)</li>
+        <li>Juice: lá "bật" khi chộp đúng, rung &amp; mờ khi sai; âm 和</li>
+      </ul>
+      <div class="jphook">🌸 <b>Điểm Nhật:</b> Karuta là trò chơi Tết (お正月) truyền thống; lồng ghép học かな &amp; いろは tự nhiên.</div>
+      <div class="hook">🪝 <b>Hook 10×:</b> Vừa chơi vừa học かな + đua tốc độ + 2 chế độ trong 1 → giá trị lặp lại cao.</div>
+      <div class="foot"><span class="chip">♻️ Hạ tầng: <b>static</b></span><span class="chip">Offline: <b>✓</b></span></div>
+    </article>
+
+    <!-- 9 DARUMA OTOSHI -->
+    <article class="card" data-cat="arcade" data-dev="2" data-fun="4" style="--cat:#e7384f">
+      <span class="kbig">達磨</span>
+      <span class="num">09</span>
+      <span class="cat">🕹️ Vật lý · Tap timing</span>
+      <h3><span class="jpname">だるま落とし</span>Daruma Otoshi</h3>
+      <div class="en">Romaji: Daruma Otoshi · Việt: Gõ rớt khối Daruma</div>
+      <p class="tagline">"Gõ búa văng từng khối, giữ Daruma trên đỉnh không đổ — càng cao càng phê."</p>
+      <p class="desc">Trò chơi gỗ truyền thống: dùng búa đánh bay khối giữa mà tháp không sập. Vật lý đơn giản (xung lực ngang + rơi thẳng) nhưng cảm giác canh lực &amp; thời điểm rất đã. Hay gấp 10× nhờ chế độ tháp vô tận, combo &amp; power-up.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">1–2 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Canh thanh lực + thời điểm: gõ đúng khối văng ngang, tháp tụt xuống</li>
+        <li>Chế độ vô tận: tháp tự cao thêm, tốc độ tăng dần → đua điểm</li>
+        <li>Combo khi gõ liên tiếp gọn gàng; rung &amp; "wobble" khi suýt đổ</li>
+        <li>Power-up: búa to, slow-motion, khối "vàng" thưởng điểm</li>
+        <li>Vật lý &amp; particle (mảnh gỗ bay) cho cảm giác đã tay</li>
+        <li>Bảng xếp hạng điểm cao; skin Daruma theo mùa lễ</li>
+      </ul>
+      <div class="jphook">🌸 <b>Điểm Nhật:</b> Daruma — biểu tượng kiên trì &amp; điều ước (vẽ mắt khi đạt mục tiêu); đồ chơi gỗ cổ truyền.</div>
+      <div class="hook">🪝 <b>Hook 10×:</b> Tháp vô tận + combo + leaderboard → "một búa nữa thôi" gây nghiện.</div>
+      <div class="foot"><span class="chip">♻️ Hạ tầng: <b>static</b></span><span class="chip">Offline: <b>✓</b></span></div>
+    </article>
+
+    <!-- 10 KENDAMA -->
+    <article class="card" data-cat="arcade" data-dev="2" data-fun="4" style="--cat:#34d3b6">
+      <span class="kbig">けん玉</span>
+      <span class="num">10</span>
+      <span class="cat">🕹️ Vật lý · Timing/Skill</span>
+      <h3><span class="jpname">けん玉</span>Kendama</h3>
+      <div class="en">Romaji: Kendama · Việt: Tung hứng Kendama (chén &amp; bóng)</div>
+      <p class="tagline">"Giật &amp; canh thời điểm để bóng rơi trúng chén/đầu kim — trick combo lên đỉnh."</p>
+      <p class="desc">Mô phỏng kendama: bóng nối dây, người chơi "giật" lên rồi canh để bóng đáp đúng chén lớn/nhỏ/đỉnh kim. Vật lý con lắc + bắt điểm. Hay gấp 10× nhờ hệ thống "trick" (技) tăng độ khó, chuỗi combo &amp; thử thách kỹ năng.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">2 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Vật lý con lắc cho bóng &amp; dây; "giật" bằng nhấn/giữ rồi thả</li>
+        <li>Bắt điểm: chén lớn/vừa/nhỏ &amp; đỉnh kim (とめけん) cho điểm khác nhau</li>
+        <li>Hệ thống trick (技) mở dần: もしかめ, ふりけん, combo nối</li>
+        <li>Chế độ thử thách: hoàn thành chuỗi trick trước khi hết giờ</li>
+        <li>Combo &amp; multiplier; rung phản hồi khi bắt trúng/trượt</li>
+        <li>Bảng xếp hạng điểm/combo; skin kendama gỗ &amp; màu</li>
+      </ul>
+      <div class="jphook">🌸 <b>Điểm Nhật:</b> Kendama là môn chơi kỹ năng dân gian đang "hot" lại toàn cầu; có hẳn cấp đai (級/段) chuẩn Nhật.</div>
+      <div class="hook">🪝 <b>Hook 10×:</b> Cây kỹ năng trick + thử thách combo + leaderboard → luyện "lên đai" gây nghiện.</div>
+      <div class="foot"><span class="chip">♻️ Hạ tầng: <b>static</b></span><span class="chip">Offline: <b>✓</b></span></div>
+    </article>
+
+  </div>
+
+  <!-- COMPARISON TABLE -->
+  <div class="section-title"><h2>📊 Bảng so sánh nhanh</h2><div class="line"></div></div>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Game (日本)</th><th>Thể loại</th><th>Dễ làm</th><th>Thu hút</th><th>MVP</th><th>Hạ tầng</th><th>Hook 10×</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>01</td><td><b>数独 Sudoku</b></td><td>Puzzle Daily</td><td><span class="mini dev" data-dev="3"></span></td><td><span class="mini" data-fun="5"></span></td><td>2–3 ngày</td><td>static + BE nhẹ</td><td>Daily · streak</td></tr>
+        <tr><td>02</td><td><b>お絵かきロジック Nonogram</b></td><td>Puzzle reveal</td><td><span class="mini dev" data-dev="3"></span></td><td><span class="mini" data-fun="5"></span></td><td>2–3 ngày</td><td>static</td><td>Album sưu tầm</td></tr>
+        <tr><td>03</td><td><b>動物将棋 Dōbutsu Shōgi</b></td><td>Board PvP+Bot</td><td><span class="mini dev" data-dev="4"></span></td><td><span class="mini" data-fun="5"></span></td><td>3–4 ngày</td><td>~85% (WS+Elo)</td><td>Elo · rematch</td></tr>
+        <tr><td>04</td><td><b>麻雀ソリティア Mahjong Sol.</b></td><td>Bài 1P</td><td><span class="mini dev" data-dev="3"></span></td><td><span class="mini" data-fun="4"></span></td><td>2–3 ngày</td><td>static + BE nhẹ</td><td>Daily · best-time</td></tr>
+        <tr><td>05</td><td><b>花札 Koi-Koi</b></td><td>Bài vs Bot</td><td><span class="mini dev" data-dev="4"></span></td><td><span class="mini" data-fun="4"></span></td><td>3–4 ngày</td><td>static (PvP=WS)</td><td>Campaign 12 tháng</td></tr>
+        <tr><td>06</td><td><b>じゃんけん Janken RPG</b></td><td>Đối kháng</td><td><span class="mini dev" data-dev="2"></span></td><td><span class="mini" data-fun="5"></span></td><td>2 ngày</td><td>static (PvP=WS)</td><td>Roguelite · boss</td></tr>
+        <tr><td>07</td><td><b>太鼓リズム Taiko</b></td><td>Nhịp điệu</td><td><span class="mini dev" data-dev="3"></span></td><td><span class="mini" data-fun="5"></span></td><td>3 ngày</td><td>static (Web Audio)</td><td>Combo · Fever</td></tr>
+        <tr><td>08</td><td><b>かるた・かな Karuta</b></td><td>Trí nhớ/Học</td><td><span class="mini dev" data-dev="2"></span></td><td><span class="mini" data-fun="4"></span></td><td>1–2 ngày</td><td>static</td><td>Học かな · đua</td></tr>
+        <tr><td>09</td><td><b>だるま落とし Daruma</b></td><td>Vật lý tap</td><td><span class="mini dev" data-dev="2"></span></td><td><span class="mini" data-fun="4"></span></td><td>1–2 ngày</td><td>static</td><td>Tháp vô tận</td></tr>
+        <tr><td>10</td><td><b>けん玉 Kendama</b></td><td>Vật lý skill</td><td><span class="mini dev" data-dev="2"></span></td><td><span class="mini" data-fun="4"></span></td><td>2 ngày</td><td>static</td><td>Trick · combo</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- BONUS -->
+  <div class="section-title"><h2>💡 Ý tưởng dự phòng / mở rộng (和)</h2><div class="line"></div></div>
+  <div class="bonus">
+    <div class="b"><h4><span>あみだくじ</span> Amidakuji</h4><p>Thang rút thăm may rủi của Nhật — vẽ thêm gạch ngang, lần theo đường để biết kết quả. Cực dễ làm, hợp minigame &amp; quay thưởng.</p></div>
+    <div class="b"><h4><span>寿司</span> Sushi Merge</h4><p>Băng chuyền sushi 回転寿司 — gộp đĩa giống nhau / phục vụ đúng đơn. Vui nhộn, dễ thêm tiến trình &amp; combo.</p></div>
+    <div class="b"><h4><span>盆栽</span> Zen Bonsai Garden</h4><p>Tỉa bonsai &amp; cào vườn đá (枯山水) thư giãn kiểu idle/sáng tạo. Hợp người thích chill, chụp hình khoe.</p></div>
+    <div class="b"><h4><span>漢字</span> Kanji Quiz</h4><p>Trắc nghiệm đọc/nghĩa Kanji &amp; Hiragana theo cấp JLPT, có streak. Vừa học vừa chơi, dễ làm daily.</p></div>
+    <div class="b"><h4><span>迷路</span> Maze (Mê cung)</h4><p>Mê cung sinh ngẫu nhiên theo chủ đề đền chùa/tre trúc; đua thời gian &amp; daily maze.</p></div>
+    <div class="b"><h4><span>将棋</span> Shogi đầy đủ</h4><p>Sau khi Dōbutsu Shōgi thành công, làm 将棋 9×9 chuẩn (có phong cấp &amp; thả quân) — tái dụng tối đa hạ tầng cờ.</p></div>
+  </div>
+
+  <footer>
+    <div class="sakura-row">🌸 ⛩️ 🎏 🍱 🥁 🎏 ⛩️ 🌸</div>
+    Tài liệu brainstorm spec game <b>phong vị Nhật Bản</b> · Đa số thuần frontend (mở file là chạy), vài game tận dụng WS/Elo/bot từ app cờ vua ·
+    Mở trực tiếp file này bằng trình duyệt, dùng thanh <b>Lọc/Sắp xếp</b> để duyệt nhanh. 和ゲーム集
+  </footer>
+
+</div>
+
+<script>
+  // Render rating dots inside cards
+  function dotsHTML(n, isDev){
+    let h = '<span class="dots">';
+    for(let i=1;i<=5;i++){
+      h += '<i class="dot '+(isDev?'dev ':'')+(i<=n?'on':'')+'"></i>';
+    }
+    return h + '</span>';
+  }
+  document.querySelectorAll('.card').forEach(card=>{
+    const dev = +card.dataset.dev, fun = +card.dataset.fun;
+    const dEl = card.querySelector('[data-dev-dots]');
+    const fEl = card.querySelector('[data-fun-dots]');
+    if(dEl) dEl.innerHTML = dotsHTML(dev,true);
+    if(fEl) fEl.innerHTML = dotsHTML(fun,false);
+  });
+  // Mini dots in table
+  document.querySelectorAll('.mini').forEach(m=>{
+    const isDev = m.classList.contains('dev');
+    const n = +(m.dataset.dev || m.dataset.fun);
+    let h='';
+    for(let i=1;i<=5;i++) h += '<span class="d'+(i<=n?' on':'')+'"></span>';
+    m.innerHTML = h;
+  });
+
+  // Filter
+  const grid = document.getElementById('grid');
+  const cards = [...grid.children];
+  document.querySelectorAll('[data-filter]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('[data-filter]').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const f = btn.dataset.filter;
+      cards.forEach(c=> c.classList.toggle('hide', f!=='all' && c.dataset.cat!==f));
+    });
+  });
+  // Sort
+  document.querySelectorAll('[data-sort]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('[data-sort]').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const s = btn.dataset.sort;
+      let arr = [...cards];
+      if(s==='dev') arr.sort((a,b)=> a.dataset.dev - b.dataset.dev);
+      else if(s==='fun') arr.sort((a,b)=> b.dataset.fun - a.dataset.fun);
+      else arr.sort((a,b)=> a.querySelector('.num').textContent - b.querySelector('.num').textContent);
+      arr.forEach(c=> grid.appendChild(c));
+    });
+  });
+</script>
+</body>
+</html>

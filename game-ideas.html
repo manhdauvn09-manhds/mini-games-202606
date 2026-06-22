@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>10 Ý Tưởng Game — Spec & Tính Năng Chính</title>
+<style>
+  :root{
+    --bg:#0e1120; --bg2:#141831; --card:#1a1f3a; --card2:#212747;
+    --text:#e9ecf8; --muted:#9aa3c8; --border:rgba(255,255,255,.09);
+    --accent:#6c8cff; --teal:#34d3b6; --gold:#ffce54; --rose:#ff7aa8;
+    --orange:#ff9f43; --green:#56d96a; --purple:#b388ff;
+    --shadow:0 18px 40px -22px rgba(0,0,0,.8);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    background:radial-gradient(1200px 700px at 80% -10%,#23306b33,transparent),
+               radial-gradient(900px 600px at -10% 10%,#34d3b622,transparent),
+               var(--bg);
+    color:var(--text); line-height:1.55; -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent)}
+  .wrap{max-width:1180px; margin:0 auto; padding:32px 20px 80px}
+
+  /* HERO */
+  header.hero{
+    text-align:center; padding:46px 20px 30px;
+    background:linear-gradient(180deg,#1a2150,transparent);
+    border-bottom:1px solid var(--border);
+  }
+  .hero .kicker{letter-spacing:3px; text-transform:uppercase; font-size:12px; color:var(--teal); font-weight:700}
+  .hero h1{font-size:clamp(28px,5vw,46px); margin:8px 0 10px; line-height:1.1}
+  .hero h1 span{background:linear-gradient(90deg,var(--accent),var(--teal));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{color:var(--muted); max-width:760px; margin:0 auto; font-size:16px}
+  .hero .meta{margin-top:18px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap}
+  .pill{font-size:12.5px; padding:6px 13px; border:1px solid var(--border); border-radius:999px; background:#ffffff0a; color:var(--muted)}
+
+  /* LEGEND */
+  .legend{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px;
+    margin:28px 0 8px;
+  }
+  .legend .box{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px 16px}
+  .legend h4{margin:0 0 6px; font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:1px}
+  .legend p{margin:0; font-size:13.5px; color:var(--muted)}
+  .dots{display:inline-flex; gap:4px; vertical-align:middle}
+  .dot{width:9px;height:9px;border-radius:50%;background:#ffffff20;display:inline-block}
+  .dot.on{background:var(--gold)}
+  .dot.dev.on{background:var(--teal)}
+
+  /* ROADMAP */
+  .section-title{display:flex; align-items:center; gap:12px; margin:46px 0 18px}
+  .section-title h2{font-size:22px; margin:0}
+  .section-title .line{flex:1; height:1px; background:var(--border)}
+  .roadmap{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px}
+  .step{background:linear-gradient(180deg,var(--card2),var(--card)); border:1px solid var(--border); border-radius:16px; padding:18px}
+  .step .tag{font-size:11.5px; font-weight:700; color:var(--bg); background:var(--teal); padding:3px 9px; border-radius:6px}
+  .step h3{margin:12px 0 8px; font-size:16px}
+  .step ul{margin:0; padding-left:18px; color:var(--muted); font-size:14px}
+
+  /* TOOLBAR */
+  .toolbar{position:sticky; top:0; z-index:5; backdrop-filter:blur(8px);
+    background:#0e1120cc; border:1px solid var(--border); border-radius:14px;
+    padding:12px; margin:26px 0; display:flex; gap:18px; flex-wrap:wrap; align-items:center; justify-content:space-between}
+  .toolbar .grp{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+  .toolbar .lbl{font-size:12px; color:var(--muted); margin-right:2px}
+  .btn{cursor:pointer; font-size:13px; padding:7px 13px; border-radius:999px; border:1px solid var(--border);
+    background:#ffffff0a; color:var(--text); transition:.15s}
+  .btn:hover{border-color:var(--accent)}
+  .btn.active{background:linear-gradient(90deg,var(--accent),var(--teal)); color:#0b0e1c; font-weight:700; border-color:transparent}
+
+  /* CARD GRID */
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(355px,1fr)); gap:20px}
+  .card{position:relative; background:var(--card); border:1px solid var(--border); border-radius:18px;
+    padding:20px; box-shadow:var(--shadow); overflow:hidden; transition:transform .15s, border-color .15s}
+  .card:hover{transform:translateY(-3px); border-color:#ffffff22}
+  .card::before{content:""; position:absolute; inset:0 0 auto 0; height:4px; background:var(--cat,#6c8cff)}
+  .card .num{position:absolute; top:14px; right:16px; font-size:42px; font-weight:800; color:#ffffff0d; line-height:1}
+  .card .cat{display:inline-block; font-size:11.5px; font-weight:700; padding:3px 10px; border-radius:7px;
+    background:color-mix(in srgb,var(--cat) 22%, transparent); color:var(--cat); border:1px solid color-mix(in srgb,var(--cat) 40%, transparent)}
+  .card h3{margin:11px 0 2px; font-size:20px}
+  .card .en{color:var(--muted); font-size:13px; margin-bottom:10px}
+  .card .desc{font-size:14px; color:#d3d8ef; margin:0 0 14px}
+
+  .ratings{display:flex; gap:18px; flex-wrap:wrap; padding:12px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); margin-bottom:14px}
+  .rating .rl{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; display:block; margin-bottom:4px}
+  .rating .rv{font-size:13px; font-weight:600}
+
+  .feat{list-style:none; margin:0 0 14px; padding:0}
+  .feat li{position:relative; padding-left:22px; font-size:13.5px; color:#d8ddf3; margin:6px 0}
+  .feat li::before{content:"▸"; position:absolute; left:4px; color:var(--cat); font-weight:700}
+
+  .foot{display:flex; gap:14px; flex-wrap:wrap; font-size:12.5px; color:var(--muted); border-top:1px dashed var(--border); padding-top:12px}
+  .foot b{color:var(--text)}
+  .chip{background:#ffffff0d; border:1px solid var(--border); border-radius:8px; padding:4px 9px}
+  .hook{background:color-mix(in srgb,var(--gold) 12%, transparent); border:1px solid color-mix(in srgb,var(--gold) 35%,transparent); color:#ffe39a; border-radius:10px; padding:9px 12px; font-size:13px; margin-bottom:6px}
+  .hook b{color:var(--gold)}
+
+  /* TABLE */
+  .tablewrap{overflow:auto; border:1px solid var(--border); border-radius:14px; margin-top:6px}
+  table{border-collapse:collapse; width:100%; min-width:720px; font-size:13.5px}
+  th,td{padding:11px 13px; text-align:left; border-bottom:1px solid var(--border)}
+  th{background:#ffffff08; color:var(--muted); font-weight:600; position:sticky; top:0}
+  tbody tr:hover{background:#ffffff05}
+  td .mini{display:inline-flex; gap:3px}
+  .mini .d{width:7px;height:7px;border-radius:50%;background:#ffffff20}
+  .mini .d.on{background:var(--gold)}
+  .mini.dev .d.on{background:var(--teal)}
+
+  /* BONUS */
+  .bonus{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:12px}
+  .bonus .b{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:13px 15px}
+  .bonus .b h4{margin:0 0 5px; font-size:15px}
+  .bonus .b p{margin:0; font-size:13px; color:var(--muted)}
+
+  footer{text-align:center; color:var(--muted); font-size:13px; margin-top:50px; padding-top:20px; border-top:1px solid var(--border)}
+  .hide{display:none !important}
+  @media(max-width:560px){ .card .num{font-size:34px} }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="kicker">Game Studio · Brainstorm</div>
+  <h1>10 Ý Tưởng Game <span>Vừa Phải · Dễ Làm · Hút Người Chơi</span></h1>
+  <p>Tuyển chọn ưu tiên những game có thể <b>tái sử dụng hạ tầng sẵn có</b> của bạn (WebSocket realtime, matchmaking, Elo, bot AI từ app cờ vua) để rút ngắn thời gian phát triển mà vẫn giữ độ giữ chân (retention) và khả năng lan truyền (viral) cao.</p>
+  <div class="meta">
+    <span class="pill">🧩 6 thể loại</span>
+    <span class="pill">⚡ MVP 1–4 ngày/game</span>
+    <span class="pill">🔁 Tận dụng hạ tầng cờ vua</span>
+    <span class="pill">📱 Web · Responsive</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="box">
+      <h4>Độ khó làm <span class="dots"><i class="dot dev on"></i><i class="dot dev on"></i><i class="dot dev"></i><i class="dot dev"></i><i class="dot dev"></i></span></h4>
+      <p>Càng nhiều chấm xanh = càng tốn công. 1 = làm trong ngày, 5 = cần nhiều ngày &amp; xử lý phức tạp.</p>
+    </div>
+    <div class="box">
+      <h4>Độ thu hút <span class="dots"><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot"></i></span></h4>
+      <p>Càng nhiều chấm vàng = càng dễ kéo &amp; giữ người chơi (vui, gây nghiện, dễ chia sẻ).</p>
+    </div>
+    <div class="box">
+      <h4>♻️ Tái sử dụng</h4>
+      <p>Mức độ dùng lại code/hạ tầng cờ vua: phòng realtime, ghép trận, Elo, bot, replay, leaderboard.</p>
+    </div>
+    <div class="box">
+      <h4>🪝 Hook giữ chân</h4>
+      <p>Cơ chế khiến người chơi quay lại / rủ bạn bè: daily puzzle, streak, bảng xếp hạng, share kết quả.</p>
+    </div>
+  </div>
+
+  <!-- ROADMAP -->
+  <div class="section-title"><h2>🗺️ Gợi ý lộ trình ra mắt</h2><div class="line"></div></div>
+  <div class="roadmap">
+    <div class="step">
+      <span class="tag">Đợt 1 · Quick win</span>
+      <h3>Thuần frontend, ra mắt nhanh</h3>
+      <ul><li>2048</li><li>Lật Hình Ghi Nhớ</li><li>Rắn Săn Mồi</li></ul>
+      <p style="color:var(--muted);font-size:12.5px;margin:8px 0 0">→ Có nội dung ngay, gần như không cần backend.</p>
+    </div>
+    <div class="step">
+      <span class="tag" style="background:var(--accent)">Đợt 2 · Tận dụng online</span>
+      <h3>Dùng lại phòng realtime + Elo</h3>
+      <ul><li>Cờ Caro (PvP + Bot)</li><li>Tetris đối kháng 1v1</li></ul>
+      <p style="color:var(--muted);font-size:12.5px;margin:8px 0 0">→ Tái sử dụng ~80–90% hạ tầng cờ vua.</p>
+    </div>
+    <div class="step">
+      <span class="tag" style="background:var(--gold);color:#0b0e1c">Đợt 3 · Giữ chân</span>
+      <h3>Daily puzzle + streak</h3>
+      <ul><li>Wordle Tiếng Việt</li><li>Sudoku</li><li>Dò Mìn (daily)</li></ul>
+      <p style="color:var(--muted);font-size:12.5px;margin:8px 0 0">→ Kéo người chơi quay lại mỗi ngày.</p>
+    </div>
+    <div class="step">
+      <span class="tag" style="background:var(--rose);color:#0b0e1c">Đợt 4 · Xã hội</span>
+      <h3>Chơi nhóm, lan truyền</h3>
+      <ul><li>Đố Vui Online (kiểu Kahoot)</li><li>Đập Gạch (giải trí)</li></ul>
+      <p style="color:var(--muted);font-size:12.5px;margin:8px 0 0">→ Tạo hiệu ứng rủ bạn bè cùng chơi.</p>
+    </div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="grp">
+      <span class="lbl">Lọc:</span>
+      <button class="btn active" data-filter="all">Tất cả</button>
+      <button class="btn" data-filter="board">♟️ Cờ/Board</button>
+      <button class="btn" data-filter="puzzle">🧩 Giải đố</button>
+      <button class="btn" data-filter="arcade">🕹️ Arcade</button>
+      <button class="btn" data-filter="word">🔤 Chữ</button>
+      <button class="btn" data-filter="casual">🎈 Casual</button>
+      <button class="btn" data-filter="trivia">🎤 Trivia</button>
+    </div>
+    <div class="grp">
+      <span class="lbl">Sắp xếp:</span>
+      <button class="btn" data-sort="default">Mặc định</button>
+      <button class="btn" data-sort="dev">Dễ làm nhất</button>
+      <button class="btn" data-sort="fun">Thu hút nhất</button>
+    </div>
+  </div>
+
+  <!-- CARDS -->
+  <div class="grid" id="grid">
+
+    <!-- 1 CỜ CARO -->
+    <article class="card" data-cat="board" data-dev="2" data-fun="5" style="--cat:#6c8cff">
+      <span class="num">01</span>
+      <span class="cat">♟️ Board · PvP + Bot</span>
+      <h3>Cờ Caro</h3>
+      <div class="en">Gomoku / Five-in-a-Row · 5 quân thẳng hàng là thắng</div>
+      <p class="desc">Game quốc dân ở Việt Nam, luật cực dễ hiểu nhưng chiều sâu chiến thuật lớn. Tái sử dụng gần như toàn bộ hạ tầng cờ vua: phòng realtime, ghép trận, Elo, replay.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">2–3 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Bàn 15×15, kiểm tra thắng theo 4 hướng (ngang/dọc/2 chéo)</li>
+        <li>Online PvP realtime + ghép trận, có chat &amp; xin hòa/đầu hàng</li>
+        <li>Bot 3 mức (minimax + đánh giá thế cờ / threat-space search)</li>
+        <li>Elo, lịch sử ván, xem lại (replay), đánh lại (rematch)</li>
+        <li>Tùy chọn luật: cấm chuỗi đôi (renju) cho người chơi nâng cao</li>
+      </ul>
+      <div class="hook">🪝 <b>Hook:</b> Bảng xếp hạng Elo + rematch nhanh + khoe kết quả ván đấu.</div>
+      <div class="foot"><span class="chip">♻️ Tái sử dụng: <b>~90%</b></span><span class="chip">Backend: <b>WS</b></span></div>
+    </article>
+
+    <!-- 2 2048 -->
+    <article class="card" data-cat="puzzle" data-dev="1" data-fun="4" style="--cat:#34d3b6">
+      <span class="num">02</span>
+      <span class="cat">🧩 Puzzle · 1 người</span>
+      <h3>2048</h3>
+      <div class="en">Gộp ô số · vuốt để hợp nhất tới 2048</div>
+      <p class="desc">Gần như thuần frontend, code gọn nhưng gây nghiện kinh điển. Làm xong trong 1 ngày, dễ thêm bảng xếp hạng online sau.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">~1 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Lưới 4×4, điều khiển vuốt (mobile) + phím mũi tên (desktop)</li>
+        <li>Animation mượt khi gộp/sinh ô, rung nhẹ khi không di chuyển được</li>
+        <li>Undo 1 bước, lưu điểm cao &amp; trạng thái vào localStorage</li>
+        <li>Nhiều theme màu/skin số; chế độ kích thước 5×5, 6×6</li>
+        <li>Bảng xếp hạng điểm cao online (tùy chọn)</li>
+      </ul>
+      <div class="hook">🪝 <b>Hook:</b> Bảng điểm cao + thử thách "đạt 2048 / 4096" + chế độ giới hạn thời gian.</div>
+      <div class="foot"><span class="chip">♻️ Tái sử dụng: <b>~15%</b></span><span class="chip">Backend: <b>tùy chọn</b></span></div>
+    </article>
+
+    <!-- 3 WORDLE -->
+    <article class="card" data-cat="word" data-dev="2" data-fun="5" style="--cat:#b388ff">
+      <span class="num">03</span>
+      <span class="cat">🔤 Chữ · Daily</span>
+      <h3>Đoán Từ (Wordle Tiếng Việt)</h3>
+      <div class="en">Wordle VN · đoán từ trong 6 lượt, gợi ý màu</div>
+      <p class="desc">Cỗ máy viral: mỗi ngày một từ chung cho cả server, người chơi khoe kết quả dạng ô vuông màu (không lộ đáp án). Vòng lặp lan truyền cực mạnh.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">~2 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Từ điển tiếng Việt có dấu (xử lý ô theo "chữ cái + dấu")</li>
+        <li>1 từ/ngày theo seed ngày — ai cũng đoán cùng một từ</li>
+        <li>Tô màu: đúng vị trí / có nhưng sai vị trí / không có</li>
+        <li>Chia sẻ kết quả dạng emoji 🟩🟨⬛ + streak (chuỗi ngày)</li>
+        <li>Thống kê cá nhân: tỉ lệ thắng, phân bố số lượt, chế độ luyện tập</li>
+      </ul>
+      <div class="hook">🪝 <b>Hook:</b> Daily + streak + nút "Chia sẻ kết quả" → lan truyền tự nhiên trên mạng xã hội.</div>
+      <div class="foot"><span class="chip">♻️ Tái sử dụng: <b>~20%</b></span><span class="chip">Backend: <b>nhẹ</b></span></div>
+    </article>
+
+    <!-- 4 SNAKE -->
+    <article class="card" data-cat="arcade" data-dev="2" data-fun="4" style="--cat:#ff9f43">
+      <span class="num">04</span>
+      <span class="cat">🕹️ Arcade · 1 người (+ đối kháng)</span>
+      <h3>Rắn Săn Mồi</h3>
+      <div class="en">Snake · ăn mồi để dài ra, đừng tự cắn</div>
+      <p class="desc">Kinh điển, ai cũng biết chơi, code lõi rất nhẹ. Bản đơn làm trong ngày; có thể nâng cấp chế độ 2 người realtime nhờ hạ tầng WebSocket.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">~1 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Chế độ cổ điển: tốc độ tăng dần theo độ dài</li>
+        <li>Vật cản / tường, mồi đặc biệt (vàng) tăng điểm tạm thời</li>
+        <li>Điều khiển phím + vuốt; skin rắn &amp; nền tùy chọn</li>
+        <li>Bảng xếp hạng điểm cao online</li>
+        <li>Nâng cao: chế độ 2 người tranh mồi realtime (dùng lại WS)</li>
+      </ul>
+      <div class="hook">🪝 <b>Hook:</b> Leaderboard + skin sưu tầm; chế độ versus tạo lý do chơi cùng bạn.</div>
+      <div class="foot"><span class="chip">♻️ Tái sử dụng: <b>~25%</b></span><span class="chip">Versus: <b>WS</b></span></div>
+    </article>
+
+    <!-- 5 TETRIS -->
+    <article class="card" data-cat="arcade" data-dev="3" data-fun="5" style="--cat:#ff6b6b">
+      <span class="num">05</span>
+      <span class="cat">🕹️ Arcade · 1 người + Đối kháng</span>
+      <h3>Tetris</h3>
+      <div class="en">Xếp khối · lấp đầy hàng để xóa, sống càng lâu càng tốt</div>
+      <p class="desc">Độ phức tạp vừa phải (xoay khối SRS, xóa hàng, hold/next) nhưng độ hút cực cao. Chế độ 1v1 "gửi rác" tận dụng được hạ tầng realtime.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">3–4 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>7-bag random, hàng đợi "Next", giữ khối "Hold", bóng đổ (ghost)</li>
+        <li>Hệ thống xoay SRS + wall-kick chuẩn; soft/hard drop</li>
+        <li>Tăng cấp theo số hàng, tính điểm combo / Tetris / T-spin</li>
+        <li>Đối kháng 1v1: xóa nhiều hàng → đẩy "rác" sang đối thủ</li>
+        <li>Bảng xếp hạng &amp; xếp hạng đối kháng theo Elo</li>
+      </ul>
+      <div class="hook">🪝 <b>Hook:</b> Battle 1v1 căng thẳng + ranking; rất hợp livestream/clip.</div>
+      <div class="foot"><span class="chip">♻️ Tái sử dụng: <b>~70%</b> (versus)</span><span class="chip">Backend: <b>WS</b></span></div>
+    </article>
+
+    <!-- 6 MINESWEEPER -->
+    <article class="card" data-cat="puzzle" data-dev="2" data-fun="3" style="--cat:#34d3b6">
+      <span class="num">06</span>
+      <span class="cat">🧩 Giải đố · 1 người</span>
+      <h3>Dò Mìn</h3>
+      <div class="en">Minesweeper · suy luận để né mìn, mở hết ô an toàn</div>
+      <p class="desc">Logic thuần, không phụ thuộc backend. Có thể thêm "bàn cờ mỗi ngày" + bảng xếp hạng thời gian để tăng giữ chân.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">1–2 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>3 độ khó (dễ/vừa/khó) + tùy chỉnh kích thước &amp; số mìn</li>
+        <li>Lần bấm đầu luôn an toàn; mở lan vùng trống tự động (flood fill)</li>
+        <li>Cắm cờ, "chord" (bấm đôi mở quanh số), đồng hồ bấm giờ</li>
+        <li>Bảng xếp hạng <i>thời gian tốt nhất</i> theo từng độ khó</li>
+        <li>Chế độ "bàn mỗi ngày" chung — so kè cùng mọi người</li>
+      </ul>
+      <div class="hook">🪝 <b>Hook:</b> Best-time leaderboard + daily board → đua thời gian mỗi ngày.</div>
+      <div class="foot"><span class="chip">♻️ Tái sử dụng: <b>~15%</b></span><span class="chip">Backend: <b>tùy chọn</b></span></div>
+    </article>
+
+    <!-- 7 SUDOKU -->
+    <article class="card" data-cat="puzzle" data-dev="3" data-fun="4" style="--cat:#34d3b6">
+      <span class="num">07</span>
+      <span class="cat">🧩 Giải đố · Daily</span>
+      <h3>Sudoku</h3>
+      <div class="en">Điền số 1–9 không trùng hàng/cột/ô 3×3</div>
+      <p class="desc">Phần khó nhất là bộ <i>sinh đề</i> đảm bảo lời giải duy nhất &amp; phân loại độ khó. Đổi lại: tệp người chơi lớn, gắn bó lâu dài qua daily puzzle.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">2–3 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Sinh đề có lời giải duy nhất; 4 mức độ (dễ → cực khó)</li>
+        <li>Ghi chú nháp (pencil marks), tự xóa nháp khi điền số</li>
+        <li>Gợi ý (hint), kiểm tra lỗi, tô sáng số trùng/cùng giá trị</li>
+        <li>Daily puzzle chung + đồng hồ + streak</li>
+        <li>Lưu &amp; tiếp tục ván đang chơi; bàn phím số cảm ứng</li>
+      </ul>
+      <div class="hook">🪝 <b>Hook:</b> Câu đố mỗi ngày + streak + thời gian giải → quay lại đều đặn.</div>
+      <div class="foot"><span class="chip">♻️ Tái sử dụng: <b>~20%</b></span><span class="chip">Backend: <b>nhẹ</b></span></div>
+    </article>
+
+    <!-- 8 MEMORY -->
+    <article class="card" data-cat="casual" data-dev="1" data-fun="3" style="--cat:#ff7aa8">
+      <span class="num">08</span>
+      <span class="cat">🎈 Casual · 1–2 người</span>
+      <h3>Lật Hình Ghi Nhớ</h3>
+      <div class="en">Memory Match · lật &amp; ghép cặp giống nhau</div>
+      <p class="desc">Dễ làm nhất nhóm, thân thiện mọi lứa tuổi (đặc biệt trẻ em). Tốt cho việc làm nóng cộng đồng &amp; thử nghiệm UI.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">~1 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Nhiều bộ thẻ: emoji, con vật, quân cờ, lá cờ quốc gia…</li>
+        <li>Lưới linh hoạt 4×4 → 6×6; đếm số lượt &amp; thời gian</li>
+        <li>Chế độ 2 người luân phiên (ai ghép nhiều cặp hơn thắng)</li>
+        <li>Chế độ "đua thời gian" + lưu kỷ lục cá nhân</li>
+        <li>Tùy chọn online 2 người (dùng lại WS) — không bắt buộc</li>
+      </ul>
+      <div class="hook">🪝 <b>Hook:</b> Bộ thẻ theo chủ đề/mùa lễ + time attack; hợp gia đình &amp; trẻ em.</div>
+      <div class="foot"><span class="chip">♻️ Tái sử dụng: <b>~20%</b></span><span class="chip">Backend: <b>tùy chọn</b></span></div>
+    </article>
+
+    <!-- 9 BREAKOUT -->
+    <article class="card" data-cat="arcade" data-dev="2" data-fun="4" style="--cat:#ffce54">
+      <span class="num">09</span>
+      <span class="cat">🕹️ Arcade · 1 người</span>
+      <h3>Đập Gạch</h3>
+      <div class="en">Breakout / Arkanoid · nảy bóng phá hết gạch</div>
+      <p class="desc">Vật lý va chạm đơn giản (bóng – thanh đỡ – gạch) nhưng cảm giác chơi đã tay. Hệ thống màn chơi + power-up tạo chiều sâu nội dung.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">~2 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Nhiều màn (level) với bố cục gạch khác nhau, gạch cứng/nhiều lớp</li>
+        <li>Power-up: nhiều bóng, thanh đỡ dài, laser, bóng xuyên</li>
+        <li>Điều khiển chuột/cảm ứng mượt; mạng &amp; điểm số</li>
+        <li>Bảng xếp hạng điểm cao online</li>
+        <li>Nâng cao: trình tạo màn (level editor) cho cộng đồng</li>
+      </ul>
+      <div class="hook">🪝 <b>Hook:</b> Tiến trình qua màn + power-up + leaderboard; có thể thêm màn do người chơi tạo.</div>
+      <div class="foot"><span class="chip">♻️ Tái sử dụng: <b>~15%</b></span><span class="chip">Backend: <b>tùy chọn</b></span></div>
+    </article>
+
+    <!-- 10 TRIVIA -->
+    <article class="card" data-cat="trivia" data-dev="3" data-fun="5" style="--cat:#56d96a">
+      <span class="num">10</span>
+      <span class="cat">🎤 Trivia · Nhiều người realtime</span>
+      <h3>Đố Vui Online</h3>
+      <div class="en">Quiz Battle (kiểu Kahoot) · trả lời nhanh &amp; đúng để thắng</div>
+      <p class="desc">Tính xã hội cao — chơi theo nhóm bạn bè/lớp học, dễ tạo "khoảnh khắc" lan truyền. Tận dụng tốt hệ thống phòng realtime sẵn có.</p>
+      <div class="ratings">
+        <div class="rating"><span class="rl">Độ khó làm</span><span class="rv" data-dev-dots></span></div>
+        <div class="rating"><span class="rl">Độ thu hút</span><span class="rv" data-fun-dots></span></div>
+        <div class="rating"><span class="rl">Thời gian MVP</span><span class="rv">3–4 ngày</span></div>
+      </div>
+      <ul class="feat">
+        <li>Phòng nhiều người: host tạo phòng &amp; mã PIN, người chơi quét vào</li>
+        <li>Câu trắc nghiệm hẹn giờ, điểm tính theo độ nhanh &amp; chính xác</li>
+        <li>Bảng xếp hạng sau mỗi câu &amp; tổng kết cuối trận</li>
+        <li>Nhiều chủ đề (kiến thức chung, phim, game, lịch sử…)</li>
+        <li>Chế độ solo "đố vui mỗi ngày"; cho phép tự tạo bộ câu hỏi</li>
+      </ul>
+      <div class="hook">🪝 <b>Hook:</b> Chơi nhóm vui nhộn + tự tạo bộ câu hỏi → người chơi tự kéo bạn bè vào.</div>
+      <div class="foot"><span class="chip">♻️ Tái sử dụng: <b>~60%</b></span><span class="chip">Backend: <b>WS + DB câu hỏi</b></span></div>
+    </article>
+
+  </div>
+
+  <!-- COMPARISON TABLE -->
+  <div class="section-title"><h2>📊 Bảng so sánh nhanh</h2><div class="line"></div></div>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Game</th><th>Thể loại</th><th>Dễ làm</th><th>Thu hút</th><th>MVP</th><th>Tái sử dụng</th><th>Hook chính</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>01</td><td><b>Cờ Caro</b></td><td>Board PvP+Bot</td><td><span class="mini dev" data-dev="2"></span></td><td><span class="mini" data-fun="5"></span></td><td>2–3 ngày</td><td>~90%</td><td>Elo · rematch</td></tr>
+        <tr><td>02</td><td><b>2048</b></td><td>Puzzle 1P</td><td><span class="mini dev" data-dev="1"></span></td><td><span class="mini" data-fun="4"></span></td><td>~1 ngày</td><td>~15%</td><td>Điểm cao</td></tr>
+        <tr><td>03</td><td><b>Đoán Từ</b></td><td>Word Daily</td><td><span class="mini dev" data-dev="2"></span></td><td><span class="mini" data-fun="5"></span></td><td>~2 ngày</td><td>~20%</td><td>Daily · share</td></tr>
+        <tr><td>04</td><td><b>Rắn Săn Mồi</b></td><td>Arcade</td><td><span class="mini dev" data-dev="2"></span></td><td><span class="mini" data-fun="4"></span></td><td>~1 ngày</td><td>~25%</td><td>Leaderboard</td></tr>
+        <tr><td>05</td><td><b>Tetris</b></td><td>Arcade Versus</td><td><span class="mini dev" data-dev="3"></span></td><td><span class="mini" data-fun="5"></span></td><td>3–4 ngày</td><td>~70%</td><td>Battle 1v1</td></tr>
+        <tr><td>06</td><td><b>Dò Mìn</b></td><td>Puzzle 1P</td><td><span class="mini dev" data-dev="2"></span></td><td><span class="mini" data-fun="3"></span></td><td>1–2 ngày</td><td>~15%</td><td>Best time</td></tr>
+        <tr><td>07</td><td><b>Sudoku</b></td><td>Puzzle Daily</td><td><span class="mini dev" data-dev="3"></span></td><td><span class="mini" data-fun="4"></span></td><td>2–3 ngày</td><td>~20%</td><td>Daily · streak</td></tr>
+        <tr><td>08</td><td><b>Lật Hình Ghi Nhớ</b></td><td>Casual 1–2P</td><td><span class="mini dev" data-dev="1"></span></td><td><span class="mini" data-fun="3"></span></td><td>~1 ngày</td><td>~20%</td><td>Theme · time attack</td></tr>
+        <tr><td>09</td><td><b>Đập Gạch</b></td><td>Arcade 1P</td><td><span class="mini dev" data-dev="2"></span></td><td><span class="mini" data-fun="4"></span></td><td>~2 ngày</td><td>~15%</td><td>Power-up · level</td></tr>
+        <tr><td>10</td><td><b>Đố Vui Online</b></td><td>Trivia nhiều người</td><td><span class="mini dev" data-dev="3"></span></td><td><span class="mini" data-fun="5"></span></td><td>3–4 ngày</td><td>~60%</td><td>Chơi nhóm</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- BONUS -->
+  <div class="section-title"><h2>💡 Ý tưởng dự phòng / mở rộng</h2><div class="line"></div></div>
+  <div class="bonus">
+    <div class="b"><h4>Cờ Thả 4 (Connect Four)</h4><p>Thả quân vào cột, 4 quân thẳng hàng là thắng. Dễ làm, tái dụng phòng realtime + bot rất tốt.</p></div>
+    <div class="b"><h4>Ô Ăn Quan</h4><p>Cờ dân gian Việt Nam — độc đáo, đậm bản sắc, hợp PvP + bot. Tạo điểm khác biệt.</p></div>
+    <div class="b"><h4>Flappy (1 nút)</h4><p>Một nút, vô tận, cực dễ gây nghiện &amp; lan truyền. Code lõi rất nhẹ, hợp mobile.</p></div>
+    <div class="b"><h4>Đua Gõ Phím</h4><p>Typing race nhiều người — gõ nhanh nhất thắng. Tái dụng WS, hợp luyện tập &amp; thi đấu.</p></div>
+    <div class="b"><h4>Cờ Caro 3×3 Nâng Cao</h4><p>Ultimate Tic-Tac-Toe — 9 bàn nhỏ trong 1 bàn lớn. Chiều sâu bất ngờ, dễ code.</p></div>
+    <div class="b"><h4>Pong 1v1</h4><p>Bóng bàn 2D đối kháng realtime — đơn giản nhất để thử nghiệm netcode versus.</p></div>
+  </div>
+
+  <footer>
+    Tài liệu brainstorm spec game · Ưu tiên tái sử dụng hạ tầng realtime/Elo/bot sẵn có ·
+    Mở trực tiếp file này bằng trình duyệt, dùng thanh <b>Lọc/Sắp xếp</b> để duyệt nhanh.
+  </footer>
+
+</div>
+
+<script>
+  // Render rating dots inside cards
+  function dotsHTML(n, isDev){
+    let h = '<span class="dots">';
+    for(let i=1;i<=5;i++){
+      h += '<i class="dot '+(isDev?'dev ':'')+(i<=n?'on':'')+'"></i>';
+    }
+    return h + '</span>';
+  }
+  document.querySelectorAll('.card').forEach(card=>{
+    const dev = +card.dataset.dev, fun = +card.dataset.fun;
+    const dEl = card.querySelector('[data-dev-dots]');
+    const fEl = card.querySelector('[data-fun-dots]');
+    if(dEl) dEl.innerHTML = dotsHTML(dev,true);
+    if(fEl) fEl.innerHTML = dotsHTML(fun,false);
+  });
+  // Mini dots in table
+  document.querySelectorAll('.mini').forEach(m=>{
+    const isDev = m.classList.contains('dev');
+    const n = +(m.dataset.dev || m.dataset.fun);
+    let h='';
+    for(let i=1;i<=5;i++) h += '<span class="d'+(i<=n?' on':'')+'"></span>';
+    m.innerHTML = h;
+  });
+
+  // Filter
+  const grid = document.getElementById('grid');
+  const cards = [...grid.children];
+  document.querySelectorAll('[data-filter]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('[data-filter]').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const f = btn.dataset.filter;
+      cards.forEach(c=> c.classList.toggle('hide', f!=='all' && c.dataset.cat!==f));
+    });
+  });
+  // Sort
+  document.querySelectorAll('[data-sort]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('[data-sort]').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const s = btn.dataset.sort;
+      let arr = [...cards];
+      if(s==='dev') arr.sort((a,b)=> a.dataset.dev - b.dataset.dev);
+      else if(s==='fun') arr.sort((a,b)=> b.dataset.fun - a.dataset.fun);
+      else arr.sort((a,b)=> a.querySelector('.num').textContent - b.querySelector('.num').textContent);
+      arr.forEach(c=> grid.appendChild(c));
+    });
+  });
+</script>
+</body>
+</html>
