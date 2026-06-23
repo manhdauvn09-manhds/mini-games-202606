@@ -184,10 +184,10 @@ function handleClick(e){
   // Find topmost tile at this position
   var clicked=null;
   for(var i=0;i<tiles.length;i++){
-    var t=tiles[i];
-    if(t.removed)continue;
-    if(t.row===row&&t.col===col){
-      if(!clicked||t.layer>clicked.layer)clicked=t;
+    var tl=tiles[i];
+    if(tl.removed)continue;
+    if(tl.row===row&&tl.col===col){
+      if(!clicked||tl.layer>clicked.layer)clicked=tl;
     }
   }
   if(!clicked||!isTileFree(clicked))return;
@@ -253,9 +253,9 @@ function render(){
   // Draw tiles by layer
   for(var layer=0;layer<3;layer++){
     for(var i=0;i<tiles.length;i++){
-      var t=tiles[i];
-      if(t.removed||t.layer!==layer)continue;
-      var x=ox+t.col*CELL,y=oy+t.row*CELL;
+      var tl=tiles[i];
+      if(tl.removed||tl.layer!==layer)continue;
+      var x=ox+tl.col*CELL,y=oy+tl.row*CELL;
       var offset=layer*3;
       // 3D effect
       ctx.fillStyle='rgba(255,255,255,.08)';

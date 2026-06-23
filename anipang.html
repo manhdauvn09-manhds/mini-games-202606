@@ -187,9 +187,9 @@ function handleClick(e){
   if(!gameRunning||animating)return;
   var rect=canvas.getBoundingClientRect();
   var dpr=devicePixelRatio;
-  var mx=(e.clientX-rect.left)*dpr,my=(e.clientY-rect.top)*dpr;
-  var ox=(canvas.width-COLS*CELL)/2,oy=(canvas.height-ROWS*CELL)/2;
-  var col=Math.floor((mx/dpr-ox)/CELL),row=Math.floor((my/dpr-oy)/CELL);
+  var mx=e.clientX-rect.left,my=e.clientY-rect.top;
+  var ox=(canvas.width/dpr-COLS*CELL)/2,oy=(canvas.height/dpr-ROWS*CELL)/2;
+  var col=Math.floor((mx-ox)/CELL),row=Math.floor((my-oy)/CELL);
   if(col<0||col>=COLS||row<0||row>=ROWS)return;
   if(!selected){selected={r:row,c:col};playClick();render();return;}
   if(selected.r===row&&selected.c===col){selected=null;render();return;}

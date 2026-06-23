@@ -191,19 +191,19 @@ function handleClick(e){
   if(!gameRunning)return;
   var rect=canvas.getBoundingClientRect();
   var dpr=devicePixelRatio;
-  var mx=(e.clientX-rect.left)*dpr,my=(e.clientY-rect.top)*dpr;
-  var ox=(canvas.width-(GRID+4)*CELL)/2,oy=10;
+  var mx=e.clientX-rect.left,my=e.clientY-rect.top;
+  var ox=(canvas.width/dpr-(GRID+4)*CELL)/2,oy=10;
   // Check piece selection (bottom area)
   var py=oy+(GRID+1)*CELL;
   for(var i=0;i<pieces.length;i++){
     var px=ox+i*CELL*3;
-    if(mx/dpr>=px&&mx/dpr<px+CELL*3&&my/dpr>=py&&my/dpr<py+CELL*2){
+    if(mx>=px&&mx<px+CELL*3&&my>=py&&my<py+CELL*2){
       selectedPiece=i;playClick();render();return;
     }
   }
   // Check grid placement
   if(selectedPiece<0)return;
-  var gx=Math.floor((mx/dpr-ox)/CELL),gy=Math.floor((my/dpr-oy)/CELL);
+  var gx=Math.floor((mx-ox)/CELL),gy=Math.floor((my-oy)/CELL);
   if(gx<0||gx>=GRID||gy<0||gy>=GRID)return;
   var piece=pieces[selectedPiece];
   if(!canPlace(piece,gy,gx))return;

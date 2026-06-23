@@ -169,8 +169,8 @@ function handleClick(e){
   if(rolling)return;
   var rect=canvas.getBoundingClientRect();
   var dpr=devicePixelRatio;
-  var mx=(e.clientX-rect.left)*dpr,my=(e.clientY-rect.top)*dpr;
-  var ox=(canvas.width-3*CELL)/2,oy=20*dpr;
+  var mx=e.clientX-rect.left,my=e.clientY-rect.top;
+  var ox=(canvas.width/dpr-3*CELL)/2,oy=20;
   var col=Math.floor((mx-ox)/CELL),row=Math.floor((my-oy)/CELL);
   if(col>=0&&col<3&&row>=0&&row<2){
     var idx=row*3+col;
@@ -180,7 +180,7 @@ function handleClick(e){
     }
   }
   // Roll button
-  if(mx>canvas.width/2-50*dpr&&mx<canvas.width/2+50*dpr&&my>canvas.height-60*dpr&&my<canvas.height-20*dpr){
+  if(mx>canvas.width/dpr/2-50&&mx<canvas.width/dpr/2+50&&my>canvas.height/dpr-60&&my<canvas.height/dpr-20){
     rollDice();
   }
 }
