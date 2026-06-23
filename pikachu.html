@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
+<meta name="theme-color" content="#0b1020"/>
+<title>⚡ Pikachu Connect ✦ 100×</title>
+<style>
+:root{--bg0:#0b1020;--bg1:#0e1428;--gold:#ffce54;--cyan:#34e0ff;--violet:#b388ff;--teal:#34d3b6;--rose:#ff6b9d;--ink:#eaf0ff;--ink-dim:#9fb0d4;--glass:rgba(255,255,255,.06);--glass-brd:rgba(255,255,255,.12);--shadow:0 18px 50px rgba(0,0,0,.5);}
+html[data-theme="light"]{--bg0:#eef2fb;--bg1:#dde4f3;--ink:#1a2236;--ink-dim:#55617d;--glass:rgba(20,30,60,.05);--glass-brd:rgba(20,30,60,.14);}
+html[data-theme="sunset"]{--bg0:#1a0d18;--bg1:#2a0f1e;--gold:#ffd36b;--cyan:#ff9e64;--violet:#ff6b9d;--teal:#ffb86b;--rose:#ff5c8a;--ink:#fff0ea;--ink-dim:#e0b3b8;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;overflow:hidden}
+body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;color:var(--ink);background:radial-gradient(1200px 700px at 12% -10%,rgba(52,224,255,.08),transparent 55%),radial-gradient(1000px 680px at 110% 0%,rgba(179,136,255,.10),transparent 52%),radial-gradient(900px 700px at 50% 120%,rgba(255,206,84,.06),transparent 55%),linear-gradient(160deg,var(--bg0),var(--bg1));background-attachment:fixed;display:flex;flex-direction:column;align-items:center;padding:max(8px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));user-select:none;-webkit-user-select:none;touch-action:none;}
+.wrap{width:100%;max-width:500px;display:flex;flex-direction:column;gap:10px;flex:1 0 auto;}
+header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--glass);border:1px solid var(--glass-brd);border-radius:16px;padding:10px 14px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:var(--shadow);}
+.brand{display:flex;align-items:baseline;gap:6px;margin-right:auto;min-width:0}
+.brand h1{font-size:clamp(22px,6vw,34px);margin:0;font-weight:800;line-height:1;background:linear-gradient(135deg,var(--teal),var(--cyan) 55%,var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.brand small{font-size:10px;color:var(--ink-dim);letter-spacing:2px;font-weight:700}
+.scores{display:flex;gap:8px}
+.score-box{min-width:72px;text-align:center;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03));border:1px solid var(--glass-brd);border-radius:10px;padding:5px 10px 6px;overflow:hidden}
+.score-box .lbl{font-size:9px;letter-spacing:1.2px;color:var(--ink-dim);font-weight:800;text-transform:uppercase}
+.score-box .val{font-size:clamp(16px,4vw,20px);font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+#score-box .val{color:var(--gold)}#best-box .val{color:var(--cyan)}
+.score-box.bump{animation:bump .28s ease}
+@keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.13)}100%{transform:scale(1)}}
+.btn{appearance:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:13px;color:var(--ink);padding:8px 12px;border-radius:10px;min-height:40px;border:1px solid var(--glass-brd);background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.04));transition:transform .08s,border-color .18s;display:inline-flex;align-items:center;justify-content:center;gap:6px;touch-action:manipulation;}
+.btn:hover{border-color:rgba(255,255,255,.28)}
+.btn:active{transform:translateY(1px) scale(.97)}
+.btn.primary{color:#1a1205;border-color:transparent;background:linear-gradient(135deg,var(--gold),#ffd778);box-shadow:0 6px 18px rgba(255,206,84,.30);}
+.icon-btn{padding:8px 10px;min-width:40px}
+.langbtn{appearance:none;cursor:pointer;font-family:inherit;font-weight:800;font-size:12px;color:var(--ink);padding:6px 10px;border-radius:999px;min-height:38px;border:1px solid var(--glass-brd);background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.04));touch-action:manipulation;}
+.langbtn.active{color:#1a1205;border-color:transparent;background:linear-gradient(135deg,var(--gold),#ffd778);box-shadow:0 6px 16px rgba(255,206,84,.30);}
+.game-area{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
+#gameCanvas{display:block;max-width:100%;max-height:100%;background:var(--glass);border:1px solid var(--glass-brd);border-radius:18px;box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);touch-action:none;}
+.info-bar{display:flex;align-items:center;gap:10px;justify-content:center;flex-wrap:wrap;padding:4px 0}
+.info-bar .puzzle-name{font-size:14px;font-weight:700;color:var(--ink-dim)}
+.info-bar .mistakes{font-size:12px;color:var(--rose)}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:22px;border-radius:18px;z-index:10;background:radial-gradient(120% 120% at 50% 30%,rgba(11,16,32,.78),rgba(11,16,32,.92));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .28s;}
+.overlay.show{opacity:1;pointer-events:auto;animation:ovin .35s ease}
+@keyframes ovin{from{transform:scale(.97)}to{transform:scale(1)}}
+.overlay .big{font-size:clamp(26px,7vw,44px);font-weight:900;margin:0;line-height:1.05;background:linear-gradient(135deg,var(--gold),var(--rose),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.overlay .sub{color:var(--ink-dim);font-size:14px;margin:0;max-width:300px}
+.overlay .ov-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.overlay .ov-stats{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;font-size:12px;color:var(--ink-dim)}
+.overlay .ov-stats b{color:var(--ink);display:block;font-size:16px}
+.toast{position:absolute;left:50%;bottom:12px;transform:translateX(-50%) translateY(12px);background:rgba(20,26,46,.92);border:1px solid var(--glass-brd);color:var(--ink);padding:8px 14px;border-radius:999px;font-size:12px;font-weight:700;z-index:11;opacity:0;pointer-events:none;box-shadow:0 10px 28px rgba(0,0,0,.5);white-space:nowrap;max-width:90%;}
+.toast.show{animation:toast 1.25s ease forwards}
+@keyframes toast{0%{opacity:0;transform:translateX(-50%) translateY(12px)}15%,75%{opacity:1;transform:translateX(-50%) translateY(0)}100%{opacity:0;transform:translateX(-50%) translateY(-8px)}}
+.modal-back{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,18,.62);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .2s;}
+.modal-back.show{opacity:1;pointer-events:auto}
+.modal{width:100%;max-width:400px;max-height:85dvh;overflow-y:auto;background:linear-gradient(180deg,var(--bg1),var(--bg0));border:1px solid var(--glass-brd);border-radius:18px;box-shadow:var(--shadow);padding:16px 16px 18px;transform:translateY(8px) scale(.98);transition:transform .2s;}
+.modal-back.show .modal{transform:translateY(0) scale(1)}
+.modal h2{font-size:18px;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+.modal .close-btn{position:absolute;top:12px;right:14px;background:none;border:none;color:var(--ink-dim);font-size:22px;cursor:pointer;padding:4px;line-height:1}
+.setting-row{display:flex;align-items:center;gap:10px;padding:6px 0}
+.setting-row .sl{font-size:13px;color:var(--ink-dim);min-width:70px}
+.tgl{position:relative;width:44px;height:24px;background:rgba(255,255,255,.15);border-radius:999px;cursor:pointer;transition:background .2s;flex-shrink:0}
+.tgl.on{background:var(--gold)}
+.tgl::after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.tgl.on::after{transform:translateX(20px)}
+.langrow{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<div class="brand"><h1>⚡ Pikachu</h1><small>Connect</small></div>
+<div class="scores">
+<div class="score-box" id="score-box"><div class="lbl" data-i18n="score">Điểm</div><div class="val" id="score">0</div></div>
+<div class="score-box" id="best-box"><div class="lbl" data-i18n="best">Kỷ lục</div><div class="val" id="best">0</div></div>
+</div>
+<button class="btn icon-btn" id="mute-btn" title="Âm thanh">🔊</button>
+<button class="btn icon-btn" id="settings-btn" title="Cài đặt">⚙️</button>
+</header>
+<div class="info-bar"><span class="puzzle-name" id="puzzleName">Onet Connect</span><span class="mistakes" id="mistakes"></span></div>
+<div class="game-area">
+<canvas id="gameCanvas"></canvas>
+<div class="overlay" id="overlay"><div class="big" id="ov-title">⚡</div><p class="sub" id="ov-sub">Pikachu Connect!</p><div class="ov-stats" id="ov-stats"></div><div class="ov-actions" id="ov-actions"></div></div>
+<div class="toast" id="toast"></div>
+</div>
+</div>
+<div class="modal-back" id="settings-modal">
+<div class="modal" style="position:relative">
+<button class="close-btn" onclick="closeModal('settings-modal')">&times;</button>
+<h2>⚙️ <span data-i18n="settings">Cài đặt</span></h2>
+<div class="setting-row"><span class="sl" data-i18n="sound">Âm thanh</span><div class="tgl on" id="sound-tgl"></div></div>
+<div class="setting-row"><span class="sl" data-i18n="vibrate">Rung</span><div class="tgl on" id="vibrate-tgl"></div></div>
+<div class="setting-row"><span class="sl" data-i18n="theme">Giao diện</span><select class="btn" id="theme-sel" style="font-size:12px;padding:6px 10px;min-height:36px"><option value="default">Mặc định</option><option value="light">Sáng</option><option value="sunset">Hoàng hôn</option></select></div>
+<div class="setting-row"><span class="sl" data-i18n="language">Ngôn ngữ</span><div class="langrow"><button class="langbtn active" data-lang="vi">VI</button><button class="langbtn" data-lang="ja">JP</button><button class="langbtn" data-lang="en">EN</button></div></div>
+<div style="margin-top:12px"><button class="btn primary" onclick="closeModal('settings-modal')" data-i18n="close">Đóng</button></div>
+</div>
+</div>
+<script>
+(function(){
+'use strict';
+var LANG={vi:{score:'Điểm',best:'Kỷ lục',settings:'Cài đặt',sound:'Âm thanh',vibrate:'Rung',theme:'Giao diện',language:'Ngôn ngữ',close:'Đóng',newGame:'Chơi mới',gameOver:'Hoàn thành!',newBest:'Kỷ lục mới! 🎉',scoreVal:'Điểm',bestVal:'Kỷ lục',time:'Thời gian',pairs:'Cặp',remaining:'Còn lại'},ja:{score:'得点',best:'最高記録',settings:'設定',sound:'サウンド',vibrate:'振動',theme:'テーマ',language:'言語',close:'閉じる',newGame:'新しいゲーム',gameOver:'完成！',newBest:'新記録！🎉',scoreVal:'得点',bestVal:'最高記録',time:'時間',pairs:'ペア',remaining:'残り'},en:{score:'Score',best:'Best',settings:'Settings',sound:'Sound',vibrate:'Vibrate',theme:'Theme',language:'Language',close:'Close',newGame:'New Game',gameOver:'Complete!',newBest:'New Best! 🎉',scoreVal:'Score',bestVal:'Best',time:'Time',pairs:'Pairs',remaining:'Remaining'}};
+var lang='vi';function t(k){return(LANG[lang]&&LANG[lang][k])||k;}
+function applyLang(){document.querySelectorAll('[data-i18n]').forEach(function(e){e.textContent=t(e.dataset.i18n);});document.querySelectorAll('.langbtn').forEach(function(b){b.classList.toggle('active',b.dataset.lang===lang);});}
+var audioCtx=null;function getAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx;}
+function playTone(f,d,t,g){if(!soundEnabled)return;try{var c=getAudio(),o=c.createOscillator(),g=c.createGain();o.type=t||'sine';o.frequency.value=f;g.gain.setValueAtTime(g||.12,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);o.connect(g);g.connect(c.destination);o.start(c.currentTime);o.stop(c.currentTime+d);}catch(e){}}
+function playClick(){playTone(600,.08,'sine',.08);}function playMatch(){playTone(880,.12,'sine',.10);}function playWin(){playTone(523,.15,'sine',.10);setTimeout(function(){playTone(659,.15,'sine',.10)},150);setTimeout(function(){playTone(784,.2,'sine',.12)},300);}
+var soundEnabled=true,vibrateEnabled=true;
+var canvas=document.getElementById('gameCanvas'),ctx=canvas.getContext('2d');
+var ROWS=8,COLS=10,CELL=0,grid=[],selected=null;
+var score=0,best=parseInt(localStorage.getItem('pikachu_best'))||0;
+var pairs=0,remaining=0,gameRunning=false,startTime=0;
+var emojis=['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐸','🐵','🐔','🐧','🐦','🐤','🦆','🦅'];
+
+function resizeCanvas(){
+  var rect=canvas.parentElement.getBoundingClientRect();
+  var s=Math.min(rect.width-10,rect.height-10,500);
+  var dpr=devicePixelRatio;
+  canvas.width=Math.round(s*dpr);canvas.height=Math.round(s*dpr);
+  canvas.style.width=Math.round(s)+'px';canvas.style.height=Math.round(s)+'px';
+  ctx.scale(dpr,dpr);
+  CELL=Math.floor(s/Math.max(ROWS,COLS+2));
+}
+
+function initGrid(){
+  var total=ROWS*COLS;
+  var types=Math.floor(total/2);
+  var pool=[];
+  for(var i=0;i<types;i++)pool.push(emojis[i%emojis.length]);
+  pool=pool.concat(pool.slice());
+  for(var i=pool.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=pool[i];pool[i]=pool[j];pool[j]=t;}
+  grid=[];var idx=0;
+  for(var r=0;r<ROWS;r++){grid[r]=[];for(var c=0;c<COLS;c++){grid[r][c]=pool[idx++];}}
+  remaining=total;
+}
+
+function isLineClear(r1,c1,r2,c2){
+  if(r1===r2&&c1===c2)return false;
+  if(grid[r1][c1]!==grid[r2][c2])return false;
+  if(r1===r2){
+    var minC=Math.min(c1,c2),maxC=Math.max(c1,c2);
+    for(var c=minC+1;c<maxC;c++)if(grid[r1][c])return false;
+    return true;
+  }
+  if(c1===c2){
+    var minR=Math.min(r1,r2),maxR=Math.max(r1,r2);
+    for(var r=minR+1;r<maxR;r++)if(grid[r][c1])return false;
+    return true;
+  }
+  return false;
+}
+
+function canConnect(r1,c1,r2,c2){
+  if(r1===r2&&c1===c2)return false;
+  if(grid[r1][c1]!==grid[r2][c2])return false;
+  if(isLineClear(r1,c1,r2,c2))return true;
+  for(var c=0;c<COLS;c++){
+    if(!grid[r1][c]&&!grid[r2][c]&&isLineClear(r1,c1,r1,c)&&isLineClear(r1,c,r2,c)&&isLineClear(r2,c,r2,c2))return true;
+  }
+  for(var r=0;r<ROWS;r++){
+    if(!grid[r][c1]&&!grid[r][c2]&&isLineClear(r1,c1,r,c1)&&isLineClear(r,c1,r,c2)&&isLineClear(r,c2,r2,c2))return true;
+  }
+  for(var r=0;r<ROWS;r++){
+    for(var c=0;c<COLS;c++){
+      if(!grid[r][c]){
+        if(isLineClear(r1,c1,r,c)&&isLineClear(r,c,r2,c2))return true;
+      }
+    }
+  }
+  return false;
+}
+
+function render(){
+  var ox=(canvas.width/devicePixelRatio-COLS*CELL)/2,oy=20;
+  ctx.clearRect(0,0,canvas.width/devicePixelRatio,canvas.height/devicePixelRatio);
+  for(var r=0;r<ROWS;r++){
+    for(var c=0;c<COLS;c++){
+      var v=grid[r][c];
+      if(!v)continue;
+      var x=ox+c*CELL,y=oy+r*CELL;
+      ctx.fillStyle='rgba(255,255,255,.06)';
+      ctx.beginPath();ctx.roundRect(x+2,y+2,CELL-4,CELL-4,6);ctx.fill();
+      ctx.font=Math.floor(CELL*0.65)+'px sans-serif';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(v,x+CELL/2,y+CELL/2);
+      if(selected&&selected.r===r&&selected.c===c){
+        ctx.strokeStyle='#ffce54';ctx.lineWidth=3;
+        ctx.beginPath();ctx.roundRect(x+2,y+2,CELL-4,CELL-4,6);ctx.stroke();
+      }
+    }
+  }
+  ctx.fillStyle='rgba(255,255,255,.4)';
+  ctx.font='12px sans-serif';ctx.textAlign='center';
+  ctx.fillText(t('remaining')+': '+remaining,canvas.width/devicePixelRatio/2,canvas.height/devicePixelRatio-10);
+}
+
+function handleClick(e){
+  if(!gameRunning)return;
+  var rect=canvas.getBoundingClientRect();
+  var dpr=devicePixelRatio;
+  var mx=(e.clientX-rect.left)*dpr,my=(e.clientY-rect.top)*dpr;
+  var ox=(canvas.width-COLS*CELL)/2,oy=20*dpr;
+  var col=Math.floor((mx-ox)/CELL),row=Math.floor((my-oy)/CELL);
+  if(col<0||col>=COLS||row<0||row>=ROWS)return;
+  if(!grid[row][col])return;
+  if(!selected){selected={r:row,c:col};playClick();render();return;}
+  if(selected.r===row&&selected.c===col){selected=null;render();return;}
+  if(canConnect(selected.r,selected.c,row,col)){
+    grid[selected.r][selected.c]=null;grid[row][col]=null;
+    remaining-=2;pairs++;score+=100;updateScore();
+    playMatch();selected=null;render();
+    if(remaining===0){
+      gameRunning=false;
+      var elapsed=Math.floor((Date.now()-startTime)/1000);
+      var bonus=Math.max(0,300-elapsed);
+      score+=bonus;updateScore();
+      var isNew=saveBest();playWin();
+      document.getElementById('ov-title').textContent='🎉';
+      document.getElementById('ov-sub').textContent=t('gameOver');
+      var m=Math.floor(elapsed/60),s=elapsed%60;
+      document.getElementById('ov-stats').innerHTML='<div><b>'+score+'</b><span>'+t('scoreVal')+'</span></div><div><b>'+pairs+'</b><span>'+t('pairs')+'</span></div><div><b>'+m+':'+(s<10?'0':'')+s+'</b><span>'+t('time')+'</span></div>'+(isNew?'<div>'+t('newBest')+'</div>':'');
+      document.getElementById('ov-actions').innerHTML='<button class="btn primary" onclick="startGame()">'+t('newGame')+'</button>';
+      document.getElementById('overlay').classList.add('show');
+    }
+  }else{
+    selected={r:row,c:col};playClick();render();
+  }
+}
+
+function updateScore(){
+  document.getElementById('score').textContent=score;
+  document.getElementById('score-box').classList.remove('bump');
+  void document.getElementById('score-box').offsetWidth;
+  document.getElementById('score-box').classList.add('bump');
+}
+function updateBest(){document.getElementById('best').textContent=best;}
+function saveBest(){if(score>best){best=score;localStorage.setItem('pikachu_best',best);updateBest();return true;}return false;}
+
+function startGame(){
+  initGrid();selected=null;pairs=0;score=0;gameRunning=true;startTime=Date.now();
+  document.getElementById('overlay').classList.remove('show');
+  updateScore();updateBest();resizeCanvas();render();
+}
+
+function setupSettings(){
+  document.getElementById('sound-tgl').addEventListener('click',function(){soundEnabled=!soundEnabled;this.classList.toggle('on',soundEnabled);document.getElementById('mute-btn').textContent=soundEnabled?'🔊':'🔇';});
+  document.getElementById('mute-btn').addEventListener('click',function(){soundEnabled=!soundEnabled;document.getElementById('sound-tgl').classList.toggle('on',soundEnabled);this.textContent=soundEnabled?'🔊':'🔇';});
+  document.getElementById('vibrate-tgl').addEventListener('click',function(){vibrateEnabled=!vibrateEnabled;this.classList.toggle('on',vibrateEnabled);});
+  document.getElementById('theme-sel').addEventListener('change',function(){document.documentElement.setAttribute('data-theme',this.value);});
+  document.querySelectorAll('.langbtn').forEach(function(el){el.addEventListener('click',function(){lang=this.dataset.lang;applyLang();});});
+  document.getElementById('settings-btn').addEventListener('click',function(){document.getElementById('settings-modal').classList.add('show');});
+}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+canvas.addEventListener('mousedown',function(e){handleClick(e);});
+canvas.addEventListener('touchstart',function(e){e.preventDefault();var t=e.touches[0];handleClick({clientX:t.clientX,clientY:t.clientY});});
+window.addEventListener('resize',function(){resizeCanvas();render();});
+window.startGame=startGame;window.closeModal=closeModal;
+setupSettings();applyLang();updateBest();resizeCanvas();startGame();
+})();
+</script>
+</body>
+</html>
