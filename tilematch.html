@@ -308,7 +308,7 @@ function closeModal(id){document.getElementById(id).classList.remove('show');}
 canvas.addEventListener('mousedown',function(e){handleClick(e);});
 canvas.addEventListener('touchstart',function(e){e.preventDefault();var t=e.touches[0];handleClick({clientX:t.clientX,clientY:t.clientY});});
 window.addEventListener('resize',function(){resizeCanvas();render();});
-window.startGame=initGame;window.closeModal=closeModal;
+window.startGame=initGame;window.initGame=initGame;window.closeModal=closeModal;
 setupSettings();applyLang();updateBest();resizeCanvas();initGame();
 })();
 </script>

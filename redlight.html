@@ -120,7 +120,7 @@ function initGame(){
   playerSpeed=2;gameRunning=true;lightDuration=1000+Math.random()*2000;
   lightTimer=Date.now()+lightDuration;
   document.getElementById('overlay').classList.remove('show');
-  updateScore();updateBest();resizeCanvas();render();
+  updateScore();updateBest();resizeCanvas();render();startLoop();
 }
 
 function handleInput(start){
@@ -157,8 +157,10 @@ function handleInput(start){
   }
 }
 
+var loopRunning=false;
+function startLoop(){if(loopRunning)return;loopRunning=true;requestAnimationFrame(gameLoop);}
 function gameLoop(){
-  if(!gameRunning)return;
+  if(!gameRunning){loopRunning=false;return;}
   // Check light change
   if(Date.now()>lightTimer){
     greenLight=!greenLight;
@@ -250,7 +252,6 @@ document.addEventListener('touchend',function(e){e.preventDefault();handleInput(
 window.addEventListener('resize',function(){resizeCanvas();render();});
 window.startGame=initGame;window.initGame=initGame;window.closeModal=closeModal;
 setupSettings();applyLang();updateBest();resizeCanvas();initGame();
-setTimeout(gameLoop,100);
 })();
 </script>
 </body>

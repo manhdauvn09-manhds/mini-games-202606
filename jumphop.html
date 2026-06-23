@@ -107,6 +107,15 @@ var gameRunning=false,jumping=false,charging=false,chargePower=0;
 var player={x:0,y:0,size:20};
 var platforms=[],currentPlatform=0,cameraY=0,jumpCount=0;
 var comboCount=0,lastPerfect=false;
+var REACH_K=1.1,LAND_TOL=32,PERFECT_TOL=12;
+function rndColor(){return '#'+Math.floor(Math.random()*16777215).toString(16).padStart(6,'0');}
+function makePlatform(prev){
+  var pw=64+Math.random()*70,ph=16+Math.random()*8;
+  var py=prev.y+(60+Math.random()*40);
+  var cx=(prev.x+prev.w/2)+(Math.random()*2-1)*120;
+  var px=Math.min(Math.max(cx-pw/2,10),Math.max(10,W-pw-10));
+  return {x:px,y:py,w:pw,h:ph,color:rndColor()};
+}
 
 function resizeCanvas(){
   var rect=canvas.parentElement.getBoundingClientRect();
@@ -122,13 +131,9 @@ function initGame(){
   player.x=W/2;player.y=H*0.7;
   cameraY=0;jumpCount=0;score=0;comboCount=0;lastPerfect=false;
   charging=false;chargePower=0;jumping=false;
-  // Create initial platforms
-  for(var i=0;i<10;i++){
-    var pw=60+Math.random()*80,ph=15+Math.random()*10;
-    var px=Math.random()*(W-pw-20)+10;
-    var py=H*0.7+i*(70+Math.random()*40);
-    platforms.push({x:px,y:py,w:pw,h:ph,color:'#'+Math.floor(Math.random()*16777215).toString(16).padStart(6,'0')});
-  }
+  // Create initial platforms (bounded, reachable spacing)
+  platforms.push({x:Math.max(10,W/2-50),y:H*0.7,w:100,h:18,color:rndColor()});
+  for(var i=1;i<10;i++){platforms.push(makePlatform(platforms[i-1]));}
   player.x=platforms[0].x+platforms[0].w/2;
   player.y=platforms[0].y-20;
   currentPlatform=0;
@@ -156,69 +161,56 @@ function handleRelease(){
   charging=false;
   cancelAnimationFrame(chargeRAF);
   jumping=true;
-  var power=Math.min(chargePower,200);
-  var dx=(platforms[currentPlatform+1].x+platforms[currentPlatform+1].w/2)-player.x;
-  var dy=(platforms[currentPlatform+1].y)-player.y;
-  var dist=Math.sqrt(dx*dx+dy*dy);
-  var ratio=power/dist;
-  var vx=dx*ratio*0.015,vy=dy*ratio*0.015-3;
-  animateJump(vx,vy);
+  var np=platforms[currentPlatform+1];
+  var tx=np.x+np.w/2,ty=np.y-20;
+  var dx=tx-player.x,dy=ty-player.y;
+  var D=Math.sqrt(dx*dx+dy*dy)||1;
+  var reach=Math.min(chargePower,200)*REACH_K;
+  var landX=player.x+(dx/D)*reach,landY=player.y+(dy/D)*reach;
+  animateHop(landX,landY,Math.abs(reach-D),np);
 }
 
-function animateJump(vx,vy){
-  var t=0,steps=30;
-  var startX=player.x,startY=player.y;
-  var targetX=platforms[currentPlatform+1].x+platforms[currentPlatform+1].w/2;
-  var targetY=platforms[currentPlatform+1].y-20;
+function animateHop(landX,landY,err,np){
+  var k=0,steps=26,sx=player.x,sy=player.y;
+  var peak=Math.min(90,40+err*0.3+Math.abs(landY-sy)*0.25);
   function step(){
-    t++;
-    var progress=t/steps;
-    player.x=startX+vx*t;
-    player.y=startY+vy*t+0.1*t*t;
+    k++;
+    var pr=k/steps;
+    player.x=sx+(landX-sx)*pr;
+    player.y=sy+(landY-sy)*pr-peak*Math.sin(Math.PI*pr);
     render();
-    if(t<steps)requestAnimationFrame(step);
-    else{
-      // Check if landed on next platform
-      var np=platforms[currentPlatform+1];
-      if(player.x>=np.x&&player.x<=np.x+np.w&&player.y>=np.y-np.h-5){
-        player.y=np.y-20;
-        currentPlatform++;
-        jumpCount++;score+=10;
-        // Perfect landing check
-        var centerDist=Math.abs(player.x-(np.x+np.w/2));
-        if(centerDist<np.w*0.15){
-          comboCount++;score+=comboCount*5;
-          lastPerfect=true;
-        }else{comboCount=0;lastPerfect=false;}
-        playLand();
-        updateScore();
-        jumping=false;
-        // Generate new platforms
-        if(currentPlatform>platforms.length-4){
-          for(var i=0;i<3;i++){
-            var pw=60+Math.random()*80,ph=15+Math.random()*10;
-            var px=Math.random()*(W-pw-20)+10;
-            var py=platforms[platforms.length-1].y+70+Math.random()*40;
-            platforms.push({x:px,y:py,w:pw,h:ph,color:'#'+Math.floor(Math.random()*16777215).toString(16).padStart(6,'0')});
-          }
-        }
-        // Camera scroll
-        if(player.y-cameraY>H*0.6)cameraY=player.y-H*0.4;
-        render();
-      }else{
-        // Fell!
-        gameRunning=false;
-        var isNew=saveBest();
-        document.getElementById('ov-title').textContent='💫';
-        document.getElementById('ov-sub').textContent=t('gameOver');
-        document.getElementById('ov-stats').innerHTML='<div><b>'+score+'</b><span>'+t('scoreVal')+'</span></div><div><b>'+jumpCount+'</b><span>'+t('jumps')+'</span></div>'+(isNew?'<div>'+t('newBest')+'</div>':'');
-        document.getElementById('ov-actions').innerHTML='<button class="btn primary" onclick="initGame()">'+t('newGame')+'</button>';
-        document.getElementById('overlay').classList.add('show');
-        playFail();
-      }
+    if(k<steps){requestAnimationFrame(step);return;}
+    if(err<=LAND_TOL){
+      player.x=np.x+np.w/2;player.y=np.y-20;
+      currentPlatform++;jumpCount++;score+=10;
+      if(err<=PERFECT_TOL){comboCount++;score+=comboCount*5;lastPerfect=true;if(vibrateEnabled&&navigator.vibrate){try{navigator.vibrate(15);}catch(e){}}}
+      else{comboCount=0;lastPerfect=false;}
+      playLand();updateScore();jumping=false;
+      if(currentPlatform>platforms.length-4){for(var i=0;i<3;i++){platforms.push(makePlatform(platforms[platforms.length-1]));}}
+      if(player.y-cameraY>H*0.6)cameraY=player.y-H*0.4;
+      render();
+    }else{
+      fallAndEnd();
     }
   }
   step();
+}
+
+function fallAndEnd(){
+  var fy=player.y,ft=0;
+  function drop(){ft++;player.y=fy+ft*ft*0.9;render();if(ft<20){requestAnimationFrame(drop);return;}endGame();}
+  drop();
+}
+
+function endGame(){
+  gameRunning=false;jumping=false;
+  var isNew=saveBest();
+  document.getElementById('ov-title').textContent='💫';
+  document.getElementById('ov-sub').textContent=t('gameOver');
+  document.getElementById('ov-stats').innerHTML='<div><b>'+score+'</b><span>'+t('scoreVal')+'</span></div><div><b>'+jumpCount+'</b><span>'+t('jumps')+'</span></div>'+(isNew?'<div>'+t('newBest')+'</div>':'');
+  document.getElementById('ov-actions').innerHTML='<button class="btn primary" onclick="initGame()">'+t('newGame')+'</button>';
+  document.getElementById('overlay').classList.add('show');
+  playFail();
 }
 
 function render(){
@@ -292,7 +284,7 @@ document.addEventListener('mouseup',function(e){handleRelease();});
 document.addEventListener('touchstart',function(e){e.preventDefault();handlePress();});
 document.addEventListener('touchend',function(e){e.preventDefault();handleRelease();});
 window.addEventListener('resize',function(){resizeCanvas();render();});
-window.startGame=initGame;window.closeModal=closeModal;
+window.startGame=initGame;window.initGame=initGame;window.closeModal=closeModal;
 setupSettings();applyLang();updateBest();resizeCanvas();initGame();
 })();
 </script>

@@ -123,7 +123,7 @@ function shuffle(arr){
 
 function initGame(){
   tubes=[];selectedTube=-1;moves=0;score=0;
-  var numColors=TUBE_COUNT-2;
+  var numColors=Math.min(TUBE_COUNT-2,colors.length);
   var allColors=[];
   for(var i=0;i<numColors;i++){
     for(var j=0;j<TUBE_HEIGHT;j++)allColors.push(colors[i%colors.length]);
@@ -277,7 +277,7 @@ function closeModal(id){document.getElementById(id).classList.remove('show');}
 canvas.addEventListener('mousedown',function(e){handleClick(e);});
 canvas.addEventListener('touchstart',function(e){e.preventDefault();var t=e.touches[0];handleClick({clientX:t.clientX,clientY:t.clientY});});
 window.addEventListener('resize',function(){resizeCanvas();render();});
-window.startGame=initGame;window.nextLevel=nextLevel;window.closeModal=closeModal;
+window.startGame=initGame;window.initGame=initGame;window.nextLevel=nextLevel;window.closeModal=closeModal;
 setupSettings();applyLang();updateBest();resizeCanvas();initGame();
 })();
 </script>

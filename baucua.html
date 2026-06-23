@@ -118,7 +118,6 @@ function resizeCanvas(){
 
 function rollDice(){
   if(rolling)return;
-  if(coins<=0){showToast('Hết xu!');return;}
   var totalBet=bet.reduce(function(a,b){return a+b;},0);
   if(totalBet<=0){showToast('Chọn ô cược!');return;}
   rolling=true;animTimer=0;
@@ -136,13 +135,14 @@ function rollDice(){
 }
 
 function resolveBet(){
-  var winAmt=0;
-  var staked=totalBet();
-  coins-=staked;
-  for(var i=0;i<3;i++){
-    var f=result[i];
-    if(bet[f]>0){winAmt+=bet[f]*2;bet[f]=0;}
+  // Stake was already deducted when each bet was placed (handleClick).
+  // Pay back stake + 1x winnings for every die that matches a bet face.
+  var winAmt=0,cnt={};
+  for(var i=0;i<3;i++){cnt[result[i]]=(cnt[result[i]]||0)+1;}
+  for(var f=0;f<6;f++){
+    if(bet[f]>0&&cnt[f]){winAmt+=bet[f]*(1+cnt[f]);}
   }
+  bet=[0,0,0,0,0,0];
   if(winAmt>0){
     coins+=winAmt;
     playWin();
