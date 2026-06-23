@@ -98,7 +98,7 @@ var LANG={vi:{score:'Điểm',best:'Kỷ lục',settings:'Cài đặt',sound:'Â
 var lang='vi';function t(k){return(LANG[lang]&&LANG[lang][k])||k;}
 function applyLang(){document.querySelectorAll('[data-i18n]').forEach(function(e){e.textContent=t(e.dataset.i18n);});document.querySelectorAll('.langbtn').forEach(function(b){b.classList.toggle('active',b.dataset.lang===lang);});}
 var audioCtx=null;function getAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx;}
-function playTone(f,d,t,g){if(!soundEnabled)return;try{var c=getAudio(),o=c.createOscillator(),g=c.createGain();o.type=t||'sine';o.frequency.value=f;g.gain.setValueAtTime(g||.12,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);o.connect(g);g.connect(c.destination);o.start(c.currentTime);o.stop(c.currentTime+d);}catch(e){}}
+function playTone(f,d,t,g){if(!soundEnabled)return;try{var c=getAudio(),o=c.createOscillator(),gn=c.createGain();o.type=t||'sine';o.frequency.value=f;gn.gain.setValueAtTime(g||.12,c.currentTime);gn.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);o.connect(gn);gn.connect(c.destination);o.start(c.currentTime);o.stop(c.currentTime+d);}catch(e){}}
 function playClick(){playTone(600,.08,'sine',.08);}function playMatch(){playTone(880,.12,'sine',.10);}function playWin(){playTone(523,.15,'sine',.10);setTimeout(function(){playTone(659,.15,'sine',.10)},150);setTimeout(function(){playTone(784,.2,'sine',.12)},300);}
 var soundEnabled=true,vibrateEnabled=true;
 var canvas=document.getElementById('gameCanvas'),ctx=canvas.getContext('2d');
@@ -123,29 +123,41 @@ function shuffle(arr){
 
 function initGame(){
   tiles=[];selected=[];slot=[];score=0;
-  // Create pairs of tiles
-  var pairs=18;
-  var emojis=[];
-  for(var i=0;i<pairs;i++){emojis.push(tileEmojis[i%tileEmojis.length]);emojis.push(tileEmojis[i%tileEmojis.length]);}
-  shuffle(emojis);
-  // Lay out in 3 layers
-  var idx=0;
+  // Build the list of stacked cell positions across 3 layers.
+  // layer0:6x6=36, layer1:4x4=16, layer2:2x2=4 -> 56 cells available.
+  var positions=[];
   for(var layer=0;layer<3;layer++){
     var rows=ROWS-layer*2,cols=COLS-layer*2;
     var ox=(COLS-cols)/2,oy=(ROWS-rows)/2;
     for(var r=0;r<rows;r++){
       for(var c=0;c<cols;c++){
-        if(idx>=emojis.length)break;
-        tiles.push({
-          emoji:emojis[idx],
-          row:oy+r,
-          col:ox+c,
-          layer:layer,
-          removed:false
-        });
-        idx++;
+        positions.push({row:oy+r,col:ox+c,layer:layer});
       }
     }
+  }
+  // Total tile count must be a multiple of 3 and fit in available cells.
+  var total=positions.length-(positions.length%3); // 54
+  // Pick K distinct emojis and place exactly a multiple of 3 of each (3 per emoji).
+  var K=total/3;
+  var pool=[];
+  for(var i=0;i<K;i++){
+    var em=tileEmojis[i%tileEmojis.length];
+    pool.push(em);pool.push(em);pool.push(em);
+  }
+  shuffle(pool);
+  // Shuffle positions so emojis are spread across all layers (real 3D stacking),
+  // then assign one emoji per position. Since every emoji has a count that is a
+  // multiple of 3, the board is always solvable.
+  shuffle(positions);
+  for(var idx=0;idx<pool.length;idx++){
+    var p=positions[idx];
+    tiles.push({
+      emoji:pool[idx],
+      row:p.row,
+      col:p.col,
+      layer:p.layer,
+      removed:false
+    });
   }
   gameRunning=true;
   document.getElementById('overlay').classList.remove('show');

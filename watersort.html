@@ -98,7 +98,7 @@ var LANG={vi:{score:'Điểm',best:'Kỷ lục',settings:'Cài đặt',sound:'Â
 var lang='vi';function t(k){return(LANG[lang]&&LANG[lang][k])||k;}
 function applyLang(){document.querySelectorAll('[data-i18n]').forEach(function(e){e.textContent=t(e.dataset.i18n);});document.querySelectorAll('.langbtn').forEach(function(b){b.classList.toggle('active',b.dataset.lang===lang);});}
 var audioCtx=null;function getAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx;}
-function playTone(f,d,t,g){if(!soundEnabled)return;try{var c=getAudio(),o=c.createOscillator(),g=c.createGain();o.type=t||'sine';o.frequency.value=f;g.gain.setValueAtTime(g||.12,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);o.connect(g);g.connect(c.destination);o.start(c.currentTime);o.stop(c.currentTime+d);}catch(e){}}
+function playTone(f,d,t,g){if(!soundEnabled)return;try{var c=getAudio(),o=c.createOscillator(),gn=c.createGain();o.type=t||'sine';o.frequency.value=f;gn.gain.setValueAtTime(g||.12,c.currentTime);gn.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);o.connect(gn);gn.connect(c.destination);o.start(c.currentTime);o.stop(c.currentTime+d);}catch(e){}}
 function playClick(){playTone(600,.08,'sine',.08);}function playPour(){playTone(440,.1,'triangle',.08);}function playWin(){playTone(523,.15,'sine',.10);setTimeout(function(){playTone(659,.15,'sine',.10)},150);setTimeout(function(){playTone(784,.2,'sine',.12)},300);}
 var soundEnabled=true,vibrateEnabled=true;
 var canvas=document.getElementById('gameCanvas'),ctx=canvas.getContext('2d');
