@@ -1542,7 +1542,7 @@
       var on = (Math.floor(clearing.t/0.06)%2)===0;
       for(var i=0;i<clearing.rows.length;i++){ flashRows[clearing.rows[i]] = {p:p,on:on}; }
     }
-    for(var rr=HIDDEN; rr<TOTAL_ROWS; rr++){
+    if(grid) for(var rr=HIDDEN; rr<TOTAL_ROWS; rr++){
       var vy = (rr-HIDDEN)*CELL;
       var fr = flashRows[rr];
       for(var cc=0; cc<COLS; cc++){
