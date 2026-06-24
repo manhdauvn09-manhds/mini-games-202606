@@ -1000,9 +1000,13 @@
     // For 4-box (I,O) and 3-box pieces, center horizontally.
     var n = BOX[type];
     var px = Math.floor((COLS - n)/2);
-    // Place so the piece's filled cells start near the top of the visible field.
-    // Hidden rows are indices 0..HIDDEN-1; visible 0 row = HIDDEN.
-    var py = 0; // top-left of box at grid row 0 (within hidden band)
+    // Place the piece so its TOP filled cell lands on the first VISIBLE row
+    // immediately. (Spawning at row 0 left the piece inside the hidden rows
+    // 0..HIDDEN-1, so it stayed invisible ~1-2s until gravity dragged it into
+    // view -> the board looked empty right after start / after Hold.)
+    var c0 = cellsFor(type, 0), minR = 99;
+    for(var ci=0; ci<c0.length; ci++){ if(c0[ci][1] < minR) minR = c0[ci][1]; }
+    var py = HIDDEN - minR;
     var piece = { type:type, rot:0, x:px, y:py };
     // Move down so cells sit appropriately (guideline spawns on rows 21-22 of 22; we
     // simply spawn at top and check collision).
