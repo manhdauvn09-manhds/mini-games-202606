@@ -92,7 +92,7 @@
   .brand .spark{ font-size:clamp(15px,3.4vw,20px); color:var(--cyan); filter:drop-shadow(0 0 8px rgba(52,224,255,.6)); }
   .brand small{ font-size:11px; color:var(--ink-dim); letter-spacing:2px; font-weight:700; }
 
-  .scores{ display:flex; gap:10px; }
+  .scores{ display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
   .score-box{
     position:relative; min-width:84px; text-align:center;
     background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03));
@@ -417,6 +417,14 @@
           <div class="lbl" data-i18n="best">Kỷ lục</div>
           <div class="val" id="best">0</div>
         </div>
+        <div class="score-box" id="moves-box">
+          <div class="lbl" data-i18n="moves">Lượt</div>
+          <div class="val" id="moves-val">0</div>
+        </div>
+        <div class="score-box" id="time-box">
+          <div class="lbl" data-i18n="time">Thời gian</div>
+          <div class="val" id="time-val">0:00</div>
+        </div>
       </div>
     </header>
 
@@ -546,6 +554,8 @@
       docTitle: "2048 ✦ 1000×",
       score: "Điểm",
       best: "Kỷ lục",
+      moves: "Lượt",
+      time: "Thời gian",
       hint: 'Dùng <b>phím mũi tên</b> / <b>WASD</b> hoặc <b>vuốt</b> để gộp các ô. Đạt <b>2048</b>!',
       newGame: "Ván mới",
       sizeTitle: "Kích thước bảng",
@@ -646,6 +656,8 @@
       docTitle: "2048 ✦ 1000×",
       score: "スコア",
       best: "ベスト",
+      moves: "手数",
+      time: "タイム",
       hint: '<b>矢印キー</b> / <b>WASD</b> または <b>スワイプ</b> でタイルを合体。<b>2048</b> を目指そう！',
       newGame: "あたらしいゲーム",
       sizeTitle: "ボードサイズ",
@@ -792,6 +804,16 @@
   var $best = document.getElementById("best");
   var $scoreBox = document.getElementById("score-box");
   var $bestBox = document.getElementById("best-box");
+  var $movesVal = document.getElementById("moves-val");
+  var $timeVal = document.getElementById("time-val");
+  var __shownSecs = 0;
+  function refreshMetaHud(){
+    if($movesVal) $movesVal.textContent = moves;
+    if(runStart && !over){ __shownSecs = Math.floor((Date.now()-runStart)/1000); }
+    else if(!runStart){ __shownSecs = 0; }
+    if($timeVal) $timeVal.textContent = fmtTime(__shownSecs);
+  }
+  setInterval(refreshMetaHud, 200);
   var $gain = document.getElementById("gain");
   var $overlay = document.getElementById("overlay");
   var $ovTitle = document.getElementById("ov-title");
@@ -1281,6 +1303,7 @@
     busy = true;
     moves++;
     if(!runStart) runStart = Date.now();
+    if($movesVal) $movesVal.textContent = moves;
 
     grid = new Array(size*size).fill(null);
     for(var id in tiles){
