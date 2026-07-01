@@ -69,6 +69,7 @@ header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--
 <div class="scores">
 <div class="score-box" id="score-box"><div class="lbl" data-i18n="score">Điểm</div><div class="val" id="score">0</div></div>
 <div class="score-box" id="best-box"><div class="lbl" data-i18n="best">Kỷ lục</div><div class="val" id="best">0</div></div>
+<div class="score-box" id="time-box"><div class="lbl" data-i18n="time">Thời gian</div><div class="val" id="time">0:00</div></div>
 </div>
 <button class="btn icon-btn" id="mute-btn" title="Âm thanh">🔊</button>
 <button class="btn icon-btn" id="settings-btn" title="Cài đặt">⚙️</button>
@@ -94,7 +95,7 @@ header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--
 <script>
 (function(){
 'use strict';
-var LANG={vi:{score:'Điểm',best:'Kỷ lục',settings:'Cài đặt',sound:'Âm thanh',vibrate:'Rung',theme:'Giao diện',language:'Ngôn ngữ',close:'Đóng',newGame:'Chơi lại',gameOver:'Hết nước!',newBest:'Kỷ lục mới! 🎉',scoreVal:'Điểm',bestVal:'Kỷ lục',moves:'Lượt',level:'Cấp'},ja:{score:'得点',best:'最高記録',settings:'設定',sound:'サウンド',vibrate:'振動',theme:'テーマ',language:'言語',close:'閉じる',newGame:'もう一度',gameOver:'終了！',newBest:'新記録！🎉',scoreVal:'得点',bestVal:'最高記録',moves:'手数',level:'レベル'},en:{score:'Score',best:'Best',settings:'Settings',sound:'Sound',vibrate:'Vibrate',theme:'Theme',language:'Language',close:'Close',newGame:'Retry',gameOver:'Stuck!',newBest:'New Best! 🎉',scoreVal:'Score',bestVal:'Best',moves:'Moves',level:'Level'}};
+var LANG={vi:{score:'Điểm',best:'Kỷ lục',time:'Thời gian',settings:'Cài đặt',sound:'Âm thanh',vibrate:'Rung',theme:'Giao diện',language:'Ngôn ngữ',close:'Đóng',newGame:'Chơi lại',gameOver:'Hết nước!',newBest:'Kỷ lục mới! 🎉',scoreVal:'Điểm',bestVal:'Kỷ lục',moves:'Lượt',level:'Cấp'},ja:{score:'得点',best:'最高記録',time:'時間',settings:'設定',sound:'サウンド',vibrate:'振動',theme:'テーマ',language:'言語',close:'閉じる',newGame:'もう一度',gameOver:'終了！',newBest:'新記録！🎉',scoreVal:'得点',bestVal:'最高記録',moves:'手数',level:'レベル'},en:{score:'Score',best:'Best',time:'Time',settings:'Settings',sound:'Sound',vibrate:'Vibrate',theme:'Theme',language:'Language',close:'Close',newGame:'Retry',gameOver:'Stuck!',newBest:'New Best! 🎉',scoreVal:'Score',bestVal:'Best',moves:'Moves',level:'Level'}};
 var lang='vi';function t(k){return(LANG[lang]&&LANG[lang][k])||k;}
 function applyLang(){document.querySelectorAll('[data-i18n]').forEach(function(e){e.textContent=t(e.dataset.i18n);});document.querySelectorAll('.langbtn').forEach(function(b){b.classList.toggle('active',b.dataset.lang===lang);});}
 var audioCtx=null;function getAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx;}
@@ -104,6 +105,10 @@ var soundEnabled=true,vibrateEnabled=true;
 var canvas=document.getElementById('gameCanvas'),ctx=canvas.getContext('2d');
 var W=0,H=0,score=0,best=parseInt(localStorage.getItem('watersort_best'))||0;
 var tubes=[],selectedTube=-1,moves=0,level=1,gameRunning=false;
+var runStart=0,frozenEnd=0;
+function fmtTime(s){var m=Math.floor(s/60),ss=s%60;return m+':'+(ss<10?'0':'')+ss;}
+function elapsedSeconds(){if(!runStart)return 0;var end=gameRunning?Date.now():(frozenEnd||Date.now());return Math.floor((end-runStart)/1000);}
+function updateTime(){var el=document.getElementById('time');if(el)el.textContent=fmtTime(elapsedSeconds());}
 var colors=['#e74c3c','#3498db','#2ecc71','#f1c40f','#9b59b6','#e67e22','#1abc9c','#e91e63','#00bcd4','#ff9800'];
 var TUBE_COUNT=8,TUBE_HEIGHT=4,CELL=0;
 
@@ -122,7 +127,7 @@ function shuffle(arr){
 }
 
 function initGame(){
-  tubes=[];selectedTube=-1;moves=0;score=0;
+  tubes=[];selectedTube=-1;moves=0;score=0;runStart=0;frozenEnd=0;
   var numColors=Math.min(TUBE_COUNT-2,colors.length);
   var allColors=[];
   for(var i=0;i<numColors;i++){
@@ -139,7 +144,7 @@ function initGame(){
   }
   gameRunning=true;
   document.getElementById('overlay').classList.remove('show');
-  updateScore();updateBest();resizeCanvas();render();
+  updateScore();updateBest();updateTime();resizeCanvas();render();
 }
 
 function getTopColor(tube){
@@ -197,6 +202,7 @@ function handleClick(e){
       var c=src.pop();
       dst.push(c);
     }
+    if(!runStart)runStart=Date.now();
     moves++;score+=10;
     playPour();
     updateScore();
@@ -208,10 +214,11 @@ function handleClick(e){
     }
     if(won){
       gameRunning=false;
+      frozenEnd=Date.now();updateTime();
       var isNew=saveBest();
       document.getElementById('ov-title').textContent='🎉';
       document.getElementById('ov-sub').textContent='Hoàn thành!';
-      document.getElementById('ov-stats').innerHTML='<div><b>'+score+'</b><span>'+t('scoreVal')+'</span></div><div><b>'+moves+'</b><span>'+t('moves')+'</span></div>'+(isNew?'<div>'+t('newBest')+'</div>':'');
+      document.getElementById('ov-stats').innerHTML='<div><b>'+score+'</b><span>'+t('scoreVal')+'</span></div><div><b>'+moves+'</b><span>'+t('moves')+'</span></div><div><b>'+fmtTime(elapsedSeconds())+'</b><span>'+t('time')+'</span></div>'+(isNew?'<div>'+t('newBest')+'</div>':'');
       document.getElementById('ov-actions').innerHTML='<button class="btn primary" onclick="nextLevel()">Cấp tiếp</button><button class="btn" onclick="initGame()">'+t('newGame')+'</button>';
       document.getElementById('overlay').classList.add('show');
       playWin();
@@ -279,6 +286,7 @@ canvas.addEventListener('touchstart',function(e){e.preventDefault();var t=e.touc
 window.addEventListener('resize',function(){resizeCanvas();render();});
 window.startGame=initGame;window.initGame=initGame;window.nextLevel=nextLevel;window.closeModal=closeModal;
 setupSettings();applyLang();updateBest();resizeCanvas();initGame();
+setInterval(function(){updateTime();},300);
 })();
 </script>
 </body>

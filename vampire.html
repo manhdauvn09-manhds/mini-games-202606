@@ -215,16 +215,17 @@ function update(dt){
       }
     }
   }
-  document.getElementById('mistakes').textContent='❤️ '+Math.ceil(player.hp)+'/'+player.maxHp+' | '+t('level')+' '+player.level+' | '+t('kills')+': '+player.kills;
+  document.getElementById('mistakes').textContent='❤️ '+Math.ceil(player.hp)+'/'+player.maxHp+' | '+t('level')+' '+player.level+' | '+t('kills')+': '+player.kills+' | ⏱️ '+fmtTime(gameTime);
 }
+
+function fmtTime(sec){var m=Math.floor(sec/60),s=Math.floor(sec%60);return m+':'+(s<10?'0':'')+s;}
 
 function gameOver(){
   gameRunning=false;
   var isNew=saveBest();
-  var m=Math.floor(gameTime/60),s=Math.floor(gameTime%60);
   document.getElementById('ov-title').textContent='💀';
   document.getElementById('ov-sub').textContent=t('gameOver');
-  document.getElementById('ov-stats').innerHTML='<div><b>'+score+'</b><span>'+t('scoreVal')+'</span></div><div><b>'+m+':'+(s<10?'0':'')+s+'</b><span>'+t('survived')+'</span></div><div><b>'+player.kills+'</b><span>'+t('kills')+'</span></div><div><b>'+player.level+'</b><span>'+t('level')+'</span></div>'+(isNew?'<div>'+t('newBest')+'</div>':'');
+  document.getElementById('ov-stats').innerHTML='<div><b>'+score+'</b><span>'+t('scoreVal')+'</span></div><div><b>'+fmtTime(gameTime)+'</b><span>'+t('survived')+'</span></div><div><b>'+player.kills+'</b><span>'+t('kills')+'</span></div><div><b>'+player.level+'</b><span>'+t('level')+'</span></div>'+(isNew?'<div>'+t('newBest')+'</div>':'');
   document.getElementById('ov-actions').innerHTML='<button class="btn primary" onclick="startGame()">'+t('newGame')+'</button>';
   document.getElementById('overlay').classList.add('show');
 }

@@ -17,11 +17,11 @@ header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--
 .brand{display:flex;align-items:baseline;gap:6px;margin-right:auto;min-width:0}
 .brand h1{font-size:clamp(22px,6vw,34px);margin:0;font-weight:800;line-height:1;background:linear-gradient(135deg,var(--teal),var(--cyan) 55%,var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent;}
 .brand small{font-size:10px;color:var(--ink-dim);letter-spacing:2px;font-weight:700}
-.scores{display:flex;gap:8px}
-.score-box{min-width:72px;text-align:center;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03));border:1px solid var(--glass-brd);border-radius:10px;padding:5px 10px 6px;overflow:hidden}
+.scores{display:flex;gap:8px;flex-wrap:wrap}
+.score-box{min-width:64px;text-align:center;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03));border:1px solid var(--glass-brd);border-radius:10px;padding:5px 10px 6px;overflow:hidden}
 .score-box .lbl{font-size:9px;letter-spacing:1.2px;color:var(--ink-dim);font-weight:800;text-transform:uppercase}
 .score-box .val{font-size:clamp(16px,4vw,20px);font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
-#score-box .val{color:var(--gold)}#best-box .val{color:var(--cyan)}
+#score-box .val{color:var(--gold)}#best-box .val{color:var(--cyan)}#time-box .val{color:var(--teal)}#moves-box .val{color:var(--violet)}
 .score-box.bump{animation:bump .28s ease}
 @keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.13)}100%{transform:scale(1)}}
 .btn{appearance:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:13px;color:var(--ink);padding:8px 12px;border-radius:10px;min-height:40px;border:1px solid var(--glass-brd);background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.04));transition:transform .08s,border-color .18s;display:inline-flex;align-items:center;justify-content:center;gap:6px;touch-action:manipulation;}
@@ -69,6 +69,8 @@ header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--
 <div class="scores">
 <div class="score-box" id="score-box"><div class="lbl" data-i18n="score">Điểm</div><div class="val" id="score">0</div></div>
 <div class="score-box" id="best-box"><div class="lbl" data-i18n="best">Kỷ lục</div><div class="val" id="best">0</div></div>
+<div class="score-box" id="time-box"><div class="lbl" data-i18n="time">Thời gian</div><div class="val" id="timeVal">0:00</div></div>
+<div class="score-box" id="moves-box"><div class="lbl" data-i18n="moves">Nước</div><div class="val" id="movesVal">0</div></div>
 </div>
 <button class="btn icon-btn" id="mute-btn" title="Âm thanh">🔊</button>
 <button class="btn icon-btn" id="settings-btn" title="Cài đặt">⚙️</button>
@@ -94,7 +96,7 @@ header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--
 <script>
 (function(){
 'use strict';
-var LANG={vi:{score:'Điểm',best:'Kỷ lục',settings:'Cài đặt',sound:'Âm thanh',vibrate:'Rung',theme:'Giao diện',language:'Ngôn ngữ',close:'Đóng',newGame:'Chơi mới',gameOver:'Hoàn thành!',newBest:'Kỷ lục mới! 🎉',scoreVal:'Điểm',bestVal:'Kỷ lục',time:'Thời gian',pairs:'Cặp',remaining:'Còn lại'},ja:{score:'得点',best:'最高記録',settings:'設定',sound:'サウンド',vibrate:'振動',theme:'テーマ',language:'言語',close:'閉じる',newGame:'新しいゲーム',gameOver:'完成！',newBest:'新記録！🎉',scoreVal:'得点',bestVal:'最高記録',time:'時間',pairs:'ペア',remaining:'残り'},en:{score:'Score',best:'Best',settings:'Settings',sound:'Sound',vibrate:'Vibrate',theme:'Theme',language:'Language',close:'Close',newGame:'New Game',gameOver:'Complete!',newBest:'New Best! 🎉',scoreVal:'Score',bestVal:'Best',time:'Time',pairs:'Pairs',remaining:'Remaining'}};
+var LANG={vi:{score:'Điểm',best:'Kỷ lục',settings:'Cài đặt',sound:'Âm thanh',vibrate:'Rung',theme:'Giao diện',language:'Ngôn ngữ',close:'Đóng',newGame:'Chơi mới',gameOver:'Hoàn thành!',newBest:'Kỷ lục mới! 🎉',scoreVal:'Điểm',bestVal:'Kỷ lục',time:'Thời gian',moves:'Nước',pairs:'Cặp',remaining:'Còn lại'},ja:{score:'得点',best:'最高記録',settings:'設定',sound:'サウンド',vibrate:'振動',theme:'テーマ',language:'言語',close:'閉じる',newGame:'新しいゲーム',gameOver:'完成！',newBest:'新記録！🎉',scoreVal:'得点',bestVal:'最高記録',time:'時間',moves:'手',pairs:'ペア',remaining:'残り'},en:{score:'Score',best:'Best',settings:'Settings',sound:'Sound',vibrate:'Vibrate',theme:'Theme',language:'Language',close:'Close',newGame:'New Game',gameOver:'Complete!',newBest:'New Best! 🎉',scoreVal:'Score',bestVal:'Best',time:'Time',moves:'Moves',pairs:'Pairs',remaining:'Remaining'}};
 var lang='vi';function t(k){return(LANG[lang]&&LANG[lang][k])||k;}
 function applyLang(){document.querySelectorAll('[data-i18n]').forEach(function(e){e.textContent=t(e.dataset.i18n);});document.querySelectorAll('.langbtn').forEach(function(b){b.classList.toggle('active',b.dataset.lang===lang);});}
 var audioCtx=null;function getAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx;}
@@ -105,6 +107,11 @@ var canvas=document.getElementById('gameCanvas'),ctx=canvas.getContext('2d');
 var ROWS=8,COLS=10,CELL=0,grid=[],selected=null;
 var score=0,best=parseInt(localStorage.getItem('pikachu_best'))||0;
 var pairs=0,remaining=0,gameRunning=false,startTime=0;
+var runStart=0,frozenEnd=0,moves=0;
+function fmtTime(s){var m=Math.floor(s/60);var ss=s%60;return m+':'+(ss<10?'0':'')+ss;}
+function elapsedSeconds(){if(!runStart)return 0;return Math.floor(((gameRunning?Date.now():frozenEnd)-runStart)/1000);}
+function refreshHUD(){document.getElementById('timeVal').textContent=fmtTime(elapsedSeconds());document.getElementById('movesVal').textContent=moves;}
+setInterval(refreshHUD,300);
 var emojis=['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐸','🐵','🐔','🐧','🐦','🐤','🦆','🦅'];
 
 function resizeCanvas(){
@@ -202,10 +209,11 @@ function handleClick(e){
   if(selected.r===row&&selected.c===col){selected=null;render();return;}
   if(canConnect(selected.r,selected.c,row,col)){
     grid[selected.r][selected.c]=null;grid[row][col]=null;
-    remaining-=2;pairs++;score+=100;updateScore();
+    if(!runStart)runStart=Date.now();
+    remaining-=2;pairs++;moves++;score+=100;updateScore();refreshHUD();
     playMatch();selected=null;render();
     if(remaining===0){
-      gameRunning=false;
+      gameRunning=false;frozenEnd=Date.now();refreshHUD();
       var elapsed=Math.floor((Date.now()-startTime)/1000);
       var bonus=Math.max(0,300-elapsed);
       score+=bonus;updateScore();
@@ -233,8 +241,9 @@ function saveBest(){if(score>best){best=score;localStorage.setItem('pikachu_best
 
 function startGame(){
   initGrid();selected=null;pairs=0;score=0;gameRunning=true;startTime=Date.now();
+  runStart=0;frozenEnd=0;moves=0;
   document.getElementById('overlay').classList.remove('show');
-  updateScore();updateBest();resizeCanvas();render();
+  updateScore();updateBest();refreshHUD();resizeCanvas();render();
 }
 
 function setupSettings(){

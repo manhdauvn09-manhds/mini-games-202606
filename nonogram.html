@@ -17,11 +17,11 @@ header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--
 .brand{display:flex;align-items:baseline;gap:6px;margin-right:auto;min-width:0}
 .brand h1{font-size:clamp(22px,6vw,34px);margin:0;font-weight:800;line-height:1;background:linear-gradient(135deg,var(--teal),var(--cyan) 55%,var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent;}
 .brand small{font-size:10px;color:var(--ink-dim);letter-spacing:2px;font-weight:700}
-.scores{display:flex;gap:8px}
+.scores{display:flex;gap:8px;flex-wrap:wrap}
 .score-box{min-width:72px;text-align:center;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03));border:1px solid var(--glass-brd);border-radius:10px;padding:5px 10px 6px;overflow:hidden}
 .score-box .lbl{font-size:9px;letter-spacing:1.2px;color:var(--ink-dim);font-weight:800;text-transform:uppercase}
 .score-box .val{font-size:clamp(16px,4vw,20px);font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
-#score-box .val{color:var(--gold)}#best-box .val{color:var(--cyan)}
+#score-box .val{color:var(--gold)}#best-box .val{color:var(--cyan)}#time-box .val{color:var(--teal)}#moves-box .val{color:var(--violet)}
 .score-box.bump{animation:bump .28s ease}
 @keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.13)}100%{transform:scale(1)}}
 .btn{appearance:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:13px;color:var(--ink);padding:8px 12px;border-radius:10px;min-height:40px;border:1px solid var(--glass-brd);background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.04));transition:transform .08s,border-color .18s;display:inline-flex;align-items:center;justify-content:center;gap:6px;touch-action:manipulation;}
@@ -69,6 +69,8 @@ header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--
 <div class="scores">
 <div class="score-box" id="score-box"><div class="lbl" data-i18n="score">Điểm</div><div class="val" id="score">0</div></div>
 <div class="score-box" id="best-box"><div class="lbl" data-i18n="best">Kỷ lục</div><div class="val" id="best">0</div></div>
+<div class="score-box" id="time-box"><div class="lbl" data-i18n="time">Thời gian</div><div class="val" id="timeVal">0:00</div></div>
+<div class="score-box" id="moves-box"><div class="lbl" data-i18n="moves">Nước</div><div class="val" id="movesVal">0</div></div>
 </div>
 <button class="btn icon-btn" id="mute-btn" title="Âm thanh">🔊</button>
 <button class="btn icon-btn" id="settings-btn" title="Cài đặt">⚙️</button>
@@ -94,7 +96,7 @@ header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--
 <script>
 (function(){
 'use strict';
-var LANG={vi:{score:'Điểm',best:'Kỷ lục',settings:'Cài đặt',sound:'Âm thanh',vibrate:'Rung',theme:'Giao diện',language:'Ngôn ngữ',close:'Đóng',newGame:'Chơi mới',gameOver:'Hoàn thành!',newBest:'Kỷ lục mới! 🎉',scoreVal:'Điểm',bestVal:'Kỷ lục',time:'Thời gian',mistakes:'Sai',puzzle:'Câu đố'},ja:{score:'得点',best:'最高記録',settings:'設定',sound:'サウンド',vibrate:'振動',theme:'テーマ',language:'言語',close:'閉じる',newGame:'新しいゲーム',gameOver:'完成！',newBest:'新記録！🎉',scoreVal:'得点',bestVal:'最高記録',time:'時間',mistakes:'ミス',puzzle:'パズル'},en:{score:'Score',best:'Best',settings:'Settings',sound:'Sound',vibrate:'Vibrate',theme:'Theme',language:'Language',close:'Close',newGame:'New Game',gameOver:'Complete!',newBest:'New Best! 🎉',scoreVal:'Score',bestVal:'Best',time:'Time',mistakes:'Errors',puzzle:'Puzzle'}};
+var LANG={vi:{score:'Điểm',best:'Kỷ lục',settings:'Cài đặt',sound:'Âm thanh',vibrate:'Rung',theme:'Giao diện',language:'Ngôn ngữ',close:'Đóng',newGame:'Chơi mới',gameOver:'Hoàn thành!',newBest:'Kỷ lục mới! 🎉',scoreVal:'Điểm',bestVal:'Kỷ lục',time:'Thời gian',mistakes:'Sai',puzzle:'Câu đố',moves:'Nước'},ja:{score:'得点',best:'最高記録',settings:'設定',sound:'サウンド',vibrate:'振動',theme:'テーマ',language:'言語',close:'閉じる',newGame:'新しいゲーム',gameOver:'完成！',newBest:'新記録！🎉',scoreVal:'得点',bestVal:'最高記録',time:'時間',mistakes:'ミス',puzzle:'パズル',moves:'手'},en:{score:'Score',best:'Best',settings:'Settings',sound:'Sound',vibrate:'Vibrate',theme:'Theme',language:'Language',close:'Close',newGame:'New Game',gameOver:'Complete!',newBest:'New Best! 🎉',scoreVal:'Score',bestVal:'Best',time:'Time',mistakes:'Errors',puzzle:'Puzzle',moves:'Moves'}};
 var lang='vi';function t(k){return(LANG[lang]&&LANG[lang][k])||k;}
 function applyLang(){document.querySelectorAll('[data-i18n]').forEach(function(e){e.textContent=t(e.dataset.i18n);});document.querySelectorAll('.langbtn').forEach(function(b){b.classList.toggle('active',b.dataset.lang===lang);});}
 var audioCtx=null;function getAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx;}
@@ -105,7 +107,13 @@ var canvas=document.getElementById('gameCanvas'),ctx=canvas.getContext('2d');
 var SIZE=10,CELL=0,grid=[],solution=[],rowHints=[],colHints=[];
 var score=0,best=parseInt(localStorage.getItem('nonogram_best'))||0;
 var mistakes=0,startTime=0,gameRunning=false,completed=false,mode='fill';
+var runStart=0,frozenEnd=0,moves=0;
 var puzzles={};
+
+function fmtTime(sec){var m=Math.floor(sec/60),s=sec%60;return m+':'+(s<10?'0':'')+s;}
+function elapsedSeconds(){if(!runStart)return 0;return Math.floor(((completed?frozenEnd:Date.now())-runStart)/1000);}
+function refreshHud(){var tv=document.getElementById('timeVal');if(tv)tv.textContent=fmtTime(elapsedSeconds());var mv=document.getElementById('movesVal');if(mv)mv.textContent=moves;}
+setInterval(refreshHud,300);
 
 function generatePuzzles(){
   puzzles['5']={name:'Mini',solution:[[0,1,1,1,0],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[0,1,1,1,0]]};
@@ -192,6 +200,8 @@ function checkCompletion(){
   return true;
 }
 
+function registerMove(){if(!runStart)runStart=Date.now();moves++;refreshHud();}
+
 function handleClick(e){
   if(!gameRunning||completed)return;
   var rect=canvas.getBoundingClientRect();
@@ -200,29 +210,30 @@ function handleClick(e){
   var col=Math.floor((mx-ox)/CELL),row=Math.floor((my-oy)/CELL);
   if(col<0||col>=SIZE||row<0||row>=SIZE)return;
   if(e.button===2||e.shiftKey){
-    if(grid[row][col]===0){grid[row][col]=2;playCross();}
-    else if(grid[row][col]===2)grid[row][col]=0;
+    if(grid[row][col]===0){grid[row][col]=2;playCross();registerMove();}
+    else if(grid[row][col]===2){grid[row][col]=0;registerMove();}
   }else{
     if(mode==='fill'){
       if(grid[row][col]===0){
         grid[row][col]=1;
-        if(solution[row][col]){playClick();}
+        if(solution[row][col]){playClick();registerMove();}
         else{
           mistakes++;document.getElementById('mistakes').textContent=t('mistakes')+': '+mistakes;
           playTone(200,.15,'sawtooth',.08);grid[row][col]=0;
           var el=document.getElementById('toast');el.textContent='✗';el.className='show';
           setTimeout(function(){el.className='';},1300);
+          registerMove();
           return;
         }
-      }else if(grid[row][col]===1)grid[row][col]=0;
+      }else if(grid[row][col]===1){grid[row][col]=0;registerMove();}
     }else{
-      if(grid[row][col]===0){grid[row][col]=2;playCross();}
-      else if(grid[row][col]===2)grid[row][col]=0;
+      if(grid[row][col]===0){grid[row][col]=2;playCross();registerMove();}
+      else if(grid[row][col]===2){grid[row][col]=0;registerMove();}
     }
   }
   render();
   if(checkCompletion()){
-    completed=true;gameRunning=false;
+    completed=true;gameRunning=false;frozenEnd=Date.now();refreshHud();
     var elapsed=Math.floor((Date.now()-startTime)/1000);
     var pts=Math.max(100,SIZE*SIZE*10-mistakes*20-elapsed);
     score+=pts;updateScore();playWin();
@@ -255,6 +266,7 @@ function startGame(){
   SIZE=parseInt(key);solution=puzzles[key].solution;
   document.getElementById('puzzleName').textContent=puzzles[key].name+' ('+SIZE+'×'+SIZE+')';
   computeHints();initGrid();mistakes=0;completed=false;gameRunning=true;startTime=Date.now();
+  runStart=0;frozenEnd=0;moves=0;refreshHud();
   document.getElementById('mistakes').textContent='';
   document.getElementById('overlay').classList.remove('show');
   updateScore();updateBest();resizeCanvas();render();

@@ -316,6 +316,7 @@
     </div>
     <div class="statmini">
       <div class="chip cyan"><b id="moveCount">0</b><span data-i18n="movesLbl">Nước</span></div>
+      <div class="chip rose"><b id="timeCount">0:00</b><span data-i18n="timeLbl">Thời gian</span></div>
       <div class="chip gold"><b id="scoreLine">0–0</b><span data-i18n="scoreLbl">Tỉ số</span></div>
     </div>
   </div>
@@ -524,6 +525,7 @@
       ariaSound: "Bật/tắt âm thanh",
       ariaMenu: "Menu",
       movesLbl: "Nước",
+      timeLbl: "Thời gian",
       scoreLbl: "Tỉ số",
       thinkingBadge: "Máy đang nghĩ",
       btnUndo: "↩️ Hoàn tác",
@@ -638,6 +640,7 @@
       ariaSound: "サウンドのオン/オフ",
       ariaMenu: "メニュー",
       movesLbl: "手数",
+      timeLbl: "時間",
       scoreLbl: "スコア",
       thinkingBadge: "考え中",
       btnUndo: "↩️ 一手戻す",
@@ -858,6 +861,28 @@
   // animation: per-cell pop progress
   const popAnim = new Map();  // key "r,c" -> {t0}
   let winPulse = 0;
+
+  // ---- live play-time + human-move tracking ----
+  let runStart = 0;           // ms timestamp of first human move this run (0 = not started)
+  let frozenEnd = 0;          // ms timestamp when game ended (freezes the clock)
+  let humanMoves = 0;         // count of stones the human player has placed this run
+  // Format ms-based elapsed seconds as m:ss
+  function fmtTime(sec){
+    sec = Math.max(0, Math.floor(sec));
+    const m = Math.floor(sec/60), s = sec%60;
+    return m + ":" + (s<10 ? "0"+s : s);
+  }
+  function elapsedSeconds(){
+    if(!runStart) return 0;
+    const end = gameOver ? (frozenEnd || Date.now()) : Date.now();
+    return Math.floor((end - runStart)/1000);
+  }
+  // refresh only the live HUD bits (cheap; driven by setInterval so the clock ticks while idle)
+  function refreshLiveHUD(){
+    const tc = $("timeCount"); if(tc) tc.textContent = fmtTime(elapsedSeconds());
+    const mc = $("moveCount"); if(mc) mc.textContent = humanMoves;
+  }
+  setInterval(refreshLiveHUD, 300);
 
   function newBoard(){
     const b = new Array(SIZE);
@@ -1314,6 +1339,7 @@
     lastMove = null; hoverCell = null;
     isDaily = false; usedUndo = false;
     lastStatBump = null; lastOverResult = null;
+    runStart = 0; frozenEnd = 0; humanMoves = 0;   // reset live clock + human-move counter
 
     mode = store.mode; diff = store.diff;
     humanSide = (store.side==="white") ? WHITE : BLACK;
@@ -1331,6 +1357,7 @@
 
   function endGame(player, cells){
     gameOver = true; running = false; botThinking = false;
+    frozenEnd = Date.now();   // freeze the live clock at the moment the game ends
     setThinking(false);
     if(player===0){
       winInfo = null;
@@ -1431,9 +1458,11 @@
     if(mode==="bot" && current!==humanSide) return;
     if(!inB(r,c) || board[r][c]!==EMPTY){ sndInvalid(); return; }
     const p = current;
+    if(!runStart) runStart = Date.now();   // start the clock on the human's first real move
+    humanMoves++;                           // count exactly one real human stone
     sndPlace(p);
     const done = placeStone(r,c,p,false);
-    if(done) return;
+    if(done) return;   // endGame() already refreshes HUD + freezes the clock
     current = opponent(current);
     saveGame();
     updateHUD();
@@ -1828,6 +1857,7 @@
     // if game was over, allow undo to resume — and REVERT the scoreboard bump (BUG FIX)
     if(gameOver){
       gameOver = false; running = true;
+      frozenEnd = 0;   // un-freeze the live clock; game resumes
       winInfo = null; winPulse = 0;
       particles.length = 0; fctx.clearRect(0,0,window.innerWidth, window.innerHeight);
       hide($("over"));
@@ -1862,6 +1892,10 @@
       popAnim.delete(m.r+","+m.c);
     }
     lastMove = history.length ? { r:history[history.length-1].r, c:history[history.length-1].c } : null;
+
+    // recompute human-move counter from remaining history after the undo
+    humanMoves = (mode==="pvp") ? history.length : history.filter(m=>m.player===humanSide).length;
+    if(history.length===0) runStart = 0;   // fully undone — clock resets to 0
 
     // recompute current turn
     if(mode==="bot"){
@@ -2011,6 +2045,10 @@
     current = s.current;
     lastMove = history.length ? { r:history[history.length-1].r, c:history[history.length-1].c } : null;
     lastStatBump = null; lastOverResult = null;
+    // restart the live clock (original elapsed time isn't persisted) and
+    // recompute the human-move count from the restored history
+    runStart = history.length ? Date.now() : 0; frozenEnd = 0;
+    humanMoves = (mode==="pvp") ? history.length : history.filter(m=>m.player===humanSide).length;
     hide($("menu")); hide($("over"));
     updateHUD(); render();
     toast(t("toastResumed"));
@@ -2046,6 +2084,7 @@
     winInfo = null; winPulse = 0; gameOver = false; running = true; botThinking = false;
     isDaily = true; usedUndo = false;
     lastStatBump = null; lastOverResult = null;
+    runStart = 0; frozenEnd = 0; humanMoves = 0;   // reset live clock + human-move counter
     current = BLACK; hoverCell = null;
     dailyOpening();
     // human plays black; opening already placed black+white, current=BLACK -> human to move
@@ -2220,7 +2259,8 @@
     else if(mode==="bot" && current!==humanSide) hint.textContent = t("hintBotTurn");
     else hint.textContent = t("hintYourTurn");
 
-    $("moveCount").textContent = history.length;
+    $("moveCount").textContent = humanMoves;
+    $("timeCount").textContent = fmtTime(elapsedSeconds());
     // HUD score chip now shows draws too: B–W (·D)
     $("scoreLine").textContent = store.stats.black + "–" + store.stats.white +
       (store.stats.draw>0 ? " ·" + store.stats.draw : "");

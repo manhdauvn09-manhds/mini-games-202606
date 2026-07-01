@@ -68,6 +68,8 @@ header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--
 <div class="brand"><h1>🀄 Tile</h1><small>Match 3D</small></div>
 <div class="scores">
 <div class="score-box" id="score-box"><div class="lbl" data-i18n="score">Điểm</div><div class="val" id="score">0</div></div>
+<div class="score-box" id="moves-box"><div class="lbl" data-i18n="moves">Nước</div><div class="val" id="moves">0</div></div>
+<div class="score-box" id="time-box"><div class="lbl" data-i18n="time">Thời gian</div><div class="val" id="time">0:00</div></div>
 <div class="score-box" id="best-box"><div class="lbl" data-i18n="best">Kỷ lục</div><div class="val" id="best">0</div></div>
 </div>
 <button class="btn icon-btn" id="mute-btn" title="Âm thanh">🔊</button>
@@ -94,7 +96,7 @@ header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--
 <script>
 (function(){
 'use strict';
-var LANG={vi:{score:'Điểm',best:'Kỷ lục',settings:'Cài đặt',sound:'Âm thanh',vibrate:'Rung',theme:'Giao diện',language:'Ngôn ngữ',close:'Đóng',newGame:'Chơi lại',gameOver:'Hết lượt!',newBest:'Kỷ lục mới! 🎉',scoreVal:'Điểm',bestVal:'Kỷ lục',pairs:'Cặp',remaining:'Còn lại'},ja:{score:'得点',best:'最高記録',settings:'設定',sound:'サウンド',vibrate:'振動',theme:'テーマ',language:'言語',close:'閉じる',newGame:'もう一度',gameOver:'終了！',newBest:'新記録！🎉',scoreVal:'得点',bestVal:'最高記録',pairs:'ペア',remaining:'残り'},en:{score:'Score',best:'Best',settings:'Settings',sound:'Sound',vibrate:'Vibrate',theme:'Theme',language:'Language',close:'Close',newGame:'Retry',gameOver:'Out of moves!',newBest:'New Best! 🎉',scoreVal:'Score',bestVal:'Best',pairs:'Pairs',remaining:'Remaining'}};
+var LANG={vi:{score:'Điểm',best:'Kỷ lục',moves:'Nước',time:'Thời gian',settings:'Cài đặt',sound:'Âm thanh',vibrate:'Rung',theme:'Giao diện',language:'Ngôn ngữ',close:'Đóng',newGame:'Chơi lại',gameOver:'Hết lượt!',newBest:'Kỷ lục mới! 🎉',scoreVal:'Điểm',bestVal:'Kỷ lục',pairs:'Cặp',remaining:'Còn lại'},ja:{score:'得点',best:'最高記録',moves:'手数',time:'時間',settings:'設定',sound:'サウンド',vibrate:'振動',theme:'テーマ',language:'言語',close:'閉じる',newGame:'もう一度',gameOver:'終了！',newBest:'新記録！🎉',scoreVal:'得点',bestVal:'最高記録',pairs:'ペア',remaining:'残り'},en:{score:'Score',best:'Best',moves:'Moves',time:'Time',settings:'Settings',sound:'Sound',vibrate:'Vibrate',theme:'Theme',language:'Language',close:'Close',newGame:'Retry',gameOver:'Out of moves!',newBest:'New Best! 🎉',scoreVal:'Score',bestVal:'Best',pairs:'Pairs',remaining:'Remaining'}};
 var lang='vi';function t(k){return(LANG[lang]&&LANG[lang][k])||k;}
 function applyLang(){document.querySelectorAll('[data-i18n]').forEach(function(e){e.textContent=t(e.dataset.i18n);});document.querySelectorAll('.langbtn').forEach(function(b){b.classList.toggle('active',b.dataset.lang===lang);});}
 var audioCtx=null;function getAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx;}
@@ -104,6 +106,10 @@ var soundEnabled=true,vibrateEnabled=true;
 var canvas=document.getElementById('gameCanvas'),ctx=canvas.getContext('2d');
 var W=0,H=0,score=0,best=parseInt(localStorage.getItem('tilematch_best'))||0;
 var gameRunning=false,tiles=[],selected=[],slot=[];
+var moves=0,runStart=0,frozenEnd=0;
+function fmtTime(s){var m=Math.floor(s/60),ss=s%60;return m+':'+(ss<10?'0':'')+ss;}
+function elapsedSeconds(){return runStart?Math.floor(((gameRunning?Date.now():frozenEnd)-runStart)/1000):0;}
+function refreshHud(){document.getElementById('moves').textContent=moves;document.getElementById('time').textContent=fmtTime(elapsedSeconds());}
 var tileEmojis=['🍎','🍊','🍋','🍇','🍓','🍒','🍑','🥝','🍌','🍉','🍈','🥭','🍍','🥥','🍫','🍪','🧁','🍩','🍿','🍭'];
 var CELL=0,COLS=6,ROWS=6;
 
@@ -122,7 +128,7 @@ function shuffle(arr){
 }
 
 function initGame(){
-  tiles=[];selected=[];slot=[];score=0;
+  tiles=[];selected=[];slot=[];score=0;moves=0;runStart=0;frozenEnd=0;
   // Build the list of stacked cell positions across 3 layers.
   // layer0:6x6=36, layer1:4x4=16, layer2:2x2=4 -> 56 cells available.
   var positions=[];
@@ -161,7 +167,7 @@ function initGame(){
   }
   gameRunning=true;
   document.getElementById('overlay').classList.remove('show');
-  updateScore();updateBest();resizeCanvas();render();
+  updateScore();updateBest();refreshHud();resizeCanvas();render();
 }
 
 function isTileFree(tile){
@@ -197,9 +203,12 @@ function handleClick(e){
     var old=slot.shift();
     old.removed=false;
   }
-  // Add to slot
+  // Add to slot (a real player action: a tile is picked from the board into the tray)
+  if(!runStart)runStart=Date.now();
+  moves++;
   slot.push(clicked);
   clicked.removed=true;
+  refreshHud();
   playClick();
   // Check for matches in slot
   var counts={};
@@ -224,7 +233,7 @@ function handleClick(e){
   // Check win
   var remaining=tiles.filter(function(t){return !t.removed;}).length;
   if(remaining===0){
-    gameRunning=false;
+    gameRunning=false;frozenEnd=Date.now();refreshHud();
     var isNew=saveBest();
     document.getElementById('ov-title').textContent='🎉';
     document.getElementById('ov-sub').textContent='Hoàn thành!';
@@ -235,7 +244,7 @@ function handleClick(e){
   }
   // Check lose (slot full and no match possible)
   if(slot.length>=7){
-    gameRunning=false;
+    gameRunning=false;frozenEnd=Date.now();refreshHud();
     var isNew=saveBest();
     document.getElementById('ov-title').textContent='😵';
     document.getElementById('ov-sub').textContent=t('gameOver');
@@ -309,6 +318,7 @@ canvas.addEventListener('mousedown',function(e){handleClick(e);});
 canvas.addEventListener('touchstart',function(e){e.preventDefault();var t=e.touches[0];handleClick({clientX:t.clientX,clientY:t.clientY});});
 window.addEventListener('resize',function(){resizeCanvas();render();});
 window.startGame=initGame;window.initGame=initGame;window.closeModal=closeModal;
+setInterval(function(){if(gameRunning&&runStart)refreshHud();},300);
 setupSettings();applyLang();updateBest();resizeCanvas();initGame();
 })();
 </script>
