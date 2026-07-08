@@ -77,10 +77,10 @@
   .plabel{ font-size:clamp(9px,1.5vmin,11px); letter-spacing:2px; text-transform:uppercase; color:var(--mut); font-weight:800; margin-bottom:6px; text-align:center; }
 
   /* Board wrapper */
-  #boardWrap{ position:relative; border-radius:18px; }
-  #board{ display:block; border-radius:14px; background:rgba(4,7,18,.55);
+  #boardWrap{ position:relative; border-radius:18px; --barH:54px; }
+  #board{ display:block; border-radius:14px; margin-top:var(--barH); background:rgba(4,7,18,.55);
     box-shadow:0 28px 60px -30px #000, inset 0 0 0 1px rgba(255,255,255,.06), inset 0 0 60px rgba(0,0,0,.45); }
-  #fx{ position:absolute; inset:0; pointer-events:none; }
+  #fx{ position:absolute; left:0; top:var(--barH); pointer-events:none; }
 
   /* Mini canvases */
   .mini{ display:block; }
@@ -97,7 +97,7 @@
   @keyframes vflash{ 0%{ transform:scale(1.35); filter:brightness(1.6) } 100%{ transform:scale(1) } }
 
   /* Top control buttons */
-  #topctl{ position:absolute; top:-2px; right:-2px; display:flex; gap:7px; z-index:6; }
+  #topctl{ position:absolute; top:9px; right:9px; display:flex; gap:7px; z-index:6; }
   .iconbtn{ pointer-events:auto; cursor:pointer; width:clamp(34px,6vmin,42px); height:clamp(34px,6vmin,42px);
     border-radius:12px; border:1px solid var(--line);
     background:rgba(8,12,30,.55); backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px);
@@ -107,7 +107,7 @@
   .iconbtn:active{ transform:scale(.9); }
 
   /* Combo / popup texts handled on canvas; level-up flash overlay */
-  #levelFlash{ position:absolute; inset:0; pointer-events:none; border-radius:14px; opacity:0;
+  #levelFlash{ position:absolute; left:0; right:0; top:var(--barH); bottom:0; pointer-events:none; border-radius:14px; opacity:0;
     background:radial-gradient(circle at 50% 50%, rgba(255,206,84,.28), transparent 65%);
     z-index:4; }
 
@@ -325,6 +325,17 @@
     .tbtn{ width:46px; height:46px; min-width:46px; min-height:46px; border-radius:12px; font-size:20px; }
   }
 </style>
+<!--PWA:start-->
+<link rel="manifest" href="tetris.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tetris">
+<meta name="application-name" content="Tetris">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20512%20512'%3E%3Cdefs%3E%3ClinearGradient%20id%3D'g'%20x1%3D'0'%20y1%3D'0'%20x2%3D'1'%20y2%3D'1'%3E%3Cstop%20offset%3D'0'%20stop-color%3D'%232a3566'%2F%3E%3Cstop%20offset%3D'1'%20stop-color%3D'%230b1020'%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D'512'%20height%3D'512'%20fill%3D'url(%23g)'%2F%3E%3Ctext%20x%3D'256'%20y%3D'266'%20font-size%3D'300'%20text-anchor%3D'middle'%20dominant-baseline%3D'central'%3E%F0%9F%9F%A6%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20512%20512'%3E%3Cdefs%3E%3ClinearGradient%20id%3D'g'%20x1%3D'0'%20y1%3D'0'%20x2%3D'1'%20y2%3D'1'%3E%3Cstop%20offset%3D'0'%20stop-color%3D'%232a3566'%2F%3E%3Cstop%20offset%3D'1'%20stop-color%3D'%230b1020'%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D'512'%20height%3D'512'%20fill%3D'url(%23g)'%2F%3E%3Ctext%20x%3D'256'%20y%3D'266'%20font-size%3D'300'%20text-anchor%3D'middle'%20dominant-baseline%3D'central'%3E%F0%9F%9F%A6%3C%2Ftext%3E%3C%2Fsvg%3E">
+<script defer src="pwa.js"></script>
+<!--PWA:end-->
 </head>
 <body>
 <div id="app">
@@ -352,7 +363,7 @@
         <button id="pauseBtn" class="iconbtn" title="Tạm dừng (P)" data-i18n-title="pauseTip">⏸</button>
         <button id="muteBtn" class="iconbtn" title="Âm thanh (M)" data-i18n-title="muteTip">🔊</button>
       </div>
-      <div id="modeTimer" style="position:absolute;top:-2px;left:-2px;z-index:6;display:none;padding:6px 10px;border-radius:12px;border:1px solid var(--line);background:rgba(8,12,30,.55);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);font-weight:900;font-size:clamp(13px,2.4vmin,17px);color:var(--cyan)">0:00</div>
+      <div id="modeTimer" style="position:absolute;top:9px;left:9px;z-index:6;display:none;padding:6px 10px;border-radius:12px;border:1px solid var(--line);background:rgba(8,12,30,.55);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);font-weight:900;font-size:clamp(13px,2.4vmin,17px);color:var(--cyan)">0:00</div>
     </div>
 
     <!-- RIGHT: Next queue -->
@@ -874,7 +885,7 @@
     // We size CELL so board + panels fit. Board pixel size = CELL*COLS x CELL*ROWS.
     var sideAllowance = isMobile ? 0 : 320; // px for both side columns + gaps on desktop
     var maxBoardW = Math.min(vw - 24 - sideAllowance, vw*0.92);
-    var maxBoardH = vh - 24 - reservedBottom;
+    var maxBoardH = vh - 24 - reservedBottom - 58; // 58 = top control strip (--barH 54) + gap
 
     var cellByW = Math.floor(maxBoardW / COLS);
     var cellByH = Math.floor(maxBoardH / ROWS);
